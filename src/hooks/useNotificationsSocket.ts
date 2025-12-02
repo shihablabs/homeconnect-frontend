@@ -12,7 +12,7 @@ interface UseNotificationsSocketOptions {
 }
 
 export function useNotificationsSocket(options: UseNotificationsSocketOptions = {}) {
-  const { socket, isConnected, notificationCount, notifications: socketNotifications } = useSocket();
+  const { socket, isConnected, notificationCount } = useSocket();
   const { autoFetch = true, onNewNotification, onNotificationRead } = options;
   
   const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -34,7 +34,7 @@ export function useNotificationsSocket(options: UseNotificationsSocketOptions = 
       ]);
       setNotifications(notificationsData.notifications);
       setStats(statsData);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('[NotificationsSocket] Error fetching notifications:', error);
       toast.error('Failed to fetch notifications');
     } finally {
@@ -156,7 +156,7 @@ export function useNotificationsSocket(options: UseNotificationsSocketOptions = 
         if (onNotificationRead) {
           onNotificationRead(notificationId);
         }
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.error('[NotificationsSocket] Error marking as read:', error);
         toast.error('Failed to mark notification as read');
       }
@@ -188,7 +188,7 @@ export function useNotificationsSocket(options: UseNotificationsSocketOptions = 
       });
 
       toast.success('All notifications marked as read');
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('[NotificationsSocket] Error marking all as read:', error);
       toast.error('Failed to mark all as read');
     }
@@ -219,7 +219,7 @@ export function useNotificationsSocket(options: UseNotificationsSocketOptions = 
             };
           });
         }
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.error('[NotificationsSocket] Error deleting notification:', error);
         toast.error('Failed to delete notification');
       }

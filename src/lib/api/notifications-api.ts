@@ -11,7 +11,7 @@ export interface Notification {
   data?: {
     entityId?: string;
     entityType?: string;
-    [key: string]: any;
+    [key: string]: unknown;
   };
   isRead: boolean;
   createdAt: string;

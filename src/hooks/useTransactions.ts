@@ -1,6 +1,6 @@
 "use client";
 
-import { paymentsApi, type Payment } from "@/lib/api/payments-api";
+import { paymentsApi, type PaymentHistoryParams } from "@/lib/api/payments-api";
 import { useQuery } from "@tanstack/react-query";
 
 interface UseTransactionsOptions {
@@ -17,8 +17,8 @@ export const useTransactions = (options: UseTransactionsOptions = {}) => {
     queryKey: ['transactions', type, status, limit],
     queryFn: async () => {
       const response = await paymentsApi.getPaymentHistory({
-        type: type !== 'all' ? (type as any) : undefined,
-        status: status !== 'all' ? (status as any) : undefined,
+        type: type !== 'all' ? (type as PaymentHistoryParams['type']) : undefined,
+        status: status !== 'all' ? (status as PaymentHistoryParams['status']) : undefined,
         limit,
       });
       return {
@@ -29,9 +29,12 @@ export const useTransactions = (options: UseTransactionsOptions = {}) => {
     staleTime: 30000, // Consider data fresh for 30 seconds
     refetchOnWindowFocus: true,
     refetchInterval: 60000, // Auto-refetch every minute
-    retry: (failureCount, error: any) => {
-      if (error?.response?.status === 429) {
-        return false;
+    retry: (failureCount, error: unknown) => {
+      if (error && typeof error === 'object' && 'response' in error) {
+        const err = error as { response?: { status?: number } };
+        if (err.response?.status === 429) {
+          return false;
+        }
       }
       return failureCount < 2;
     },
