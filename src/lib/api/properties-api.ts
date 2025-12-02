@@ -281,8 +281,10 @@ export const propertiesApi = {
   },
 
   // Delete property
-  deleteProperty: async (id: string): Promise<{ message: string }> => {
-    const response = await api.delete(`/properties/${id}`);
+  deleteProperty: async (id: string, reason?: string): Promise<{ message: string }> => {
+    const response = await api.delete(`/properties/${id}`, {
+      data: reason ? { reason } : undefined,
+    });
     return response.data;
   },
 
@@ -310,6 +312,28 @@ export const propertiesApi = {
       params: { page, limit }
     });
     return response.data.data;
+  },
+
+  // Get user's favorite properties
+  getUserFavoriteProperties: async (
+    page: number = 1, 
+    limit: number = 20,
+    listingType?: 'rent' | 'sale'
+  ): Promise<PropertySearchResult> => {
+    const response = await api.get('/properties/user/favorites', {
+      params: { page, limit, listingType }
+    });
+    // Backend returns { data: properties[], meta: { total, page, totalPages, ... } }
+    const properties = response.data.data || [];
+    const meta = response.data.meta || {};
+    return {
+      properties,
+      total: meta.total || 0,
+      page: meta.page || 1,
+      totalPages: meta.totalPages || 1,
+      hasNext: meta.hasNext || false,
+      hasPrev: meta.hasPrev || false,
+    };
   },
 
   // Get available filters

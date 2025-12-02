@@ -40,6 +40,8 @@ export function PropertyClientPage({
               }
               currency={property.currency}
               listingType={property.listingType}
+              propertyId={property.id}
+              propertyTitle={property.title}
             />
           </aside>
         </div>

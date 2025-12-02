@@ -16,6 +16,8 @@ import {
   ShieldCheck,
   ShieldOff,
 } from "lucide-react";
+import { VoteButtons } from "@/components/property/VoteButtons";
+import { ShareButton } from "@/components/property/ShareButton";
 
 interface PropertyHeaderProps {
   property: PropertyResponse;
@@ -90,24 +92,31 @@ export function PropertyHeader({ property }: PropertyHeaderProps) {
         </div>
       </div>
 
-      <div className="mt-4">
-        {isVerified ? (
-          <Badge
-            variant="outline"
-            className="border-green-600 bg-green-50 text-green-700"
-          >
-            <ShieldCheck className="mr-2 h-4 w-4" />
-            Verified Listing
-          </Badge>
-        ) : (
-          <Badge
-            variant="outline"
-            className="border-red-600 bg-red-50 text-red-700"
-          >
-            <ShieldOff className="mr-2 h-4 w-4" />
-            Not Verified
-          </Badge>
-        )}
+      <div className="mt-6 flex items-center justify-between flex-wrap gap-4">
+        <div className="flex items-center gap-3 flex-wrap">
+          {isVerified ? (
+            <Badge
+              variant="outline"
+              className="border-green-600 bg-green-50 text-green-700"
+            >
+              <ShieldCheck className="mr-2 h-4 w-4" />
+              Verified Listing
+            </Badge>
+          ) : (
+            <Badge
+              variant="outline"
+              className="border-red-600 bg-red-50 text-red-700"
+            >
+              <ShieldOff className="mr-2 h-4 w-4" />
+              Not Verified
+            </Badge>
+          )}
+          <VoteButtons propertyId={property.id} />
+        </div>
+        <ShareButton 
+          propertyId={property.id}
+          propertyTitle={title}
+        />
       </div>
     </Card>
   );

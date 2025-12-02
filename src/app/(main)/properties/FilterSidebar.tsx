@@ -79,7 +79,7 @@ export function FilterSidebar({
         <Label htmlFor="city" className="mb-3 text-sm font-medium">City</Label>
         <Select
           value={filters.city || "all"}
-          onValueChange={(value) => onFilterChange({ city: value })}
+          onValueChange={(value) => onFilterChange({ city: value === "all" ? undefined : value })}
           disabled={isLoading || cities.length === 0}
         >
           <SelectTrigger className="w-full mt-2">

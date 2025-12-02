@@ -3,10 +3,15 @@
 import { pacifico } from '@/lib/fonts';
 import { clsx } from 'clsx';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { useState } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { useDashboardCounts } from '@/hooks/useDashboardCounts';
+import { useLogoutMutation } from '@/redux/features/auth/authApiSlice';
+import { toast } from 'sonner';
 import {
+  TbBell,
   TbBuilding,
+  TbCalendar,
   TbChartBar,
   TbChevronDown,
   TbChevronRight,
@@ -20,6 +25,7 @@ import {
   TbMessage,
   TbSettings,
   TbShield,
+  TbThumbUp,
   TbUser,
   TbUsers
 } from 'react-icons/tb';
@@ -73,6 +79,20 @@ const menuConfig = {
     },
     {
       type: 'link',
+      href: '/dashboard/votes',
+      label: 'My Votes',
+      icon: TbThumbUp,
+      badge: null
+    },
+    {
+      type: 'link',
+      href: '/dashboard/bookings',
+      label: 'Bookings',
+      icon: TbCalendar,
+      badge: null
+    },
+    {
+      type: 'link',
       href: '/dashboard/messages',
       label: 'Messages',
       icon: TbMessage,
@@ -80,9 +100,23 @@ const menuConfig = {
     },
     {
       type: 'link',
+      href: '/dashboard/notifications',
+      label: 'Notifications',
+      icon: TbBell,
+      badge: null
+    },
+    {
+      type: 'link',
       href: '/dashboard/support',
       label: 'Support',
       icon: TbHelp,
+      badge: null
+    },
+    {
+      type: 'link',
+      href: '/dashboard/profile',
+      label: 'Profile Settings',
+      icon: TbUser,
       badge: null
     }
   ],
@@ -133,6 +167,13 @@ const menuConfig = {
     },
     {
       type: 'link',
+      href: '/dashboard/bookings',
+      label: 'Bookings',
+      icon: TbCalendar,
+      badge: null
+    },
+    {
+      type: 'link',
       href: '/dashboard/messages',
       label: 'Messages',
       icon: TbMessage,
@@ -140,9 +181,23 @@ const menuConfig = {
     },
     {
       type: 'link',
+      href: '/dashboard/notifications',
+      label: 'Notifications',
+      icon: TbBell,
+      badge: null
+    },
+    {
+      type: 'link',
       href: '/dashboard/lease-templates',
       label: 'Lease Templates',
       icon: TbFileText,
+      badge: null
+    },
+    {
+      type: 'link',
+      href: '/dashboard/profile',
+      label: 'Profile Settings',
+      icon: TbUser,
       badge: null
     }
   ],
@@ -155,23 +210,18 @@ const menuConfig = {
       badge: null
     },
     {
-      type: 'dropdown',
+      type: 'link',
+      href: '/dashboard/admin/users',
       label: 'User Management',
       icon: TbUsers,
-      items: [
-        { href: '/dashboard/admin/users', label: 'All Users' },
-        { href: '/dashboard/admin/landlords', label: 'Landlords' },
-        { href: '/dashboard/admin/tenants', label: 'Tenants' },
-        { href: '/dashboard/admin/staff', label: 'Staff Members' },
-      ]
+      badge: null
     },
     {
       type: 'dropdown',
       label: 'Properties',
       icon: TbBuilding,
       items: [
-        { href: '/dashboard/admin/properties', label: 'All Properties' },
-        { href: '/dashboard/admin/verification', label: 'Property Verification' },
+        { href: '/dashboard/admin/properties', label: 'Property Verification' },
         { href: '/dashboard/admin/categories', label: 'Categories & Types' },
       ]
     },
@@ -194,6 +244,13 @@ const menuConfig = {
     },
     {
       type: 'link',
+      href: '/dashboard/notifications',
+      label: 'Notifications',
+      icon: TbBell,
+      badge: null
+    },
+    {
+      type: 'link',
       href: '/dashboard/admin/support',
       label: 'Support Center',
       icon: TbHelp,
@@ -205,14 +262,28 @@ const menuConfig = {
       label: 'Analytics',
       icon: TbChartBar,
       badge: null
+    },
+    {
+      type: 'link',
+      href: '/dashboard/profile',
+      label: 'Profile Settings',
+      icon: TbUser,
+      badge: null
     }
   ],
   support: [
     {
       type: 'link',
       href: '/dashboard',
-      label: 'Support Dashboard',
+      label: 'Dashboard',
       icon: TbChartBar,
+      badge: null
+    },
+    {
+      type: 'link',
+      href: '/dashboard/maintenance',
+      label: 'Maintenance Requests',
+      icon: TbSettings,
       badge: null
     },
     {
@@ -220,14 +291,28 @@ const menuConfig = {
       href: '/dashboard/support/tickets',
       label: 'Support Tickets',
       icon: TbMessage,
-      badge: '15'
+      badge: null
     },
     {
       type: 'link',
-      href: '/dashboard/support/live-chat',
-      label: 'Live Chat',
+      href: '/dashboard/users',
+      label: 'View Users',
       icon: TbUsers,
-      badge: '3'
+      badge: null
+    },
+    {
+      type: 'link',
+      href: '/dashboard/bookings',
+      label: 'Bookings',
+      icon: TbCalendar,
+      badge: null
+    },
+    {
+      type: 'link',
+      href: '/dashboard/notifications',
+      label: 'Notifications',
+      icon: TbBell,
+      badge: null
     },
     {
       type: 'dropdown',
@@ -241,16 +326,9 @@ const menuConfig = {
     },
     {
       type: 'link',
-      href: '/dashboard/support/escalations',
-      label: 'Escalated Issues',
-      icon: TbShield,
-      badge: '7'
-    },
-    {
-      type: 'link',
-      href: '/dashboard/support/feedback',
-      label: 'User Feedback',
-      icon: TbHeart,
+      href: '/dashboard/profile',
+      label: 'Profile Settings',
+      icon: TbUser,
       badge: null
     }
   ]
@@ -258,7 +336,55 @@ const menuConfig = {
 
 export default function DashboardSidebar({ isOpen, onClose, role }: DashboardSidebarProps) {
   const pathname = usePathname();
+  const router = useRouter();
+  const { unreadMessages, unreadNotifications, pendingMaintenance } = useDashboardCounts();
+  const [logoutUser, { isLoading: isLoggingOut }] = useLogoutMutation();
+
+  const handleLogout = async () => {
+    try {
+      await logoutUser().unwrap();
+      toast.success("Logged out successfully.");
+      router.push('/login');
+    } catch (err) {
+      toast.error("Failed to log out. Please try again.");
+      console.error('Failed to log out:', err);
+    }
+  };
+  
+  // Initialize with empty Set to prevent hydration mismatch
+  // Load from localStorage only on client after mount
   const [openDropdowns, setOpenDropdowns] = useState<Set<string>>(new Set());
+  const [isMounted, setIsMounted] = useState(false);
+
+  // Load dropdown state from localStorage after mount (client-side only)
+  useEffect(() => {
+    setIsMounted(true);
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem(`dashboard-dropdowns-${role}`);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          setOpenDropdowns(new Set(Array.isArray(parsed) ? parsed : []));
+        }
+      } catch (error) {
+        console.error('Failed to load dropdown state:', error);
+      }
+    }
+  }, [role]);
+
+  // Save dropdown state to localStorage whenever it changes
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem(
+          `dashboard-dropdowns-${role}`,
+          JSON.stringify(Array.from(openDropdowns))
+        );
+      } catch (error) {
+        console.error('Failed to save dropdown state:', error);
+      }
+    }
+  }, [openDropdowns, role]);
 
   const toggleDropdown = (label: string) => {
     const newDropdowns = new Set(openDropdowns);
@@ -270,7 +396,43 @@ export default function DashboardSidebar({ isOpen, onClose, role }: DashboardSid
     setOpenDropdowns(newDropdowns);
   };
 
-  const menuItems = menuConfig[role];
+  // Get menu items with dynamic badge counts
+  const getMenuItemsWithBadges = () => {
+    const items = menuConfig[role];
+    return items.map(item => {
+      if (item.type === 'link') {
+        // Update badges based on href
+        if (item.href === '/dashboard/messages') {
+          return { ...item, badge: unreadMessages > 0 ? unreadMessages.toString() : null };
+        }
+        if (item.href === '/dashboard/notifications') {
+          return { ...item, badge: unreadNotifications > 0 ? unreadNotifications.toString() : null };
+        }
+        if (item.href === '/dashboard/maintenance') {
+          return { ...item, badge: pendingMaintenance > 0 ? pendingMaintenance.toString() : null };
+        }
+        // Support-specific badges
+        if (role === 'support') {
+          if (item.href === '/dashboard/support/tickets') {
+            // Could be enhanced with actual support ticket count
+            return item;
+          }
+          if (item.href === '/dashboard/support/escalations') {
+            // Could be enhanced with actual escalation count
+            return item;
+          }
+        }
+        // Admin-specific badges
+        if (role === 'admin' && item.href === '/dashboard/admin/support') {
+          // Could be enhanced with actual support ticket count
+          return item;
+        }
+      }
+      return item;
+    });
+  };
+
+  const menuItems = getMenuItemsWithBadges();
 
   return (
     <>
@@ -284,11 +446,11 @@ export default function DashboardSidebar({ isOpen, onClose, role }: DashboardSid
 
       {/* Sidebar */}
       <div className={clsx(
-        "fixed h-full inset-y-0 left-0 z-50 w-80 bg-gradient-to-b from-white to-gray-50/80 shadow-2xl border-r border-gray-200/60 backdrop-blur-lg transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0",
+        "fixed h-full inset-y-0 left-0 z-50 w-80 bg-gradient-to-b from-white to-gray-50/80 border-r border-gray-200/60 backdrop-blur-lg transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0 flex flex-col",
         isOpen ? "translate-x-0" : "-translate-x-full"
       )}>
         {/* Enhanced Logo Section */}
-        <div className="flex items-center justify-between h-24 p-6 border-b border-gray-200/40 bg-white/50 backdrop-blur-sm">
+        <div className="flex items-center justify-between h-24 p-6 border-b border-gray-200/40 bg-white/50 backdrop-blur-sm flex-shrink-0">
           <Link
             href="/"
             className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent drop-shadow-lg hover:drop-shadow-xl inline-flex items-center space-x-4 hover:scale-105 transition-all duration-300">
@@ -312,8 +474,8 @@ export default function DashboardSidebar({ isOpen, onClose, role }: DashboardSid
           </button>
         </div>
 
-        {/* Enhanced Navigation */}
-        <nav className="mt-8 px-4">
+        {/* Enhanced Navigation - Scrollable */}
+        <nav className="flex-1 overflow-y-auto mt-8 px-4 pb-24">
           <div className="space-y-2">
             {menuItems.map((item) => {
               const IconComponent = item.icon;
@@ -338,11 +500,11 @@ export default function DashboardSidebar({ isOpen, onClose, role }: DashboardSid
                       )}
                     </button>
 
-                    {isDropdownOpen && (
+                    {isMounted && isDropdownOpen && (
                       <div className="ml-4 pl-8 border-l-2 border-gray-200/40 space-y-1 py-2">
-                        {item.items?.map((subItem) => (
+                        {item.items?.map((subItem, index) => (
                           <Link
-                            key={subItem.href}
+                            key={`${subItem.href}-${subItem.label}-${index}`}
                             href={subItem.href}
                             className="flex items-center px-3 py-2 text-sm text-gray-600 rounded-lg hover:text-blue-600 hover:bg-blue-50/50 transition-all duration-200"
                             onClick={() => window.innerWidth < 1024 && onClose()}
@@ -395,16 +557,13 @@ export default function DashboardSidebar({ isOpen, onClose, role }: DashboardSid
         {/* Enhanced Footer Section */}
         <div className="absolute bottom-0 left-0 right-0 p-6 border-t border-gray-200/40 bg-white/50 backdrop-blur-sm">
           <div className="space-y-3">
-            <Link
-              href="/dashboard/profile"
-              className="flex items-center px-4 py-3 text-sm font-medium text-gray-700 rounded-xl hover:bg-blue-300/10 hover:text-gray-900 transition-all duration-200 group"
+            <button 
+              onClick={handleLogout}
+              disabled={isLoggingOut}
+              className="flex items-center w-full px-4 py-3 text-sm font-medium text-red-600 rounded-xl hover:bg-red-50/80 transition-all duration-200 group disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <TbUser className="w-5 h-5 mr-3 text-gray-500 group-hover:text-blue-500" />
-              My Profile
-            </Link>
-            <button className="flex items-center w-full px-4 py-3 text-sm font-medium text-red-600 rounded-xl hover:bg-red-50/80 transition-all duration-200 group">
               <TbLogout className="w-5 h-5 mr-3" />
-              Sign Out
+              {isLoggingOut ? 'Logging out...' : 'Logout'}
             </button>
           </div>
         </div>

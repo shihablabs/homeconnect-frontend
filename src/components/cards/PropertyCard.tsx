@@ -16,6 +16,8 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { VoteButtons } from "@/components/property/VoteButtons";
+import { ShareButton } from "@/components/property/ShareButton";
 
 interface PropertyCardProps {
   property: PropertyResponse;
@@ -165,6 +167,30 @@ export function PropertyCard({ property }: PropertyCardProps) {
               {neighborhood ? `${neighborhood}, ` : ""}
               {city}
             </span>
+          </div>
+
+          {/* Voting and Share Section */}
+          <div 
+            className="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between gap-2"
+            onClick={(e) => e.stopPropagation()}
+            onMouseDown={(e) => e.stopPropagation()}
+          >
+            <div onClick={(e) => e.stopPropagation()}>
+              <VoteButtons 
+                propertyId={id} 
+                compact={true}
+                showScore={false}
+              />
+            </div>
+            <div onClick={(e) => e.stopPropagation()}>
+              <ShareButton
+                propertyId={id}
+                propertyTitle={title}
+                variant="ghost"
+                size="sm"
+                showLabel={false}
+              />
+            </div>
           </div>
         </div>
 

@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/card";
 import { OwnerAgentResponse } from "@/types/property.types";
 import { Separator } from "@radix-ui/react-dropdown-menu";
 import { MessageSquare, Phone } from "lucide-react";
+import { ShareButton } from "@/components/property/ShareButton";
 
 interface PropertySidebarProps {
   owner: OwnerAgentResponse;
@@ -13,6 +14,8 @@ interface PropertySidebarProps {
   price: number;
   currency: string;
   listingType: "rent" | "sale";
+  propertyId?: string;
+  propertyTitle?: string;
 }
 
 export function PropertySidebar({
@@ -21,6 +24,8 @@ export function PropertySidebar({
   price,
   currency,
   listingType,
+  propertyId,
+  propertyTitle,
 }: PropertySidebarProps) {
   const contactPerson = agent || owner;
 
@@ -76,6 +81,15 @@ export function PropertySidebar({
           <Phone className="mr-2 h-4 w-4" />
           {contactPerson.phone || "Request Phone"}
         </Button>
+        {propertyId && propertyTitle && (
+          <ShareButton
+            propertyId={propertyId}
+            propertyTitle={propertyTitle}
+            variant="outline"
+            size="lg"
+            className="w-full"
+          />
+        )}
       </div>
     </Card>
   );

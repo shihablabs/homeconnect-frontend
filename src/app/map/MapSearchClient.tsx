@@ -13,11 +13,21 @@ import {
 } from "@/components/ui/select";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { PropertyResponse, isRentalResponse } from "@/types/property.types";
+import { useGetPropertiesQuery, useGetAvailableFiltersQuery } from "@/redux/features/property/propertyApiSlice";
+import { PropertyFilters } from "@/types/property.types";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import { Filter, Search, X } from "lucide-react";
+import { Filter, Search, X, Loader2, MapPin, RefreshCw } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useDebounce } from "../../hooks/useDebounce";
+import { useRouter, useSearchParams } from "next/navigation";
+import { FilterSidebar } from "@/app/(main)/properties/FilterSidebar";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 
 type MapItem = PropertyResponse;
 
@@ -56,132 +66,119 @@ const safeInvalidateSize = (map: L.Map | null) => {
   }
 };
 
-export default function MapSearchClient({ items }: { items: MapItem[] }) {
-  // All available filters
-  const cities = useMemo(
-    () => Array.from(new Set(items.map((i) => i.city))).sort(),
-    [items]
-  );
-  const neighborhoods = useMemo(
-    () =>
-      Array.from(
-        new Set(items.map((i) => i.neighborhood).filter(Boolean))
-      ).sort() as string[],
-    [items]
-  );
-  const propertyTypes = useMemo(
-    () =>
-      Array.from(
-        new Set(items.map((i) => i.propertyType).filter(Boolean))
-      ).sort() as string[],
-    [items]
-  );
+export default function MapSearchClient() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
-  // Filter states
-  const [listingType, setListingType] = useState<"all" | "rent" | "sale">(
-    "all"
-  );
-  const [city, setCity] = useState<string>("all");
-  const [neighborhood, setNeighborhood] = useState<string>("all");
-  const [propertyType, setPropertyType] = useState<string>("all");
-  const [bedsMin, setBedsMin] = useState<number>(0);
-  const [minPrice, setMinPrice] = useState<number>(0);
-  const [maxPrice, setMaxPrice] = useState<number>(0);
-  const [searchInput, setSearchInput] = useState<string>("");
-  const [isMapReady, setIsMapReady] = useState(false);
+  // Filter state from URL params
+  const filters = useMemo((): PropertyFilters => {
+    const q = searchParams.get("q") || undefined;
+    const listingType = (searchParams.get("lt") as "rent" | "sale") || undefined;
+    const city = searchParams.get("city") || undefined;
+    const propertyType = searchParams.get("pt") || undefined;
+    const bedrooms = searchParams.get("beds") ? Number(searchParams.get("beds")) : undefined;
+    const minPrice = searchParams.get("min") ? Number(searchParams.get("min")) : undefined;
+    const maxPrice = searchParams.get("max") ? Number(searchParams.get("max")) : undefined;
+    const page = Number(searchParams.get("page") || "1");
+    const limit = Number(searchParams.get("limit") || "100"); // Higher limit for map view
 
-  // Debounced search
-  const debouncedSearch = useDebounce(searchInput, 300);
+    const activeFilters: PropertyFilters = {
+      search: q,
+      listingType,
+      city,
+      propertyType: propertyType as any,
+      bedrooms,
+      sortBy: "createdAt",
+      sortOrder: "desc",
+      page,
+      limit,
+    };
 
-  // Price bounds
-  const {
-    minPrice: absoluteMinPrice,
-    maxPrice: absoluteMaxPrice,
-    currency,
-  } = useMemo(() => {
-    if (!items.length) {
-      return { minPrice: 0, maxPrice: 0, currency: "BDT" };
+    if (listingType === "rent") {
+      activeFilters.minRent = minPrice;
+      activeFilters.maxRent = maxPrice;
+    } else {
+      activeFilters.minPrice = minPrice;
+      activeFilters.maxPrice = maxPrice;
     }
 
-    const prices = items.map((item) => getPriceValue(item));
-    return {
-      minPrice: Math.min(...prices),
-      maxPrice: Math.max(...prices),
-      currency: getCurrencyValue(items[0]),
-    };
-  }, [items]);
+    return activeFilters;
+  }, [searchParams]);
 
-  // Initialize price range
-  useEffect(() => {
-    setMinPrice(absoluteMinPrice);
-    setMaxPrice(absoluteMaxPrice);
-  }, [absoluteMinPrice, absoluteMaxPrice]);
+  // Fetch properties from API
+  const {
+    data: searchResult,
+    isLoading: isLoadingProperties,
+    isError,
+    error,
+    refetch,
+  } = useGetPropertiesQuery(filters);
 
-  // Derived results with complete filtering
-  const filtered = useMemo(() => {
-    const text = debouncedSearch.trim().toLowerCase();
+  const { data: filterOptions, isLoading: isLoadingFilters } =
+    useGetAvailableFiltersQuery();
 
-    return items.filter((item) => {
-      // Listing type filter
-      if (listingType !== "all" && item.listingType !== listingType)
-        return false;
+  // Get properties with coordinates
+  const items = useMemo(() => {
+    if (!searchResult?.properties) return [];
+    return searchResult.properties.filter(
+      (property) =>
+        typeof property.latitude === "number" &&
+        typeof property.longitude === "number" &&
+        !isNaN(property.latitude) &&
+        !isNaN(property.longitude)
+    );
+  }, [searchResult]);
 
-      // City filter
-      if (city !== "all" && item.city !== city) return false;
+  // Update URL params
+  const updateURL = useCallback(
+    (newParams: Record<string, string | number | undefined>) => {
+      const next = new URLSearchParams(searchParams.toString());
 
-      // Neighborhood filter
-      if (neighborhood !== "all" && item.neighborhood !== neighborhood)
-        return false;
-
-      // Property type filter
-      if (propertyType !== "all" && item.propertyType !== propertyType)
-        return false;
-
-      // Beds filter
-      if (bedsMin > 0 && item.bedrooms < bedsMin) return false;
-
-      // Price filter
-      const priceValue = getPriceValue(item);
-      if (priceValue < minPrice || priceValue > maxPrice) return false;
-
-      // Search filter
-      if (text) {
-        const searchableFields = [
-          item.title,
-          item.city,
-          item.neighborhood,
-          item.propertyType,
-          item.description,
-        ].filter(Boolean);
-
+      Object.entries(newParams).forEach(([key, value]) => {
         if (
-          !searchableFields.some((field) => field!.toLowerCase().includes(text))
+          value === undefined ||
+          value === "" ||
+          value === "all" ||
+          value === 0
         ) {
-          return false;
+          next.delete(key);
+        } else {
+          next.set(key, String(value));
         }
+      });
+
+      if (Object.keys(newParams).some((k) => k !== "page")) {
+        next.delete("page");
       }
 
-      return true;
-    });
-  }, [
-    items,
-    listingType,
-    city,
-    neighborhood,
-    propertyType,
-    bedsMin,
-    minPrice,
-    maxPrice,
-    debouncedSearch,
-  ]);
+      router.push(`/map?${next.toString()}`, { scroll: false });
+    },
+    [router, searchParams]
+  );
+
+  const clearAll = useCallback(() => {
+    router.push("/map", { scroll: false });
+  }, [router]);
+
+  // Local filter states for quick filters
+  const [searchInput, setSearchInput] = useState<string>(filters.search || "");
+  const [isMapReady, setIsMapReady] = useState(false);
+  const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
+
+  // Debounced search
+  const debouncedSearch = useDebounce(searchInput, 500);
+
+  useEffect(() => {
+    updateURL({ q: debouncedSearch.trim() || undefined });
+  }, [debouncedSearch, updateURL]);
 
   // Selection state
   const [selectedId, setSelectedId] = useState<string | null>(null);
   useEffect(() => {
-    if (selectedId && !filtered.find((f) => f.id === selectedId)) {
+    if (selectedId && !items.find((f) => f.id === selectedId)) {
       setSelectedId(null);
     }
-  }, [filtered, selectedId]);
+  }, [items, selectedId]);
 
   // Map refs
   const mapElRef = useRef<HTMLDivElement | null>(null);
@@ -202,7 +199,7 @@ export default function MapSearchClient({ items }: { items: MapItem[] }) {
     }
   }, []);
 
-  // Initialize Leaflet map - FIXED VERSION
+  // Initialize Leaflet map
   useEffect(() => {
     let destroyed = false;
     let resizeTimer: NodeJS.Timeout;
@@ -228,7 +225,6 @@ export default function MapSearchClient({ items }: { items: MapItem[] }) {
         center: initialCenter,
         zoom: 12,
         zoomControl: true,
-        // Prevent premature initialization
         preferCanvas: true,
         fadeAnimation: false,
         markerZoomAnimation: false,
@@ -290,11 +286,11 @@ export default function MapSearchClient({ items }: { items: MapItem[] }) {
         mapRef.current = null;
       }
     };
-  }, [items]);
+  }, []);
 
-  // Update markers when filtered results or selection change - FIXED
+  // Update markers when items or selection change
   useEffect(() => {
-    if (!isMapReady) return;
+    if (!isMapReady || isLoadingProperties) return;
 
     const L = LRef.current;
     const map = mapRef.current;
@@ -312,7 +308,7 @@ export default function MapSearchClient({ items }: { items: MapItem[] }) {
 
     const group = L.featureGroup();
 
-    filtered.forEach((p: MapItem) => {
+    items.forEach((p: MapItem) => {
       const selected = selectedId === p.id;
       const color = selected ? "#16a34a" : colorByType(p.listingType);
       const priceValue = getPriceValue(p);
@@ -343,7 +339,7 @@ export default function MapSearchClient({ items }: { items: MapItem[] }) {
           p.bathrooms
         } bath • ${p.areaSize.toLocaleString()} ${p.areaUnit ?? "sqft"}
             </div>
-            <a href="/property/${
+            <a href="/properties/${
               p.id
             }" style="color:#2563eb; text-decoration:underline; font-size:11px; display:inline-block; margin-top:4px;">View details</a>
           </div>
@@ -362,7 +358,7 @@ export default function MapSearchClient({ items }: { items: MapItem[] }) {
       markersGroupRef.current = group;
 
       // Fit bounds safely
-      const b = computeBounds(filtered);
+      const b = computeBounds(items);
       if (b && b[0] && b[1]) {
         setTimeout(() => {
           safeMapOperation((map) => {
@@ -382,98 +378,42 @@ export default function MapSearchClient({ items }: { items: MapItem[] }) {
     } catch (error) {
       console.warn("Error updating map:", error);
     }
-  }, [filtered, selectedId, isMapReady, safeMapOperation]);
+  }, [items, selectedId, isMapReady, isLoadingProperties, safeMapOperation]);
 
   // Controls
   const fitToMarkers = () => {
     safeMapOperation((map) => {
-      const b = computeBounds(filtered);
+      const b = computeBounds(items);
       if (b && b[0] && b[1]) {
         map.fitBounds(b, { padding: [40, 40], animate: true });
       }
     });
   };
 
-  const resetAllFilters = useCallback(() => {
-    setListingType("all");
-    setCity("all");
-    setNeighborhood("all");
-    setPropertyType("all");
-    setBedsMin(0);
-    setMinPrice(absoluteMinPrice);
-    setMaxPrice(absoluteMaxPrice);
-    setSearchInput("");
-  }, [absoluteMinPrice, absoluteMaxPrice]);
-
-  // Active filters for chips
-  const activeFilters = useMemo(() => {
-    const filters = [];
-
-    if (listingType !== "all")
-      filters.push({
-        key: "type",
-        label: listingType === "rent" ? "Rent" : "Buy",
-        onClear: () => setListingType("all"),
-      });
-    if (city !== "all")
-      filters.push({ key: "city", label: city, onClear: () => setCity("all") });
-    if (neighborhood !== "all")
-      filters.push({
-        key: "neighborhood",
-        label: neighborhood,
-        onClear: () => setNeighborhood("all"),
-      });
-    if (propertyType !== "all")
-      filters.push({
-        key: "propertyType",
-        label: propertyType,
-        onClear: () => setPropertyType("all"),
-      });
-    if (bedsMin > 0)
-      filters.push({
-        key: "beds",
-        label: `${bedsMin}+ beds`,
-        onClear: () => setBedsMin(0),
-      });
-    if (minPrice !== absoluteMinPrice || maxPrice !== absoluteMaxPrice) {
-      filters.push({
-        key: "price",
-        label: `${currency} ${minPrice.toLocaleString()} - ${currency} ${maxPrice.toLocaleString()}`,
-        onClear: () => {
-          setMinPrice(absoluteMinPrice);
-          setMaxPrice(absoluteMaxPrice);
-        },
-      });
-    }
-    if (debouncedSearch)
-      filters.push({
-        key: "search",
-        label: `"${debouncedSearch}"`,
-        onClear: () => setSearchInput(""),
-      });
-
-    return filters;
-  }, [
-    listingType,
-    city,
-    neighborhood,
-    propertyType,
-    bedsMin,
-    minPrice,
-    maxPrice,
-    debouncedSearch,
-    currency,
-    absoluteMinPrice,
-    absoluteMaxPrice,
-  ]);
-
-  const formatPrice = (n: number) => `${currency} ${n.toLocaleString()}`;
+  // Active filters count
+  const activeFilterCount = useMemo(() => {
+    let count = 0;
+    if (filters.search) count++;
+    if (filters.listingType) count++;
+    if (filters.city) count++;
+    if (filters.propertyType) count++;
+    if (filters.bedrooms) count++;
+    if (
+      filters.minPrice ||
+      filters.maxPrice ||
+      filters.minRent ||
+      filters.maxRent
+    )
+      count++;
+    return count;
+  }, [filters]);
 
   return (
     <div className="grid gap-6 md:grid-cols-12 mt-20">
       {/* Map */}
       <section className="md:col-span-7 lg:col-span-8">
-        <div className="overflow-hidden rounded-xl border h-[70vh] md:h-[80vh] sticky top-20">
+        <div className="overflow-hidden rounded-xl border h-[70vh] md:h-[80vh] sticky top-20 relative">
+          {/* Map Container */}
           <div
             ref={mapElRef}
             className="absolute inset-0 z-10"
@@ -481,32 +421,66 @@ export default function MapSearchClient({ items }: { items: MapItem[] }) {
           />
 
           {/* Loading overlay */}
-          {!isMapReady && (
+          {(isLoadingProperties || !isMapReady) && (
             <div className="absolute inset-0 flex items-center justify-center bg-muted/50 z-20">
               <div className="text-center">
-                <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent mx-auto mb-2"></div>
+                <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto mb-2" />
                 <div className="text-sm text-muted-foreground">
-                  Loading map...
+                  {isLoadingProperties ? "Loading properties..." : "Loading map..."}
                 </div>
               </div>
             </div>
           )}
 
+          {/* Error overlay */}
+          {isError && (
+            <div className="absolute inset-0 flex items-center justify-center bg-red-50/90 z-20">
+              <div className="text-center p-6">
+                <div className="text-red-600 font-semibold mb-2">Failed to load properties</div>
+                <div className="text-sm text-red-500 mb-4">
+                  {error && 'message' in error ? String(error.message) : 'Unknown error'}
+                </div>
+                <Button onClick={() => refetch()} variant="outline" size="sm">
+                  <RefreshCw className="mr-2 h-4 w-4" />
+                  Retry
+                </Button>
+              </div>
+            </div>
+          )}
+
           {/* Legend overlay */}
-          {isMapReady && (
-            <div className="pointer-events-none absolute right-3 top-3 z-20 rounded-md bg-white/90 p-3 text-xs shadow space-y-1">
+          {isMapReady && !isLoadingProperties && (
+            <div className="pointer-events-none absolute right-3 top-3 z-20 rounded-md bg-white/90 backdrop-blur-sm p-3 text-xs shadow-lg space-y-1.5 border">
+              <div className="flex items-center gap-2 font-medium mb-1 text-xs text-muted-foreground">
+                Legend
+              </div>
               <div className="flex items-center gap-2">
                 <span className="inline-block h-3 w-3 rounded-full bg-[#2563eb]" />{" "}
-                Rent
+                <span className="text-xs">For Rent</span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="inline-block h-3 w-3 rounded-full bg-[#dc2626]" />{" "}
-                Buy
+                <span className="text-xs">For Sale</span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="inline-block h-3 w-3 rounded-full bg-[#16a34a]" />{" "}
-                Selected
+                <span className="inline-block h-3 w-3 rounded-full bg-[#16a34a] border-2 border-white" />{" "}
+                <span className="text-xs">Selected</span>
               </div>
+            </div>
+          )}
+
+          {/* Map Controls */}
+          {isMapReady && !isLoadingProperties && items.length > 0 && (
+            <div className="absolute left-3 top-3 z-20 flex flex-col gap-2">
+              <Button
+                onClick={fitToMarkers}
+                variant="secondary"
+                size="sm"
+                className="shadow-lg"
+              >
+                <MapPin className="mr-2 h-4 w-4" />
+                Fit to Markers
+              </Button>
             </div>
           )}
 
@@ -522,15 +496,43 @@ export default function MapSearchClient({ items }: { items: MapItem[] }) {
       <aside className="md:col-span-5 lg:col-span-4">
         <div className="rounded-xl border bg-background p-6 space-y-6 sticky top-20 max-h-[80vh] overflow-y-auto">
           {/* Header */}
-          <div>
-            <h1 className="text-2xl font-bold mb-2">Map Search</h1>
-            <div className="text-sm text-muted-foreground">
-              {filtered.length} property{filtered.length !== 1 ? "ies" : ""}{" "}
-              found
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-bold mb-1">Map Search</h1>
+              <div className="text-sm text-muted-foreground">
+                {isLoadingProperties ? (
+                  <span className="flex items-center gap-2">
+                    <Loader2 className="h-3 w-3 animate-spin" />
+                    Loading...
+                  </span>
+                ) : (
+                  <>
+                    {items.length} property{items.length !== 1 ? "ies" : ""} found
+                    {searchResult?.total && searchResult.total > items.length && (
+                      <span className="text-xs ml-1">
+                        (showing {items.length} on map)
+                      </span>
+                    )}
+                  </>
+                )}
+              </div>
             </div>
+            <Button
+              variant="outline"
+              size="icon"
+              className="md:hidden"
+              onClick={() => setIsFilterSheetOpen(true)}
+            >
+              <Filter className="h-4 w-4" />
+              {activeFilterCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground rounded-full h-5 w-5 text-xs flex items-center justify-center">
+                  {activeFilterCount}
+                </span>
+              )}
+            </Button>
           </div>
 
-          {/* Search */}
+          {/* Quick Search */}
           <div className="space-y-4">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -540,17 +542,22 @@ export default function MapSearchClient({ items }: { items: MapItem[] }) {
                 placeholder="Search properties..."
                 className="pl-10"
               />
+              {isLoadingProperties && (
+                <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                  <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                </div>
+              )}
             </div>
 
-            {/* Quick Filters */}
-            <div className="grid grid-cols-2 gap-4">
+            {/* Quick Filters - Desktop */}
+            <div className="hidden md:block space-y-4">
               <div>
-                <div className="mb-2 text-sm font-medium">Type</div>
+                <div className="mb-2 text-sm font-medium">Listing Type</div>
                 <ToggleGroup
                   type="single"
-                  value={listingType}
+                  value={filters.listingType || "all"}
                   onValueChange={(v: string) =>
-                    setListingType((v as "all" | "rent" | "sale") || "all")
+                    updateURL({ lt: v === "all" ? undefined : v })
                   }
                   className="rounded-md bg-muted p-1"
                 >
@@ -575,162 +582,104 @@ export default function MapSearchClient({ items }: { items: MapItem[] }) {
                 </ToggleGroup>
               </div>
 
-              <div>
-                <div className="mb-2 text-sm font-medium">Beds</div>
-                <Select
-                  value={String(bedsMin)}
-                  onValueChange={(v) => setBedsMin(Number(v))}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Any" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="0">Any</SelectItem>
-                    <SelectItem value="1">1+</SelectItem>
-                    <SelectItem value="2">2+</SelectItem>
-                    <SelectItem value="3">3+</SelectItem>
-                    <SelectItem value="4">4+</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            {/* Location Filters */}
-            <div className="space-y-3">
-              <div>
-                <div className="mb-2 text-sm font-medium">City</div>
-                <Select value={city} onValueChange={setCity}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="All cities" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Cities</SelectItem>
-                    {cities.map((c) => (
-                      <SelectItem key={c} value={c}>
-                        {c}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {neighborhoods.length > 0 && (
-                <div>
-                  <div className="mb-2 text-sm font-medium">Neighborhood</div>
-                  <Select value={neighborhood} onValueChange={setNeighborhood}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="All areas" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Areas</SelectItem>
-                      {neighborhoods.map((n) => (
-                        <SelectItem key={n} value={n}>
-                          {n}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
-
-              {propertyTypes.length > 0 && (
-                <div>
-                  <div className="mb-2 text-sm font-medium">Property Type</div>
-                  <Select value={propertyType} onValueChange={setPropertyType}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="All types" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Types</SelectItem>
-                      {propertyTypes.map((pt) => (
-                        <SelectItem key={pt} value={pt}>
-                          {pt}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
-            </div>
-
-            {/* Price Range */}
-            <div>
-              <div className="mb-3 flex items-center justify-between">
-                <div className="text-sm font-medium">Price Range</div>
-                <div className="text-xs text-muted-foreground">
-                  {formatPrice(minPrice)} — {formatPrice(maxPrice)}
-                </div>
-              </div>
-              <div className="space-y-2">
-                <div className="flex gap-2">
-                  <Input
-                    type="number"
-                    value={minPrice}
-                    onChange={(e) => setMinPrice(Number(e.target.value))}
-                    placeholder="Min"
-                    className="text-sm"
-                  />
-                  <Input
-                    type="number"
-                    value={maxPrice}
-                    onChange={(e) => setMaxPrice(Number(e.target.value))}
-                    placeholder="Max"
-                    className="text-sm"
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Active Filters */}
-            {activeFilters.length > 0 && (
-              <div className="border-t pt-4">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="text-sm font-medium">Active Filters</div>
-                  <Button
-                    variant="link"
-                    className="text-xs h-auto p-0"
-                    onClick={resetAllFilters}
-                  >
-                    Clear All
-                  </Button>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {activeFilters.map((filter) => (
-                    <Badge
-                      key={filter.key}
-                      variant="secondary"
-                      className="pl-2 pr-1 py-1"
+              {/* Active Filters */}
+              {activeFilterCount > 0 && (
+                <div className="border-t pt-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="text-sm font-medium">Active Filters</div>
+                    <Button
+                      variant="link"
+                      className="text-xs h-auto p-0"
+                      onClick={clearAll}
                     >
-                      {filter.label}
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-3 w-3 ml-1 hover:bg-transparent"
-                        onClick={filter.onClear}
-                      >
-                        <X className="h-2 w-2" />
-                      </Button>
-                    </Badge>
-                  ))}
+                      Clear All
+                    </Button>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {filters.listingType && (
+                      <Badge variant="secondary" className="pl-2 pr-1 py-1">
+                        {filters.listingType === "rent" ? "Rent" : "Sale"}
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-3 w-3 ml-1 hover:bg-transparent"
+                          onClick={() => updateURL({ lt: undefined })}
+                        >
+                          <X className="h-2 w-2" />
+                        </Button>
+                      </Badge>
+                    )}
+                    {filters.city && (
+                      <Badge variant="secondary" className="pl-2 pr-1 py-1">
+                        {filters.city}
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-3 w-3 ml-1 hover:bg-transparent"
+                          onClick={() => updateURL({ city: undefined })}
+                        >
+                          <X className="h-2 w-2" />
+                        </Button>
+                      </Badge>
+                    )}
+                    {filters.propertyType && (
+                      <Badge variant="secondary" className="pl-2 pr-1 py-1">
+                        {filters.propertyType}
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-3 w-3 ml-1 hover:bg-transparent"
+                          onClick={() => updateURL({ pt: undefined })}
+                        >
+                          <X className="h-2 w-2" />
+                        </Button>
+                      </Badge>
+                    )}
+                    {filters.bedrooms && (
+                      <Badge variant="secondary" className="pl-2 pr-1 py-1">
+                        {filters.bedrooms}+ beds
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-3 w-3 ml-1 hover:bg-transparent"
+                          onClick={() => updateURL({ beds: undefined })}
+                        >
+                          <X className="h-2 w-2" />
+                        </Button>
+                      </Badge>
+                    )}
+                    {(filters.minPrice || filters.maxPrice || filters.minRent || filters.maxRent) && (
+                      <Badge variant="secondary" className="pl-2 pr-1 py-1">
+                        Price range
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-3 w-3 ml-1 hover:bg-transparent"
+                          onClick={() => {
+                            updateURL({ min: undefined, max: undefined });
+                          }}
+                        >
+                          <X className="h-2 w-2" />
+                        </Button>
+                      </Badge>
+                    )}
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
-            {/* Actions */}
-            <div className="flex gap-2 pt-2">
+              {/* View All Filters Button */}
               <Button
-                onClick={fitToMarkers}
                 variant="outline"
-                className="flex-1"
+                className="w-full"
+                onClick={() => setIsFilterSheetOpen(true)}
               >
-                Fit to Markers
-              </Button>
-              <Button
-                onClick={resetAllFilters}
-                variant="outline"
-                className="flex-1"
-              >
-                Reset All
+                <Filter className="mr-2 h-4 w-4" />
+                View All Filters
+                {activeFilterCount > 0 && (
+                  <span className="ml-2 bg-primary text-primary-foreground rounded-full h-5 w-5 text-xs flex items-center justify-center">
+                    {activeFilterCount}
+                  </span>
+                )}
               </Button>
             </div>
           </div>
@@ -738,14 +687,29 @@ export default function MapSearchClient({ items }: { items: MapItem[] }) {
           {/* Results List */}
           <div className="border-t pt-4">
             <div className="space-y-3 max-h-[300px] overflow-y-auto pr-2">
-              {filtered.length === 0 ? (
+              {isLoadingProperties ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  <Loader2 className="h-8 w-8 mx-auto mb-2 animate-spin" />
+                  <div>Loading properties...</div>
+                </div>
+              ) : items.length === 0 ? (
                 <div className="text-center py-8 text-muted-foreground">
                   <Filter className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                  <div>No properties found</div>
-                  <div className="text-sm">Try adjusting your filters</div>
+                  <div className="font-medium">No properties found</div>
+                  <div className="text-sm mt-1">Try adjusting your filters</div>
+                  {activeFilterCount > 0 && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="mt-4"
+                      onClick={clearAll}
+                    >
+                      Clear Filters
+                    </Button>
+                  )}
                 </div>
               ) : (
-                filtered.map((property) => (
+                items.map((property) => (
                   <div
                     key={property.id}
                     className={`rounded-lg border p-3 cursor-pointer transition-all ${
@@ -763,6 +727,27 @@ export default function MapSearchClient({ items }: { items: MapItem[] }) {
           </div>
         </div>
       </aside>
+
+      {/* Filter Sheet (Mobile) */}
+      <Sheet open={isFilterSheetOpen} onOpenChange={setIsFilterSheetOpen}>
+        <SheetContent
+          side="right"
+          className="w-[90vw] sm:w-[420px] overflow-y-auto"
+        >
+          <SheetHeader className="border-b pb-4">
+            <SheetTitle className="text-xl">Filters</SheetTitle>
+          </SheetHeader>
+          <div className="mt-6 pb-8">
+            <FilterSidebar
+              filters={filters}
+              filterOptions={filterOptions}
+              isLoading={isLoadingFilters}
+              onFilterChange={updateURL}
+              onClearAll={clearAll}
+            />
+          </div>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }

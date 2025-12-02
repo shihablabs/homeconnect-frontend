@@ -1,12 +1,12 @@
+'use client';
 
-export default function DashboardMessagePage() {
+import { ProtectedRoute } from '@/components/protected-route';
+import { MessagesDashboardClient } from './MessagesDashboardClient';
+
+export default function MessagesPage() {
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <div className="px-6">
-        <div>
-          <h2 className="text-3xl font-bold">Message</h2>
-        </div>
-      </div>
-    </div>
-  )
+    <ProtectedRoute>
+      <MessagesDashboardClient />
+    </ProtectedRoute>
+  );
 }

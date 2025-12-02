@@ -470,19 +470,21 @@ export default function ProfilePage() {
 
           {/* Tabs Navigation */}
           <Tabs defaultValue="general" className="w-full">
-            <TabsList className="grid w-full grid-cols-3 mb-6">
+            <TabsList className={`grid w-full mb-6 ${user.role === 'admin' ? 'grid-cols-3' : 'grid-cols-2'}`}>
               <TabsTrigger value="general">
                 <UserIcon className="mr-2 h-4 w-4" /> General
               </TabsTrigger>
               <TabsTrigger value="security">
                 <Shield className="mr-2 h-4 w-4" /> Security
               </TabsTrigger>
-              <TabsTrigger
-                value="danger"
-                className="text-destructive data-[state=active]:border-b-destructive data-[state=active]:text-destructive"
-              >
-                <AlertTriangle className="mr-2 h-4 w-4" /> Danger Zone
-              </TabsTrigger>
+              {user.role === 'admin' && (
+                <TabsTrigger
+                  value="danger"
+                  className="text-destructive data-[state=active]:border-b-destructive data-[state=active]:text-destructive"
+                >
+                  <AlertTriangle className="mr-2 h-4 w-4" /> Danger Zone
+                </TabsTrigger>
+              )}
             </TabsList>
 
             {/* Tab 1: General Settings */}
@@ -495,10 +497,12 @@ export default function ProfilePage() {
               <SecuritySettings />
             </TabsContent>
 
-            {/* Tab 3: Danger Zone */}
-            <TabsContent value="danger">
-              <DangerZone />
-            </TabsContent>
+            {/* Tab 3: Danger Zone - Only for Admin */}
+            {user.role === 'admin' && (
+              <TabsContent value="danger">
+                <DangerZone />
+              </TabsContent>
+            )}
           </Tabs>
         </div>
       </div>

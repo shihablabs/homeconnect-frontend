@@ -1,12 +1,23 @@
 "use client";
 
-import { dashboardApi } from "@/lib/api/dashboard";
+import { dashboardApi, type IDashboardOverviewResponse } from "@/lib/api/dashboard";
 import { useQuery } from "@tanstack/react-query";
 
 export const useDashboard = () => {
-  const overviewQuery = useQuery({
+  const overviewQuery = useQuery<IDashboardOverviewResponse>({
     queryKey: ["dashboard", "overview"],
     queryFn: dashboardApi.getDashboard,
+    staleTime: 120000, // Consider data fresh for 2 minutes
+    refetchOnWindowFocus: false, // Disable to prevent excessive refetches
+    refetchInterval: 300000, // Refetch every 5 minutes
+    retry: (failureCount, error: any) => {
+      // Don't retry on rate limit errors (429)
+      if (error?.response?.status === 429) {
+        return false;
+      }
+      return failureCount < 3;
+    },
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
   });
 
   const stats = overviewQuery.data?.stats;
@@ -19,6 +30,9 @@ export const useDashboard = () => {
     activities,
     properties,
     isLoading: overviewQuery.isLoading,
+    isFetching: overviewQuery.isFetching,
     error: overviewQuery.error,
+    refetch: overviewQuery.refetch,
+    data: overviewQuery.data,
   };
 };

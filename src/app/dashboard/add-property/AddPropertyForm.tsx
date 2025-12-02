@@ -117,6 +117,7 @@ const baseSchema = z.object({
 
   address: requiredString,
   city: requiredString,
+  neighborhood: requiredString,
   state: requiredString,
   country: requiredString,
   latitude: requiredNumber,
@@ -259,6 +260,7 @@ const initialFormData: Partial<PropertyFormData> & Record<string, any> = {
   propertyType: "apartment",
   address: "",
   city: "Dhaka",
+  neighborhood: "",
   state: "",
   country: "Bangladesh",
   latitude: 23.8103,
@@ -351,6 +353,7 @@ export function AddPropertyForm() {
         isValid = await trigger([
           "address",
           "city",
+          "neighborhood",
           "state",
           "country",
           "latitude",
@@ -392,18 +395,88 @@ export function AddPropertyForm() {
   };
 
   const onSubmit = async (data: any) => {
-    const finalData: any = { ...data };
-    const images = finalData.imageFiles as File[];
-    delete finalData.imageFiles;
+    try {
+      const finalData: any = { ...data };
+      const images = finalData.imageFiles as File[];
+      delete finalData.imageFiles;
 
-    toast.promise(createProperty({ data: finalData, images }).unwrap(), {
-      loading: "Adding your property...",
-      success: (response) => {
-        router.push(`/properties/${response.id}`);
-        return "Property listed successfully!";
-      },
-      error: (err) => err.data?.message || "Failed to list property.",
-    });
+      // Ensure neighborhood is set (use city as fallback if empty)
+      if (!finalData.neighborhood || finalData.neighborhood.trim() === '') {
+        finalData.neighborhood = finalData.city || 'N/A';
+      }
+
+      // Ensure availableFrom is properly formatted as ISO string for rental properties
+      if (finalData.listingType === 'rent' && finalData.availableFrom) {
+        const availableFromDate = new Date(finalData.availableFrom);
+        if (isNaN(availableFromDate.getTime())) {
+          // Invalid date, set to tomorrow
+          const tomorrow = new Date();
+          tomorrow.setDate(tomorrow.getDate() + 1);
+          finalData.availableFrom = tomorrow.toISOString();
+        } else {
+          // Ensure it's in the future
+          const now = new Date();
+          if (availableFromDate <= now) {
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            finalData.availableFrom = tomorrow.toISOString();
+          } else {
+            finalData.availableFrom = availableFromDate.toISOString();
+          }
+        }
+      }
+
+      // Clean up data - remove undefined/null values and ensure proper types
+      Object.keys(finalData).forEach(key => {
+        const value = finalData[key];
+        
+        // Skip special handling for required fields
+        if (value === undefined || value === null) {
+          // Only delete optional fields
+          if (['zipCode', 'yearBuilt', 'lotSize', 'agent', 'managementCompany', 'virtualTour', 'videos', 'floorPlans', 'tags'].includes(key)) {
+            delete finalData[key];
+          }
+        } else if (value === '' && ['zipCode', 'agent', 'managementCompany', 'virtualTour'].includes(key)) {
+          // Remove empty optional strings
+          delete finalData[key];
+        }
+      });
+
+      // Ensure arrays are properly formatted (don't delete if empty, backend expects arrays)
+      if (finalData.amenities && !Array.isArray(finalData.amenities)) {
+        finalData.amenities = [];
+      }
+      if (finalData.utilitiesIncluded && !Array.isArray(finalData.utilitiesIncluded)) {
+        finalData.utilitiesIncluded = [];
+      }
+      if (finalData.tags && !Array.isArray(finalData.tags)) {
+        finalData.tags = [];
+      }
+      if (finalData.videos && !Array.isArray(finalData.videos)) {
+        finalData.videos = [];
+      }
+      if (finalData.floorPlans && !Array.isArray(finalData.floorPlans)) {
+        finalData.floorPlans = [];
+      }
+
+      await toast.promise(
+        createProperty({ data: finalData, images }).unwrap(),
+        {
+          loading: "Adding your property...",
+          success: (response) => {
+            router.push(`/properties/${response.id}`);
+            return "Property listed successfully!";
+          },
+          error: (err: any) => {
+            const errorMessage = err?.data?.message || err?.message || "Failed to list property. Please check all required fields.";
+            return errorMessage;
+          },
+        }
+      );
+    } catch (error: any) {
+      console.error('Property creation error:', error);
+      toast.error(error?.data?.message || error?.message || "Failed to create property. Please try again.");
+    }
   };
 
   const onInvalid = (errors: FieldErrors) => {
@@ -689,7 +762,7 @@ function Step2() {
         )}
       />
 
-      {/* --- Street Address and Zip Code --- */}
+      {/* --- Street Address --- */}
       <FormField
         control={control}
         name="address"
@@ -707,6 +780,25 @@ function Step2() {
         )}
       />
 
+      {/* --- Neighborhood --- */}
+      <FormField
+        control={control}
+        name="neighborhood"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Neighborhood / Area</FormLabel>
+            <FormControl>
+              <Input
+                placeholder="e.g., Gulshan, Dhanmondi, Banani"
+                {...field}
+              />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+
+      {/* --- Zip Code (Optional) --- */}
       <FormField
         control={control}
         name="zipCode"

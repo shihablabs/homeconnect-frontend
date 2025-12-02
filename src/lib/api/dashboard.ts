@@ -9,6 +9,8 @@ export interface IActivityResponse {
   };
   action: string;
   message: string;
+  read: boolean;
+  readAt?: string;
   createdAt: string;
 }
 
@@ -42,6 +44,10 @@ export interface IDashboardStats {
   totalLandlords: number;
   pendingMaintenance: number;
   totalRevenue: number;
+  // Landlord-specific optional fields
+  totalBookings?: number;
+  pendingBookings?: number;
+  activeTenants?: number;
 }
 
 export interface IDashboardOverviewResponse {
@@ -67,6 +73,19 @@ export const dashboardApi = {
   getDashboard: async (): Promise<IDashboardOverviewResponse> => {
     const response = await api.get('/dashboard/overview');
     return response.data.data; // Matches the backend structure
+  },
+
+  /**
+   * Create a new maintenance request (Tenant Only)
+   */
+  createMaintenanceRequest: async (data: {
+    property: string;
+    title: string;
+    description: string;
+    priority?: 'low' | 'medium' | 'high';
+  }): Promise<IMaintenanceRequestResponse> => {
+    const response = await api.post('/dashboard/maintenance', data);
+    return response.data.data;
   },
 
   /**
@@ -113,6 +132,34 @@ export const dashboardApi = {
     totalPages: number;
   }> => {
     const response = await api.get('/dashboard/activity', { params });
+    return response.data.data;
+  },
+
+  /**
+   * Mark a single activity as read
+   */
+  markActivityAsRead: async (activityId: string): Promise<IActivityResponse> => {
+    const response = await api.patch(`/dashboard/activity/${activityId}/read`);
+    return response.data.data;
+  },
+
+  /**
+   * Mark all activities as read for the current user
+   */
+  markAllActivitiesAsRead: async (): Promise<{ count: number }> => {
+    const response = await api.patch('/dashboard/activity/read-all');
+    return response.data.data;
+  },
+
+  /**
+   * Get dashboard counts (messages, notifications, maintenance)
+   */
+  getDashboardCounts: async (): Promise<{
+    unreadMessages: number;
+    unreadNotifications: number;
+    pendingMaintenance: number;
+  }> => {
+    const response = await api.get('/dashboard/counts');
     return response.data.data;
   },
 };

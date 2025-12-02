@@ -13,7 +13,9 @@ import {
   Receipt,
   UserRound,
   Users,
-  Wrench
+  Wrench,
+  Loader2,
+  AlertCircle
 } from 'lucide-react';
 
 import Image from 'next/image';
@@ -24,10 +26,16 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
-
 import { StatCard } from '@/components/cards/StatCard.tsx';
 import { ProtectedRoute } from '@/components/protected-route';
-import { IDashboardOverviewResponse, IUser } from '@/lib/api/dashboard';
+import { useDashboard } from '@/hooks/useDashboard';
+import { selectCurrentUser } from '@/redux/features/auth/authSlice';
+import { useAppSelector } from '@/redux/hooks';
+import { dashboardApi } from '@/lib/api/dashboard';
+import { toast } from 'sonner';
+import { useQueryClient } from '@tanstack/react-query';
+import { DashboardSkeleton } from '@/components/dashboard/DashboardSkeleton';
+import { ErrorState } from '@/components/dashboard/ErrorState';
 
 const formatCurrency = (amount: number | undefined) => {
   if (amount === undefined) return 'BDT 0';
@@ -80,22 +88,60 @@ const getPriorityColor = (priority: string | undefined) => {
   }
 };
 
-interface DashboardPageClientProps {
-  user: IUser | null;
-  dashboardData: IDashboardOverviewResponse | null;
-}
-
-export default function DashboardPageClient({ user, dashboardData }: DashboardPageClientProps) {
-
+export default function DashboardPage() {
+  // Get user from Redux state
+  const user = useAppSelector(selectCurrentUser);
+  
+  // Fetch dashboard data using hook
+  const { stats, activities, properties, isLoading, error, refetch, isFetching } = useDashboard();
+  const queryClient = useQueryClient();
+  
   const [markingRead, setMarkingRead] = useState<string | null>(null);
+  const [markingAll, setMarkingAll] = useState(false);
 
-  const handleMarkAsRead = (id: string) => {
+  // Transform hook data to match component expectations
+  const dashboardData = stats ? {
+    stats,
+    recentActivity: activities,
+    pendingMaintenanceRequests: properties,
+  } : null;
+
+  // Progressive loading: Show partial data if available even while fetching
+  const showProgressiveData = dashboardData && !isLoading;
+
+  // Get read activities from API data (activities already have read status from backend)
+  const readActivities = new Set(
+    activities.filter(a => a.read).map(a => a.id)
+  );
+
+  const handleMarkAsRead = async (id: string) => {
     setMarkingRead(id);
-    console.log(`Marking ${id} as read`);
-    setTimeout(() => setMarkingRead(null), 1000);
+    try {
+      await dashboardApi.markActivityAsRead(id);
+      // Invalidate and refetch dashboard data to get updated read status
+      await queryClient.invalidateQueries({ queryKey: ['dashboard', 'overview'] });
+      toast.success('Activity marked as read');
+    } catch (error: any) {
+      toast.error(error?.response?.data?.message || 'Failed to mark activity as read');
+      console.error('Error marking activity as read:', error);
+    } finally {
+      setTimeout(() => setMarkingRead(null), 1000);
+    }
   };
 
-  const handleMarkAllAsRead = () => {
+  const handleMarkAllAsRead = async () => {
+    setMarkingAll(true);
+    try {
+      const result = await dashboardApi.markAllActivitiesAsRead();
+      // Invalidate and refetch dashboard data to get updated read status
+      await queryClient.invalidateQueries({ queryKey: ['dashboard', 'overview'] });
+      toast.success(`${result.count} activities marked as read`);
+    } catch (error: any) {
+      toast.error(error?.response?.data?.message || 'Failed to mark all activities as read');
+      console.error('Error marking all activities as read:', error);
+    } finally {
+      setMarkingAll(false);
+    }
   };
 
   const occupancyRate =
@@ -113,16 +159,24 @@ export default function DashboardPageClient({ user, dashboardData }: DashboardPa
         <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
           {/* Header */}
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">
-                Welcome back, {user?.name || 'Guest'}!
-              </h1>
-              <p className="text-gray-600 mt-1">
-                {user?.role === 'landlord' && 'Property Management Dashboard'}
-                {user?.role === 'admin' && 'System Administration Dashboard'}
-                {user?.role === 'tenant' && 'Tenant Dashboard'}
-                {user?.role === 'support' && 'Support Dashboard'}
-              </p>
+            <div className="flex items-center gap-3">
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900">
+                  Welcome back, {user?.name || 'Guest'}!
+                </h1>
+                <p className="text-gray-600 mt-1">
+                  {user?.role === 'landlord' && 'Property Management Dashboard'}
+                  {user?.role === 'admin' && 'System Administration Dashboard'}
+                  {user?.role === 'tenant' && 'Tenant Dashboard'}
+                  {user?.role === 'support' && 'Support Dashboard'}
+                </p>
+              </div>
+              {isFetching && !isLoading && (
+                <Loader2 
+                  className="h-5 w-5 animate-spin text-blue-600" 
+                  aria-label="Refreshing data"
+                />
+              )}
             </div>
             <div className="flex flex-wrap gap-3">
               {user?.role === 'landlord' && (
@@ -142,8 +196,16 @@ export default function DashboardPageClient({ user, dashboardData }: DashboardPa
             </div>
           </div>
 
+          {/* Progressive Loading: Show data if available, even while refetching */}
           {dashboardData && (
             <div className="space-y-6">
+              {/* Show subtle loading indicator when refetching in background */}
+              {isFetching && !isLoading && (
+                <div className="flex items-center justify-center gap-2 text-sm text-blue-600 bg-blue-50 border border-blue-200 rounded-lg p-2 animate-pulse">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span>Updating dashboard data...</span>
+                </div>
+              )}
               {/* Stat Cards */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <StatCard
@@ -215,25 +277,89 @@ export default function DashboardPageClient({ user, dashboardData }: DashboardPa
                   </CardContent>
                 </Card>
 
-                <Card>
-                  <CardHeader>
-                    <CardTitle>User Information</CardTitle>
-                    <CardDescription>System-wide stats</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-center">
-                      <p className="text-4xl font-bold text-gray-900 mb-2">
-                        {dashboardData.stats?.totalUsers || 0}
-                      </p>
-                      <p className="text-gray-600">Total Users</p>
-                      <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
-                        <p className="text-sm text-blue-700">
-                          {dashboardData.stats?.totalLandlords || 0} Active Landlords
-                        </p>
+                {user?.role === 'landlord' ? (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Booking Overview</CardTitle>
+                      <CardDescription>Your property bookings</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-4">
+                        <div className="text-center">
+                          <p className="text-4xl font-bold text-gray-900 mb-2">
+                            {dashboardData.stats?.totalBookings || 0}
+                          </p>
+                          <p className="text-gray-600">Total Bookings</p>
+                        </div>
+                        <div className="grid grid-cols-2 gap-3">
+                          <div className="p-3 bg-yellow-50 rounded-lg border border-yellow-200">
+                            <p className="text-2xl font-bold text-yellow-700">
+                              {dashboardData.stats?.pendingBookings || 0}
+                            </p>
+                            <p className="text-xs text-yellow-600">Pending</p>
+                          </div>
+                          <div className="p-3 bg-green-50 rounded-lg border border-green-200">
+                            <p className="text-2xl font-bold text-green-700">
+                              {dashboardData.stats?.activeTenants || 0}
+                            </p>
+                            <p className="text-xs text-green-600">Active Tenants</p>
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                    </CardContent>
+                  </Card>
+                ) : user?.role === 'admin' ? (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>User Information</CardTitle>
+                      <CardDescription>System-wide stats</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-center">
+                        <p className="text-4xl font-bold text-gray-900 mb-2">
+                          {dashboardData.stats?.totalUsers || 0}
+                        </p>
+                        <p className="text-gray-600">Total Users</p>
+                        <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                          <p className="text-sm text-blue-700">
+                            {dashboardData.stats?.totalLandlords || 0} Active Landlords
+                          </p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ) : user?.role === 'tenant' ? (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Booking Overview</CardTitle>
+                      <CardDescription>Your property bookings</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-4">
+                        <div className="text-center">
+                          <p className="text-4xl font-bold text-gray-900 mb-2">
+                            {dashboardData.stats?.totalBookings || 0}
+                          </p>
+                          <p className="text-gray-600">Total Bookings</p>
+                        </div>
+                        <div className="grid grid-cols-2 gap-3">
+                          <div className="p-3 bg-yellow-50 rounded-lg border border-yellow-200">
+                            <p className="text-2xl font-bold text-yellow-700">
+                              {dashboardData.stats?.pendingBookings || 0}
+                            </p>
+                            <p className="text-xs text-yellow-600">Pending</p>
+                          </div>
+                          <div className="p-3 bg-green-50 rounded-lg border border-green-200">
+                            <p className="text-2xl font-bold text-green-700">
+                              {dashboardData.stats?.activeTenants || 0}
+                            </p>
+                            <p className="text-xs text-green-600">Active</p>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ) : null}
               </div>
 
               {/* Recent Activities & Pending Maintenance */}
@@ -246,15 +372,26 @@ export default function DashboardPageClient({ user, dashboardData }: DashboardPa
                       <CardDescription>Latest updates and requests</CardDescription>
                     </div>
                     <div className="flex gap-2">
-                      {dashboardData?.recentActivity?.length > 0 && (
+                      {dashboardData?.recentActivity?.length > 0 && 
+                       activities.some(a => !a.read) && (
                         <Button
                           variant="ghost"
                           size="sm"
                           onClick={handleMarkAllAsRead}
+                          disabled={markingAll}
                           className="text-xs"
                         >
-                          <Eye className="h-3 w-3 mr-1" />
-                          Mark All Read
+                          {markingAll ? (
+                            <>
+                              <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                              Marking...
+                            </>
+                          ) : (
+                            <>
+                              <Eye className="h-3 w-3 mr-1" />
+                              Mark All Read
+                            </>
+                          )}
                         </Button>
                       )}
                       <Link href="/dashboard/activities">
@@ -269,10 +406,11 @@ export default function DashboardPageClient({ user, dashboardData }: DashboardPa
                       {dashboardData?.recentActivity?.slice(0, 6).map((activity) => (
                         <div
                           key={activity.id}
-                          className={`flex items-start space-x-3 p-3 rounded-lg border transition-colors duration-200 ${false // এখানে আপনার 'read' লজিক বসাতে পারেন (e.g., !activity.read)
-                            ? 'bg-blue-50 border-blue-200'
-                            : 'bg-white border-gray-200'
-                            }`}
+                          className={`flex items-start space-x-3 p-3 rounded-lg border transition-colors duration-200 ${
+                            !activity.read
+                              ? 'bg-blue-50 border-blue-200'
+                              : 'bg-white border-gray-200'
+                          }`}
                         >
                           <span className="text-lg mt-0.5 flex-shrink-0">
                             {getActivityIcon(activity.action)}
@@ -293,7 +431,7 @@ export default function DashboardPageClient({ user, dashboardData }: DashboardPa
                               })}
                             </p>
                           </div>
-                          {true && ( // এখানে আপনার 'read' লজিক বসাতে পারেন (e.g., !activity.read)
+                          {!activity.read && (
                             <Button
                               variant="ghost"
                               size="sm"
@@ -302,7 +440,7 @@ export default function DashboardPageClient({ user, dashboardData }: DashboardPa
                               className="text-xs text-blue-600 hover:text-blue-800 flex-shrink-0"
                             >
                               {markingRead === activity.id ? (
-                                '...'
+                                <Loader2 className="h-3 w-3 animate-spin" />
                               ) : (
                                 <Eye className="h-3 w-3" />
                               )}
@@ -432,17 +570,51 @@ export default function DashboardPageClient({ user, dashboardData }: DashboardPa
             </div>
           )}
 
-          {/* ডেটা লোড না হলে বা লোডিং অবস্থায় থাকলে */}
-          {!dashboardData && (
+          {/* Initial Loading State - Skeleton Loader (only on first load) */}
+          {isLoading && !dashboardData && <DashboardSkeleton />}
+
+          {/* Error State - Enhanced */}
+          {error && !isLoading && (
+            <ErrorState
+              error={error}
+              onRetry={() => {
+                queryClient.invalidateQueries({ queryKey: ['dashboard', 'overview'] });
+                refetch();
+              }}
+              title="Error Loading Dashboard"
+              description="We encountered an issue while loading your dashboard data"
+            />
+          )}
+
+          {/* No Data State */}
+          {!dashboardData && !isLoading && !error && (
             <Card>
               <CardHeader>
-                <CardTitle>Loading Dashboard</CardTitle>
+                <CardTitle>No Data Available</CardTitle>
+                <CardDescription>
+                  We couldn't find any dashboard data at this time
+                </CardDescription>
               </CardHeader>
               <CardContent>
-                <p className="text-center text-gray-500 py-10">
-                  Loading dashboard data...
-                </p>
-                {/* এখানে একটি স্পিনার (Spinner) অ্যাড করতে পারেন */}
+                <div className="text-center py-10 space-y-4">
+                  <div className="flex justify-center">
+                    <div className="rounded-full bg-gray-100 p-4">
+                      <BarChart className="h-12 w-12 text-gray-400" />
+                    </div>
+                  </div>
+                  <p className="text-gray-600">
+                    No dashboard data available. This might be your first time here!
+                  </p>
+                  <Button
+                    onClick={() => {
+                      queryClient.invalidateQueries({ queryKey: ['dashboard', 'overview'] });
+                      refetch();
+                    }}
+                    variant="outline"
+                  >
+                    Refresh Data
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           )}

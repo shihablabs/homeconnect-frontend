@@ -46,11 +46,22 @@ export function PropertyControls({
   }, [filters.search, searchInput]);
 
   const handleSortChange = (value: string) => {
-    onFilterChange({ sort: value === "createdAt:desc" ? undefined : value });
+    const [sortBy, sortOrder] = value.split(":");
+    // If "Most Popular" is selected, clear sort to use backend default (score)
+    if (value === "score:desc") {
+      onFilterChange({ sortBy: undefined, sortOrder: undefined });
+    } else {
+      onFilterChange({ 
+        sortBy: sortBy === "createdAt" && sortOrder === "desc" ? undefined : sortBy,
+        sortOrder: sortBy === "createdAt" && sortOrder === "desc" ? undefined : sortOrder
+      });
+    }
   };
 
-  const sortValue = `${filters.sortBy || "createdAt"}:${filters.sortOrder || "desc"
-    }`;
+  // Default to score if no sort is specified
+  const defaultSortBy = filters.sortBy || "score";
+  const defaultSortOrder = filters.sortOrder || "desc";
+  const sortValue = `${defaultSortBy}:${defaultSortOrder}`;
 
   return (
     <div className="rounded-xl border bg-background p-6">
@@ -82,6 +93,7 @@ export function PropertyControls({
               <SelectValue placeholder="Sort by" />
             </SelectTrigger>
             <SelectContent>
+              <SelectItem value="score:desc">Most Popular (Highest Votes)</SelectItem>
               <SelectItem value="createdAt:desc">Newest First</SelectItem>
               <SelectItem value="rentPrice:asc">Price: Low to High (Rent)</SelectItem>
               <SelectItem value="rentPrice:desc">Price: High to Low (Rent)</SelectItem>

@@ -34,6 +34,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { useAppSelector } from "@/redux/hooks";
+import { selectCurrentUser } from "@/redux/features/auth/authSlice";
 
 interface PropertiesListTableProps {
   properties: PropertyResponse[];
@@ -67,8 +69,12 @@ function getStatusVariant(
 
 export function PropertiesListTable({ properties }: PropertiesListTableProps) {
   const router = useRouter();
+  const user = useAppSelector(selectCurrentUser);
   const [deleteProperty, { isLoading: isDeleting }] =
     useDeletePropertyMutation();
+
+  // Check if user is admin or support
+  const isAdminOrSupport = user?.role === 'admin' || user?.role === 'support';
 
   const handleDelete = async (id: string) => {
     toast.promise(
@@ -175,14 +181,19 @@ export function PropertiesListTable({ properties }: PropertiesListTableProps) {
                       <Copy className="mr-2 h-4 w-4" /> Copy Link
                     </DropdownMenuItem>
 
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem
-                      onClick={() => handleDelete(property.id)}
-                      disabled={isDeleting}
-                      className="text-destructive focus:text-destructive cursor-pointer"
-                    >
-                      <Trash className="mr-2 h-4 w-4" /> Delete
-                    </DropdownMenuItem>
+                    {/* Show delete for owner, admin, or support */}
+                    {(property.owner?.id === user?.id || isAdminOrSupport) && (
+                      <>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                          onClick={() => handleDelete(property.id)}
+                          disabled={isDeleting}
+                          className="text-destructive focus:text-destructive cursor-pointer"
+                        >
+                          <Trash className="mr-2 h-4 w-4" /> Delete
+                        </DropdownMenuItem>
+                      </>
+                    )}
                   </DropdownMenuContent>
                 </DropdownMenu>
               </TableCell>
