@@ -44,8 +44,11 @@ export function TenantSupportClient() {
         priority: 'medium',
         description: '',
       });
-    } catch (error: any) {
-      toast.error(error?.response?.data?.message || 'Failed to create support ticket');
+    } catch (error: unknown) {
+      const errorMessage = error && typeof error === 'object' && 'response' in error
+        ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
+        : undefined;
+      toast.error(errorMessage || 'Failed to create support ticket');
     } finally {
       setSubmitting(false);
     }
@@ -169,7 +172,7 @@ export function TenantSupportClient() {
                   <h3 className="font-semibold mb-2">How do I book a property?</h3>
                   <p className="text-sm text-muted-foreground">
                     Search for properties, select your desired dates, and complete the booking
-                    process. You'll need to make a payment to confirm your booking.
+                    process. You&apos;ll need to make a payment to confirm your booking.
                   </p>
                 </div>
 

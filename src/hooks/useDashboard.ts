@@ -10,10 +10,13 @@ export const useDashboard = () => {
     staleTime: 120000, // Consider data fresh for 2 minutes
     refetchOnWindowFocus: false, // Disable to prevent excessive refetches
     refetchInterval: 300000, // Refetch every 5 minutes
-    retry: (failureCount, error: any) => {
+    retry: (failureCount, error: unknown) => {
       // Don't retry on rate limit errors (429)
-      if (error?.response?.status === 429) {
-        return false;
+      if (error && typeof error === 'object' && 'response' in error) {
+        const err = error as { response?: { status?: number } };
+        if (err.response?.status === 429) {
+          return false;
+        }
       }
       return failureCount < 3;
     },

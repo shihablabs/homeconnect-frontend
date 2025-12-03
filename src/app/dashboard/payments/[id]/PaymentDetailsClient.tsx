@@ -34,8 +34,11 @@ export function PaymentDetailsClient({ paymentId }: PaymentDetailsClientProps) {
       ]);
       setPayment(paymentData);
       setEscrowStatus(escrowData);
-    } catch (error: any) {
-      toast.error(error?.response?.data?.message || 'Failed to fetch payment details');
+    } catch (error: unknown) {
+      const errorMessage = error && typeof error === 'object' && 'response' in error
+        ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
+        : undefined;
+      toast.error(errorMessage || 'Failed to fetch payment details');
       router.push('/dashboard/payments');
     } finally {
       setLoading(false);
@@ -49,8 +52,11 @@ export function PaymentDetailsClient({ paymentId }: PaymentDetailsClientProps) {
         returnUrl: `${window.location.origin}/dashboard/payments/${paymentId}`,
       });
       window.location.href = response.sessionUrl;
-    } catch (error: any) {
-      toast.error(error?.response?.data?.message || 'Failed to create payment session');
+    } catch (error: unknown) {
+      const errorMessage = error && typeof error === 'object' && 'response' in error
+        ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
+        : undefined;
+      toast.error(errorMessage || 'Failed to create payment session');
     }
   };
 

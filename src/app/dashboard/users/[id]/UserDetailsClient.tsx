@@ -5,8 +5,8 @@ import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { usersApi, type User } from '@/lib/api/users-api';
-import { adminApi } from '@/lib/api/admin-api';
+import { usersApi } from '@/lib/api/users-api';
+import { adminApi, type User } from '@/lib/api/admin-api';
 import { ArrowLeft, User as UserIcon, Mail, Phone, Shield, Ban, CheckCircle2, Calendar, Loader2, Trash2, RotateCcw } from 'lucide-react';
 import { toast } from 'sonner';
 import Link from 'next/link';
@@ -41,8 +41,11 @@ export function UserDetailsClient({ userId }: UserDetailsClientProps) {
       setLoading(true);
       const userData = await adminApi.getUserById(userId);
       setUser(userData);
-    } catch (error: any) {
-      toast.error(error?.response?.data?.message || 'Failed to fetch user details');
+    } catch (error: unknown) {
+      const errorMessage = error && typeof error === 'object' && 'response' in error
+        ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
+        : undefined;
+      toast.error(errorMessage || 'Failed to fetch user details');
       router.push('/dashboard/users');
     } finally {
       setLoading(false);
@@ -60,8 +63,11 @@ export function UserDetailsClient({ userId }: UserDetailsClientProps) {
       });
       toast.success(`User ${user.isActive ? 'blocked' : 'activated'} successfully`);
       fetchUser();
-    } catch (error: any) {
-      toast.error(error?.response?.data?.message || 'Failed to update user status');
+    } catch (error: unknown) {
+      const errorMessage = error && typeof error === 'object' && 'response' in error
+        ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
+        : undefined;
+      toast.error(errorMessage || 'Failed to update user status');
     } finally {
       setUpdating(false);
     }
@@ -75,8 +81,11 @@ export function UserDetailsClient({ userId }: UserDetailsClientProps) {
       await adminApi.deleteUser(userId, 'Deleted by admin from user details page');
       toast.success('User deleted successfully');
       router.push('/dashboard/users');
-    } catch (error: any) {
-      toast.error(error?.response?.data?.message || 'Failed to delete user');
+    } catch (error: unknown) {
+      const errorMessage = error && typeof error === 'object' && 'response' in error
+        ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
+        : undefined;
+      toast.error(errorMessage || 'Failed to delete user');
     } finally {
       setUpdating(false);
     }
@@ -90,8 +99,11 @@ export function UserDetailsClient({ userId }: UserDetailsClientProps) {
       await adminApi.restoreUser(userId);
       toast.success('User restored successfully');
       fetchUser();
-    } catch (error: any) {
-      toast.error(error?.response?.data?.message || 'Failed to restore user');
+    } catch (error: unknown) {
+      const errorMessage = error && typeof error === 'object' && 'response' in error
+        ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
+        : undefined;
+      toast.error(errorMessage || 'Failed to restore user');
     } finally {
       setUpdating(false);
     }

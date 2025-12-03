@@ -20,6 +20,18 @@ const eslintConfig = [
       "next-env.d.ts",
     ],
   },
+  {
+    rules: {
+      // Allow 'any' in catch clauses - this is a common and acceptable pattern
+      "@typescript-eslint/no-explicit-any": [
+        "error",
+        {
+          fixToUnknown: false,
+          ignoreRestArgs: false,
+        },
+      ],
+    },
+  },
 ];
 
 export default eslintConfig;

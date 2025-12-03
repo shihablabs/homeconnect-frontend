@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useChatSocket } from '@/hooks/useChatSocket';
 import { useAuthState } from '@/hooks/useAuthState';
+import { useSocket } from '@/contexts/SocketContext';
 import { MessageSquare, Send, Search, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -26,6 +27,7 @@ const formatTimeAgo = (date: string) => {
 
 export function MessagesDashboardClient() {
   const { user } = useAuthState();
+  const { onlineUsers } = useSocket();
   const [selectedPartnerId, setSelectedPartnerId] = useState<string | null>(null);
   const [newMessage, setNewMessage] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
@@ -38,7 +40,6 @@ export function MessagesDashboardClient() {
     isTyping,
     isPartnerOnline,
     isConnected,
-    onlineUsers,
     sendMessage,
     markAsRead,
     startTyping,
@@ -86,8 +87,11 @@ export function MessagesDashboardClient() {
       markAsRead(selectedPartnerId);
       // Refresh conversations to update last message
       fetchConversations();
-    } catch (error: any) {
-      toast.error(error?.message || 'Failed to send message');
+    } catch (error: unknown) {
+      const errorMessage = error && typeof error === 'object' && 'message' in error
+        ? String((error as { message?: unknown }).message)
+        : undefined;
+      toast.error(errorMessage || 'Failed to send message');
     }
   };
 

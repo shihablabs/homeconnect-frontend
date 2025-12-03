@@ -17,10 +17,13 @@ export const useAdminStats = (options?: {
     refetchOnWindowFocus: false, // Disable to prevent excessive refetches
     refetchOnMount: false, // Don't refetch on component mount if data exists
     refetchInterval: refetchInterval === undefined ? false : refetchInterval, // Default: Disable auto-refetch, only manual or explicit
-    retry: (failureCount, error: any) => {
+    retry: (failureCount, error: unknown) => {
       // Don't retry on rate limit errors (429)
-      if (error?.response?.status === 429) {
-        return false;
+      if (error && typeof error === 'object' && 'response' in error) {
+        const err = error as { response?: { status?: number } };
+        if (err.response?.status === 429) {
+          return false;
+        }
       }
       return failureCount < 2; // Reduced retries from 3 to 2
     },

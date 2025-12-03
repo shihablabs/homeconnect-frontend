@@ -34,7 +34,7 @@ import {
 } from '@/components/ui/table';
 import { Book, Plus, Edit, Trash2, Search, Eye, Download, Loader2, RefreshCw, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
-import { userGuideApi, type UserGuide, type CreateUserGuideRequest } from '@/lib/api/support-api';
+import { userGuideApi, type UserGuide, type CreateUserGuideRequest, type GuideCategory } from '@/lib/api/support-api';
 
 
 export function UserGuidesClient() {
@@ -72,8 +72,11 @@ export function UserGuidesClient() {
     staleTime: 60000, // 1 minute
     refetchOnWindowFocus: false,
     refetchInterval: false, // Disable auto-refetch by default
-    retry: (failureCount, error: any) => {
-      if (error?.response?.status === 429) return false;
+    retry: (failureCount, error: unknown) => {
+      if (error && typeof error === 'object' && 'response' in error) {
+        const err = error as { response?: { status?: number } };
+        if (err.response?.status === 429) return false;
+      }
       return failureCount < 2;
     },
   });
@@ -114,7 +117,7 @@ export function UserGuidesClient() {
         title: data.title,
         description: data.description,
         content: data.content,
-        category: data.category as any,
+        category: data.category as GuideCategory,
         targetAudience: data.targetAudience,
         isPublished: data.isPublished,
       };
@@ -125,8 +128,11 @@ export function UserGuidesClient() {
       toast.success('Guide created successfully');
       setIsDialogOpen(false);
     },
-    onError: (error: any) => {
-      toast.error(error?.message || 'Failed to create guide');
+    onError: (error: unknown) => {
+      const errorMessage = error && typeof error === 'object' && 'message' in error
+        ? String((error as { message?: unknown }).message)
+        : undefined;
+      toast.error(errorMessage || 'Failed to create guide');
     },
   });
 
@@ -136,7 +142,7 @@ export function UserGuidesClient() {
         title: data.title,
         description: data.description,
         content: data.content,
-        category: data.category as any,
+        category: data.category as GuideCategory,
         targetAudience: data.targetAudience,
         isPublished: data.isPublished,
       };
@@ -147,8 +153,11 @@ export function UserGuidesClient() {
       toast.success('Guide updated successfully');
       setIsDialogOpen(false);
     },
-    onError: (error: any) => {
-      toast.error(error?.message || 'Failed to update guide');
+    onError: (error: unknown) => {
+      const errorMessage = error && typeof error === 'object' && 'message' in error
+        ? String((error as { message?: unknown }).message)
+        : undefined;
+      toast.error(errorMessage || 'Failed to update guide');
     },
   });
 
@@ -160,8 +169,11 @@ export function UserGuidesClient() {
       queryClient.invalidateQueries({ queryKey: ['support', 'guides'] });
       toast.success('Guide deleted successfully');
     },
-    onError: (error: any) => {
-      toast.error(error?.message || 'Failed to delete guide');
+    onError: (error: unknown) => {
+      const errorMessage = error && typeof error === 'object' && 'message' in error
+        ? String((error as { message?: unknown }).message)
+        : undefined;
+      toast.error(errorMessage || 'Failed to delete guide');
     },
   });
 

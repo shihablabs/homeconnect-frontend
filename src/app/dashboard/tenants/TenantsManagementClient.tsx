@@ -48,8 +48,11 @@ export function TenantsManagementClient() {
         tenant.properties.add(booking.property.id);
       });
       setBookings(bookingsData);
-    } catch (error: any) {
-      toast.error(error?.response?.data?.message || 'Failed to fetch tenants');
+    } catch (error: unknown) {
+      const errorMessage = error && typeof error === 'object' && 'response' in error
+        ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
+        : undefined;
+      toast.error(errorMessage || 'Failed to fetch tenants');
       setBookings([]); // Ensure bookings is always an array
     } finally {
       setLoading(false);
@@ -69,7 +72,7 @@ export function TenantsManagementClient() {
       }
       const entry = tenantMap.get(booking.tenant.id);
       entry.bookings.push(booking);
-      if (!entry.properties.find((p: any) => p.id === booking.property.id)) {
+      if (!entry.properties.find((p: { id: string }) => p.id === booking.property.id)) {
         entry.properties.push(booking.property);
       }
     });
@@ -185,7 +188,7 @@ export function TenantsManagementClient() {
                       </TableCell>
                       <TableCell>
                         <div className="space-y-1">
-                          {entry.properties.slice(0, 2).map((property: any) => (
+                          {entry.properties.slice(0, 2).map((property: { id: string; title: string; address: string; city: string; images: string[] }) => (
                             <div key={property.id} className="flex items-center gap-2 text-sm">
                               <Home className="h-3 w-3 text-muted-foreground" />
                               <Link

@@ -76,7 +76,7 @@ function VerifyEmailContent() {
 
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-left">
                   <p className="text-sm text-blue-800 font-medium mb-2">
-                    Didn't receive the email?
+                    Didn&apos;t receive the email?
                   </p>
                   <ul className="text-sm text-blue-700 space-y-1 list-disc list-inside">
                     <li>Check your spam/junk folder</li>

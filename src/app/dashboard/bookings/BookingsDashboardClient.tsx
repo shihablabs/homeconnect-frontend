@@ -41,8 +41,11 @@ export function BookingsDashboardClient() {
       setLoading(true);
       const response = await bookingsApi.getUserBookings(viewType);
       setBookings(response?.bookings || []);
-    } catch (error: any) {
-      toast.error(error?.response?.data?.message || 'Failed to fetch bookings');
+    } catch (error: unknown) {
+      const errorMessage = error && typeof error === 'object' && 'response' in error
+        ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
+        : undefined;
+      toast.error(errorMessage || 'Failed to fetch bookings');
       setBookings([]); // Ensure bookings is always an array
     } finally {
       setLoading(false);
@@ -56,8 +59,11 @@ export function BookingsDashboardClient() {
         returnUrl: `${window.location.origin}/dashboard/bookings/${booking.id}`,
       });
       window.location.href = response.url;
-    } catch (error: any) {
-      toast.error(error?.response?.data?.message || 'Failed to create payment session');
+    } catch (error: unknown) {
+      const errorMessage = error && typeof error === 'object' && 'response' in error
+        ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
+        : undefined;
+      toast.error(errorMessage || 'Failed to create payment session');
     }
   };
 

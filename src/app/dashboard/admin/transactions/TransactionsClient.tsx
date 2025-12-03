@@ -79,7 +79,13 @@ export function TransactionsClient() {
               <DollarSign className="h-12 w-12 text-muted-foreground" />
               <h3 className="text-lg font-semibold">Failed to load transactions</h3>
               <p className="text-muted-foreground text-center">
-                {(error as any)?.response?.data?.message || 'An error occurred while fetching transactions'}
+                {(() => {
+                  if (error && typeof error === 'object' && 'response' in error) {
+                    const err = error as { response?: { data?: { message?: string } } };
+                    return err.response?.data?.message || 'An error occurred while fetching transactions';
+                  }
+                  return 'An error occurred while fetching transactions';
+                })()}
               </p>
               <Button onClick={() => refetch()} variant="outline">
                 <RefreshCw className="mr-2 h-4 w-4" />

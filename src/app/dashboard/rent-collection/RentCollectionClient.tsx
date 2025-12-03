@@ -50,8 +50,11 @@ export function RentCollectionClient() {
         });
         setPayments(response?.payments || []);
       }
-    } catch (error: any) {
-      toast.error(error?.response?.data?.message || 'Failed to fetch data');
+    } catch (error: unknown) {
+      const errorMessage = error && typeof error === 'object' && 'response' in error
+        ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
+        : undefined;
+      toast.error(errorMessage || 'Failed to fetch data');
       if (activeTab === 'overview') {
         setEarnings({
           totalEarnings: 0,

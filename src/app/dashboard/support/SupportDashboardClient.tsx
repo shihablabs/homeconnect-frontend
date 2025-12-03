@@ -31,7 +31,13 @@ export function SupportDashboardClient() {
           <AlertCircle className="h-12 w-12 text-muted-foreground mb-4" />
           <h3 className="text-lg font-semibold mb-2">Failed to load dashboard</h3>
           <p className="text-muted-foreground mb-4">
-            {(error as any)?.response?.data?.message || 'An error occurred'}
+            {(() => {
+              if (error && typeof error === 'object' && 'response' in error) {
+                const err = error as { response?: { data?: { message?: string } } };
+                return err.response?.data?.message || 'An error occurred';
+              }
+              return 'An error occurred';
+            })()}
           </p>
           <Button onClick={() => refetch()}>
             <RefreshCw className="mr-2 h-4 w-4" />
@@ -140,7 +146,7 @@ export function SupportDashboardClient() {
               </div>
             ) : (
               <div className="space-y-4">
-                {maintenanceRequests.slice(0, 5).map((request: any) => (
+                {maintenanceRequests.slice(0, 5).map((request: { id: string; title: string; status: string; priority: string }) => (
                   <div
                     key={request.id}
                     className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent transition-colors"
@@ -148,7 +154,7 @@ export function SupportDashboardClient() {
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-2">
                         <h4 className="font-semibold">
-                          {request.property?.title || 'Property'}
+                          {request.title || 'Property'}
                         </h4>
                         <Badge variant="outline" className="capitalize">
                           {request.status}
@@ -169,16 +175,14 @@ export function SupportDashboardClient() {
                         )}
                       </div>
                       <p className="text-sm text-muted-foreground line-clamp-2">
-                        {request.description || 'No description provided'}
+                        {request.title || 'No title provided'}
                       </p>
                       <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
                         <span>
-                          Tenant: {request.tenant?.name || 'Unknown'}
+                          Status: {request.status || 'Unknown'}
                         </span>
                         <span>
-                          {request.createdAt
-                            ? new Date(request.createdAt).toLocaleDateString()
-                            : 'N/A'}
+                          Priority: {request.priority || 'N/A'}
                         </span>
                       </div>
                     </div>

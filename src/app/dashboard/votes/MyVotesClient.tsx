@@ -27,10 +27,13 @@ export function MyVotesClient() {
     queryFn: () => votesApi.getMyVotes({ page, limit: 20 }),
     staleTime: 30000, // 30 seconds
     refetchOnWindowFocus: true,
-    retry: (failureCount, error: any) => {
+    retry: (failureCount, error: unknown) => {
       // Don't retry on 403 or 401 errors
-      if (error?.response?.status === 403 || error?.response?.status === 401) {
-        return false;
+      if (error && typeof error === 'object' && 'response' in error) {
+        const err = error as { response?: { status?: number } };
+        if (err.response?.status === 403 || err.response?.status === 401) {
+          return false;
+        }
       }
       return failureCount < 2;
     },
@@ -38,8 +41,13 @@ export function MyVotesClient() {
 
   // Handle errors
   if (error) {
-    const errorMessage = (error as any)?.response?.data?.message || (error as any)?.message || 'Failed to fetch your votes';
-    const statusCode = (error as any)?.response?.status;
+    const errorObj = error && typeof error === 'object' && 'response' in error
+      ? (error as { response?: { data?: { message?: string }; status?: number } })
+      : null;
+    const errorMessage = errorObj?.response?.data?.message || 
+      (error && typeof error === 'object' && 'message' in error ? String((error as { message?: unknown }).message) : undefined) ||
+      'Failed to fetch your votes';
+    const statusCode = errorObj?.response?.status;
     
     // Handle 403 Forbidden (unauthorized) specifically
     if (statusCode === 403) {
@@ -62,7 +70,7 @@ export function MyVotesClient() {
           <div>
             <h1 className="text-3xl font-bold">My Votes</h1>
             <p className="text-muted-foreground mt-1">
-              View all properties you've voted on
+              View all properties you&apos;ve voted on
             </p>
           </div>
           <Card>
@@ -85,7 +93,7 @@ export function MyVotesClient() {
         <div>
           <h1 className="text-3xl font-bold">My Votes</h1>
           <p className="text-muted-foreground mt-1">
-            View all properties you've voted on
+            View all properties you&apos;ve voted on
           </p>
         </div>
       </div>

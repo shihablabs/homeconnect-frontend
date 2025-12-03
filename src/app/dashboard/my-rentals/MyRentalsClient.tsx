@@ -25,11 +25,14 @@ export function MyRentalsClient() {
     queryFn: () => bookingsApi.getUserBookings('tenant'),
     staleTime: 60000, // 1 minute
     refetchOnWindowFocus: false,
-    retry: 2,
-    onError: (error: any) => {
-      if (error?.response?.status !== 401 && error?.response?.status !== 403) {
-        toast.error(error?.response?.data?.message || 'Failed to fetch rentals');
+    retry: (failureCount, error: unknown) => {
+      if (error && typeof error === 'object' && 'response' in error) {
+        const err = error as { response?: { status?: number } };
+        if (err.response?.status === 401 || err.response?.status === 403) {
+          return false;
+        }
       }
+      return failureCount < 2;
     },
   });
 
@@ -79,7 +82,13 @@ export function MyRentalsClient() {
                 <Home className="h-12 w-12 text-muted-foreground mb-4" />
                 <h3 className="text-lg font-semibold mb-2">Failed to load rentals</h3>
                 <p className="text-muted-foreground mb-4">
-                  {(error as any)?.response?.data?.message || 'An error occurred while fetching your rentals'}
+                  {(() => {
+                    if (error && typeof error === 'object' && 'response' in error) {
+                      const err = error as { response?: { data?: { message?: string } } };
+                      return err.response?.data?.message || 'An error occurred while fetching your rentals';
+                    }
+                    return 'An error occurred while fetching your rentals';
+                  })()}
                 </p>
                 <Button onClick={() => refetch()}>
                   Try Again
@@ -115,7 +124,7 @@ export function MyRentalsClient() {
               <Home className="h-12 w-12 text-muted-foreground mb-4" />
               <h3 className="text-lg font-semibold mb-2">No active rentals</h3>
               <p className="text-muted-foreground mb-4">
-                You don't have any active rentals at the moment
+                You don&apos;t have any active rentals at the moment
               </p>
               <Link href="/dashboard/search">
                 <Button>

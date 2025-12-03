@@ -56,7 +56,8 @@ export function TenantScreeningClient() {
       // const screeningData = await screeningApi.getScreeningResults();
       // setScreenings(screeningData);
       setScreenings([]);
-    } catch (error: any) {
+    } catch (error: unknown) {
+      console.error('Failed to fetch data:', error);
       toast.error('Failed to fetch data');
       setBookings([]); // Ensure bookings is always an array
       setScreenings([]);

@@ -44,7 +44,8 @@ export function CreateBookingClient() {
         limit: 10,
       });
       setProperties(response.properties);
-    } catch (error: any) {
+    } catch (error: unknown) {
+      console.error('Failed to search properties:', error);
       toast.error('Failed to search properties');
     } finally {
       setLoading(false);
@@ -80,8 +81,11 @@ export function CreateBookingClient() {
       });
       toast.success('Booking created successfully!');
       router.push(`/dashboard/bookings/${booking.id}`);
-    } catch (error: any) {
-      toast.error(error?.response?.data?.message || 'Failed to create booking');
+    } catch (error: unknown) {
+      const errorMessage = error && typeof error === 'object' && 'response' in error
+        ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
+        : undefined;
+      toast.error(errorMessage || 'Failed to create booking');
     } finally {
       setCreating(false);
     }

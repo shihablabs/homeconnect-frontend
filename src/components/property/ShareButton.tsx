@@ -102,9 +102,15 @@ export function ShareButton({
           url: shareUrl,
         });
         toast.success('Shared successfully!');
-      } catch (error: any) {
+      } catch (error: unknown) {
         // User cancelled or error occurred
-        if (error.name !== 'AbortError') {
+        console.error('Share error:', error);
+        if (error && typeof error === 'object' && 'name' in error) {
+          const err = error as { name?: string };
+          if (err.name !== 'AbortError') {
+            toast.error('Failed to share');
+          }
+        } else {
           toast.error('Failed to share');
         }
       }
@@ -131,7 +137,7 @@ export function ShareButton({
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
         {/* Native Share (Mobile) */}
-        {typeof navigator !== 'undefined' && navigator.share && (
+        {typeof navigator !== 'undefined' && typeof navigator.share === 'function' && (
           <>
             <DropdownMenuItem onClick={handleNativeShare}>
               <Share2 className="mr-2 h-4 w-4" />

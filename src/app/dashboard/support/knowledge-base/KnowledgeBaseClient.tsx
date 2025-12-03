@@ -34,7 +34,7 @@ import {
 } from '@/components/ui/table';
 import { BookOpen, Plus, Edit, Trash2, Search, Eye, Loader2, RefreshCw, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
-import { knowledgeBaseApi, type KnowledgeArticle, type CreateKnowledgeArticleRequest } from '@/lib/api/support-api';
+import { knowledgeBaseApi, type KnowledgeArticle, type CreateKnowledgeArticleRequest, type KnowledgeBaseCategory } from '@/lib/api/support-api';
 
 
 export function KnowledgeBaseClient() {
@@ -71,8 +71,11 @@ export function KnowledgeBaseClient() {
     staleTime: 60000, // 1 minute
     refetchOnWindowFocus: false,
     refetchInterval: false, // Disable auto-refetch by default
-    retry: (failureCount, error: any) => {
-      if (error?.response?.status === 429) return false;
+    retry: (failureCount, error: unknown) => {
+      if (error && typeof error === 'object' && 'response' in error) {
+        const err = error as { response?: { status?: number } };
+        if (err.response?.status === 429) return false;
+      }
       return failureCount < 2;
     },
   });
@@ -111,7 +114,7 @@ export function KnowledgeBaseClient() {
       const payload: CreateKnowledgeArticleRequest = {
         title: data.title,
         content: data.content,
-        category: data.category as any,
+        category: data.category as KnowledgeBaseCategory,
         tags,
         isPublished: data.isPublished,
       };
@@ -122,8 +125,11 @@ export function KnowledgeBaseClient() {
       toast.success('Article created successfully');
       setIsDialogOpen(false);
     },
-    onError: (error: any) => {
-      toast.error(error?.message || 'Failed to create article');
+    onError: (error: unknown) => {
+      const errorMessage = error && typeof error === 'object' && 'message' in error
+        ? String((error as { message?: unknown }).message)
+        : undefined;
+      toast.error(errorMessage || 'Failed to create article');
     },
   });
 
@@ -133,7 +139,7 @@ export function KnowledgeBaseClient() {
       const payload = {
         title: data.title,
         content: data.content,
-        category: data.category as any,
+        category: data.category as KnowledgeBaseCategory,
         tags,
         isPublished: data.isPublished,
       };
@@ -144,8 +150,11 @@ export function KnowledgeBaseClient() {
       toast.success('Article updated successfully');
       setIsDialogOpen(false);
     },
-    onError: (error: any) => {
-      toast.error(error?.message || 'Failed to update article');
+    onError: (error: unknown) => {
+      const errorMessage = error && typeof error === 'object' && 'message' in error
+        ? String((error as { message?: unknown }).message)
+        : undefined;
+      toast.error(errorMessage || 'Failed to update article');
     },
   });
 
@@ -157,8 +166,11 @@ export function KnowledgeBaseClient() {
       queryClient.invalidateQueries({ queryKey: ['support', 'knowledge-base'] });
       toast.success('Article deleted successfully');
     },
-    onError: (error: any) => {
-      toast.error(error?.message || 'Failed to delete article');
+    onError: (error: unknown) => {
+      const errorMessage = error && typeof error === 'object' && 'message' in error
+        ? String((error as { message?: unknown }).message)
+        : undefined;
+      toast.error(errorMessage || 'Failed to delete article');
     },
   });
 

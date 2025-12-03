@@ -62,9 +62,12 @@ export function StaffManagementClient() {
     staleTime: 30000,
     refetchOnWindowFocus: true,
     refetchInterval: 60000,
-    retry: (failureCount, error: any) => {
-      if (error?.response?.status === 429) {
-        return false;
+    retry: (failureCount, error: unknown) => {
+      if (error && typeof error === 'object' && 'response' in error) {
+        const err = error as { response?: { status?: number } };
+        if (err.response?.status === 429) {
+          return false;
+        }
       }
       return failureCount < 2;
     },
@@ -79,9 +82,12 @@ export function StaffManagementClient() {
     staleTime: 30000,
     refetchOnWindowFocus: true,
     refetchInterval: 60000,
-    retry: (failureCount, error: any) => {
-      if (error?.response?.status === 429) {
-        return false;
+    retry: (failureCount, error: unknown) => {
+      if (error && typeof error === 'object' && 'response' in error) {
+        const err = error as { response?: { status?: number } };
+        if (err.response?.status === 429) {
+          return false;
+        }
       }
       return failureCount < 2;
     },
@@ -115,8 +121,11 @@ export function StaffManagementClient() {
       queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
       queryClient.invalidateQueries({ queryKey: ['admin', 'users', 'admin'] });
       queryClient.invalidateQueries({ queryKey: ['admin', 'users', 'support'] });
-    } catch (error: any) {
-      toast.error(error?.response?.data?.message || 'Failed to create staff member');
+    } catch (error: unknown) {
+      const errorMessage = error && typeof error === 'object' && 'response' in error
+        ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
+        : undefined;
+      toast.error(errorMessage || 'Failed to create staff member');
     }
   };
 
@@ -152,8 +161,11 @@ export function StaffManagementClient() {
       queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
       queryClient.invalidateQueries({ queryKey: ['admin', 'users', 'admin'] });
       queryClient.invalidateQueries({ queryKey: ['admin', 'users', 'support'] });
-    } catch (error: any) {
-      toast.error(error?.response?.data?.message || 'Failed to update status');
+    } catch (error: unknown) {
+      const errorMessage = error && typeof error === 'object' && 'response' in error
+        ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
+        : undefined;
+      toast.error(errorMessage || 'Failed to update status');
     } finally {
       setUpdatingStatusId(null);
     }
@@ -176,7 +188,13 @@ export function StaffManagementClient() {
                 <Shield className="h-12 w-12 text-muted-foreground" />
                 <h3 className="text-lg font-semibold">Failed to load staff</h3>
                 <p className="text-muted-foreground text-center">
-                  {(error as any)?.response?.data?.message || 'An error occurred while fetching staff members'}
+                  {(() => {
+                    if (error && typeof error === 'object' && 'response' in error) {
+                      const err = error as { response?: { data?: { message?: string } } };
+                      return err.response?.data?.message || 'An error occurred while fetching staff members';
+                    }
+                    return 'An error occurred while fetching staff members';
+                  })()}
                 </p>
                 <Button onClick={refetch} variant="outline">
                   <RefreshCw className="mr-2 h-4 w-4" />

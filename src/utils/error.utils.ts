@@ -71,3 +71,31 @@ export const getErrorCode = (error: AppError): string => {
 
   return 'UNKNOWN_ERROR';
 };
+
+/**
+ * Extract error message from unknown error (for catch blocks)
+ * Handles axios errors with response.data.message pattern
+ */
+export const getErrorMessage = (error: unknown, fallback = 'An unexpected error occurred'): string => {
+  if (!error) return fallback;
+  
+  // Handle axios error response pattern: error.response.data.message
+  if (error && typeof error === 'object' && 'response' in error) {
+    const err = error as { response?: { data?: { message?: string } } };
+    if (err.response?.data?.message) {
+      return err.response.data.message;
+    }
+  }
+  
+  // Handle standard Error
+  if (error instanceof Error) {
+    return error.message;
+  }
+  
+  // Handle string errors
+  if (typeof error === 'string') {
+    return error;
+  }
+  
+  return fallback;
+};

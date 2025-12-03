@@ -79,9 +79,12 @@ export function CommissionsClient() {
     staleTime: 30000,
     refetchOnWindowFocus: true,
     refetchInterval: 60000,
-    retry: (failureCount, error: any) => {
-      if (error?.response?.status === 429) {
-        return false;
+    retry: (failureCount, error: unknown) => {
+      if (error && typeof error === 'object' && 'response' in error) {
+        const err = error as { response?: { status?: number } };
+        if (err.response?.status === 429) {
+          return false;
+        }
       }
       return failureCount < 2;
     },
@@ -109,6 +112,10 @@ export function CommissionsClient() {
   };
 
   if (error) {
+    const errorMessage = error && typeof error === 'object' && 'response' in error
+      ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
+      : undefined;
+    
     return (
       <div className="space-y-6">
         <Card>
@@ -117,7 +124,7 @@ export function CommissionsClient() {
               <DollarSign className="h-12 w-12 text-muted-foreground" />
               <h3 className="text-lg font-semibold">Failed to load commissions</h3>
               <p className="text-muted-foreground text-center">
-                {(error as any)?.response?.data?.message || 'An error occurred while fetching commissions'}
+                {errorMessage || 'An error occurred while fetching commissions'}
               </p>
               <Button onClick={() => refetch()} variant="outline">
                 <RefreshCw className="mr-2 h-4 w-4" />

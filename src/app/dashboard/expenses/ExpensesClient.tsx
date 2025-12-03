@@ -70,7 +70,8 @@ export function ExpensesClient() {
       // const response = await expensesApi.getExpenses();
       // setExpenses(response.expenses);
       setExpenses([]);
-    } catch (error: any) {
+    } catch (error: unknown) {
+      console.error('Failed to fetch expenses:', error);
       toast.error('Failed to fetch expenses');
     } finally {
       setLoading(false);
@@ -98,8 +99,11 @@ export function ExpensesClient() {
         receipt: '',
       });
       fetchExpenses();
-    } catch (error: any) {
-      toast.error(error?.response?.data?.message || 'Failed to add expense');
+    } catch (error: unknown) {
+      const errorMessage = error && typeof error === 'object' && 'response' in error
+        ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
+        : undefined;
+      toast.error(errorMessage || 'Failed to add expense');
     }
   };
 

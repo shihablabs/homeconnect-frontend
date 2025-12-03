@@ -89,8 +89,11 @@ export function UsersManagementClient() {
         reason: !confirmDialog.currentStatus ? 'Activated by admin' : 'Blocked by admin',
       });
       toast.success(`User ${!confirmDialog.currentStatus ? 'activated' : 'blocked'} successfully`);
-    } catch (error: any) {
-      toast.error(error?.response?.data?.message || 'Failed to update status');
+    } catch (error: unknown) {
+      const errorMessage = error && typeof error === 'object' && 'response' in error
+        ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
+        : undefined;
+      toast.error(errorMessage || 'Failed to update status');
     }
   };
 
@@ -109,8 +112,11 @@ export function UsersManagementClient() {
     try {
       await deleteUserAsync({ userId: confirmDialog.userId, reason: 'Deleted by admin' });
       toast.success('User deleted successfully');
-    } catch (error: any) {
-      toast.error(error?.response?.data?.message || 'Failed to delete user');
+    } catch (error: unknown) {
+      const errorMessage = error && typeof error === 'object' && 'response' in error
+        ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
+        : undefined;
+      toast.error(errorMessage || 'Failed to delete user');
     }
   };
 
@@ -133,7 +139,13 @@ export function UsersManagementClient() {
               <Users className="h-12 w-12 text-muted-foreground" />
               <h3 className="text-lg font-semibold">Failed to load users</h3>
               <p className="text-muted-foreground text-center">
-                {(error as any)?.response?.data?.message || 'An error occurred while fetching users'}
+                {(() => {
+                  if (error && typeof error === 'object' && 'response' in error) {
+                    const err = error as { response?: { data?: { message?: string } } };
+                    return err.response?.data?.message || 'An error occurred while fetching users';
+                  }
+                  return 'An error occurred while fetching users';
+                })()}
               </p>
               <Button onClick={() => refetch()} variant="outline">
                 <RefreshCw className="mr-2 h-4 w-4" />

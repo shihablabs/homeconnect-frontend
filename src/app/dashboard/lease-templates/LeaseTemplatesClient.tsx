@@ -72,7 +72,8 @@ export function LeaseTemplatesClient() {
           updatedAt: new Date().toISOString(),
         },
       ]);
-    } catch (error: any) {
+    } catch (error: unknown) {
+      console.error('Failed to fetch templates:', error);
       toast.error('Failed to fetch templates');
     } finally {
       setLoading(false);
@@ -120,8 +121,11 @@ export function LeaseTemplatesClient() {
       }
       setIsDialogOpen(false);
       fetchTemplates();
-    } catch (error: any) {
-      toast.error(error?.response?.data?.message || 'Failed to save template');
+    } catch (error: unknown) {
+      const errorMessage = error && typeof error === 'object' && 'response' in error
+        ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
+        : undefined;
+      toast.error(errorMessage || 'Failed to save template');
     }
   };
 
@@ -133,7 +137,8 @@ export function LeaseTemplatesClient() {
       // await templatesApi.deleteTemplate(templateId);
       toast.success('Template deleted successfully');
       fetchTemplates();
-    } catch (error: any) {
+    } catch (error: unknown) {
+      console.error('Failed to delete template:', error);
       toast.error('Failed to delete template');
     }
   };

@@ -53,14 +53,18 @@ export function NotificationsDashboardClient() {
 
   // Filter notifications based on active tab and type filter
   useEffect(() => {
-    const params: any = {
+    const params: {
+      limit: number;
+      unreadOnly?: boolean;
+      type?: 'message' | 'booking' | 'payment' | 'property' | 'maintenance' | 'system';
+    } = {
       limit: 50,
     };
     if (activeTab === 'unread') {
       params.unreadOnly = true;
     }
     if (typeFilter !== 'all') {
-      params.type = typeFilter;
+      params.type = typeFilter as 'message' | 'booking' | 'payment' | 'property' | 'maintenance' | 'system';
     }
     fetchNotifications(params);
   }, [activeTab, typeFilter, fetchNotifications]);
@@ -74,7 +78,8 @@ export function NotificationsDashboardClient() {
   const handleMarkAsRead = async (notificationId: string) => {
     try {
       await markAsRead(notificationId);
-    } catch (error: any) {
+    } catch (error: unknown) {
+      console.error('Failed to mark notification as read:', error);
       toast.error('Failed to mark notification as read');
     }
   };
@@ -83,7 +88,8 @@ export function NotificationsDashboardClient() {
     try {
       setMarkingAll(true);
       await markAllAsRead();
-    } catch (error: any) {
+    } catch (error: unknown) {
+      console.error('Failed to mark all as read:', error);
       toast.error('Failed to mark all as read');
     } finally {
       setMarkingAll(false);
@@ -93,7 +99,8 @@ export function NotificationsDashboardClient() {
   const handleDelete = async (notificationId: string) => {
     try {
       await deleteNotification(notificationId);
-    } catch (error: any) {
+    } catch (error: unknown) {
+      console.error('Failed to delete notification:', error);
       toast.error('Failed to delete notification');
     }
   };
@@ -279,7 +286,7 @@ export function NotificationsDashboardClient() {
                   <Bell className="h-12 w-12 text-muted-foreground mb-4" />
                   <h3 className="text-lg font-semibold mb-2">No notifications</h3>
                   <p className="text-muted-foreground">
-                    You're all caught up! New notifications will appear here
+                    You&apos;re all caught up! New notifications will appear here
                   </p>
                 </div>
               ) : (

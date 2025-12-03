@@ -17,9 +17,11 @@ export function AdminDashboardClient() {
     try {
       setRefreshing(true);
       await refetch();
-    } catch (err: any) {
-      const errorMessage = err?.response?.data?.message || 'Failed to refresh stats';
-      toast.error(errorMessage);
+    } catch (err: unknown) {
+      const errorMessage = err && typeof err === 'object' && 'response' in err
+        ? (err as { response?: { data?: { message?: string } } }).response?.data?.message
+        : undefined;
+      toast.error(errorMessage || 'Failed to refresh stats');
     } finally {
       setRefreshing(false);
     }

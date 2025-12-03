@@ -2,7 +2,7 @@
 
 import { useEffect, useCallback, useState } from 'react';
 import { useSocket } from '@/contexts/SocketContext';
-import { notificationsApi, type Notification, type NotificationStats } from '@/lib/api/notifications-api';
+import { notificationsApi, type Notification, type NotificationStats, type NotificationParams } from '@/lib/api/notifications-api';
 import { toast } from 'sonner';
 
 interface UseNotificationsSocketOptions {
@@ -20,12 +20,7 @@ export function useNotificationsSocket(options: UseNotificationsSocketOptions = 
   const [loading, setLoading] = useState(false);
 
   // Fetch notifications from API
-  const fetchNotifications = useCallback(async (params?: {
-    page?: number;
-    limit?: number;
-    unreadOnly?: boolean;
-    type?: string;
-  }) => {
+  const fetchNotifications = useCallback(async (params?: NotificationParams) => {
     try {
       setLoading(true);
       const [notificationsData, statsData] = await Promise.all([

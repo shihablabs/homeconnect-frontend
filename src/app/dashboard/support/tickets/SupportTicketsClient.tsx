@@ -68,8 +68,11 @@ export function SupportTicketsClient() {
     staleTime: 30000, // 30 seconds
     refetchOnWindowFocus: true,
     refetchInterval: 60000, // Auto-refetch every minute
-    retry: (failureCount, error: any) => {
-      if (error?.response?.status === 429) return false;
+    retry: (failureCount, error: unknown) => {
+      if (error && typeof error === 'object' && 'response' in error) {
+        const err = error as { response?: { status?: number } };
+        if (err.response?.status === 429) return false;
+      }
       return failureCount < 2;
     },
   });
@@ -207,7 +210,13 @@ export function SupportTicketsClient() {
               <AlertCircle className="h-12 w-12 text-destructive mb-4" />
               <h3 className="text-lg font-semibold mb-2">Failed to load tickets</h3>
               <p className="text-muted-foreground text-center mb-4">
-                {(error as any)?.response?.data?.message || 'An error occurred while fetching tickets'}
+                {(() => {
+                  if (error && typeof error === 'object' && 'response' in error) {
+                    const err = error as { response?: { data?: { message?: string } } };
+                    return err.response?.data?.message || 'An error occurred while fetching tickets';
+                  }
+                  return 'An error occurred while fetching tickets';
+                })()}
               </p>
               <Button onClick={() => refetch()} variant="outline">
                 <RefreshCw className="mr-2 h-4 w-4" />

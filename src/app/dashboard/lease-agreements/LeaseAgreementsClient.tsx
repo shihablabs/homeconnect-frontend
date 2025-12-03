@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -26,12 +26,17 @@ export function LeaseAgreementsClient() {
     staleTime: 60000, // 1 minute
     refetchOnWindowFocus: false,
     retry: 2,
-    onError: (error: any) => {
-      if (error?.response?.status !== 401 && error?.response?.status !== 403) {
-        toast.error(error?.response?.data?.message || 'Failed to fetch lease agreements');
-      }
-    },
   });
+
+  // Handle errors (React Query v5 removed onError from useQuery)
+  useEffect(() => {
+    if (error) {
+      const errorObj = error as { response?: { status?: number; data?: { message?: string } } };
+      if (errorObj?.response?.status !== 401 && errorObj?.response?.status !== 403) {
+        toast.error(errorObj?.response?.data?.message || 'Failed to fetch lease agreements');
+      }
+    }
+  }, [error]);
 
   // Filter only confirmed/completed bookings (active leases)
   const leases = useMemo(() => {
@@ -77,7 +82,13 @@ export function LeaseAgreementsClient() {
                 <FileText className="h-12 w-12 text-muted-foreground mb-4" />
                 <h3 className="text-lg font-semibold mb-2">Failed to load lease agreements</h3>
                 <p className="text-muted-foreground mb-4">
-                  {(error as any)?.response?.data?.message || 'An error occurred while fetching your lease agreements'}
+                  {(() => {
+                    if (error && typeof error === 'object' && 'response' in error) {
+                      const err = error as { response?: { data?: { message?: string } } };
+                      return err.response?.data?.message || 'An error occurred while fetching your lease agreements';
+                    }
+                    return 'An error occurred while fetching your lease agreements';
+                  })()}
                 </p>
                 <Button onClick={() => refetch()}>
                   Try Again
@@ -113,7 +124,7 @@ export function LeaseAgreementsClient() {
               <FileText className="h-12 w-12 text-muted-foreground mb-4" />
               <h3 className="text-lg font-semibold mb-2">No lease agreements</h3>
               <p className="text-muted-foreground mb-4">
-                You don't have any active lease agreements
+                You don&apos;t have any active lease agreements
               </p>
               <Link href="/dashboard/search">
                 <Button>

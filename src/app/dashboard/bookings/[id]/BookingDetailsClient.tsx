@@ -45,8 +45,11 @@ export function BookingDetailsClient({ bookingId }: BookingDetailsClientProps) {
       setLoading(true);
       const data = await bookingsApi.getBooking(bookingId);
       setBooking(data);
-    } catch (error: any) {
-      toast.error(error?.response?.data?.message || 'Failed to fetch booking details');
+    } catch (error: unknown) {
+      const errorMessage = error && typeof error === 'object' && 'response' in error
+        ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
+        : undefined;
+      toast.error(errorMessage || 'Failed to fetch booking details');
       router.push('/dashboard/bookings');
     } finally {
       setLoading(false);
@@ -61,8 +64,11 @@ export function BookingDetailsClient({ bookingId }: BookingDetailsClientProps) {
         returnUrl: `${window.location.origin}/dashboard/bookings/${booking.id}`,
       });
       window.location.href = response.url;
-    } catch (error: any) {
-      toast.error(error?.response?.data?.message || 'Failed to create payment session');
+    } catch (error: unknown) {
+      const errorMessage = error && typeof error === 'object' && 'response' in error
+        ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
+        : undefined;
+      toast.error(errorMessage || 'Failed to create payment session');
     }
   };
 
@@ -79,8 +85,11 @@ export function BookingDetailsClient({ bookingId }: BookingDetailsClientProps) {
       setIsCancelDialogOpen(false);
       setCancelReason('');
       fetchBooking();
-    } catch (error: any) {
-      toast.error(error?.response?.data?.message || 'Failed to cancel booking');
+    } catch (error: unknown) {
+      const errorMessage = error && typeof error === 'object' && 'response' in error
+        ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
+        : undefined;
+      toast.error(errorMessage || 'Failed to cancel booking');
     } finally {
       setCancelling(false);
     }

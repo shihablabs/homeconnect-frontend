@@ -49,8 +49,11 @@ export function PaymentsDashboardClient() {
         const earningsData = await paymentsApi.getLandlordEarnings();
         setEarnings(earningsData);
       }
-    } catch (error: any) {
-      toast.error(error?.response?.data?.message || 'Failed to fetch payment data');
+    } catch (error: unknown) {
+      const errorMessage = error && typeof error === 'object' && 'response' in error
+        ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
+        : undefined;
+      toast.error(errorMessage || 'Failed to fetch payment data');
     } finally {
       setLoading(false);
     }
@@ -62,8 +65,11 @@ export function PaymentsDashboardClient() {
         returnUrl: `${window.location.origin}/dashboard/payments`,
       });
       window.location.href = response.sessionUrl;
-    } catch (error: any) {
-      toast.error(error?.response?.data?.message || 'Failed to create payment session');
+    } catch (error: unknown) {
+      const errorMessage = error && typeof error === 'object' && 'response' in error
+        ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
+        : undefined;
+      toast.error(errorMessage || 'Failed to create payment session');
     }
   };
 
@@ -177,7 +183,7 @@ export function PaymentsDashboardClient() {
                 <div className="flex flex-col items-center justify-center py-12 text-center">
                   <Calendar className="h-12 w-12 text-muted-foreground mb-4" />
                   <h3 className="text-lg font-semibold mb-2">No upcoming payments</h3>
-                  <p className="text-muted-foreground">You're all caught up!</p>
+                  <p className="text-muted-foreground">You&apos;re all caught up!</p>
                 </div>
               ) : (
                 <div className="rounded-lg border overflow-hidden">

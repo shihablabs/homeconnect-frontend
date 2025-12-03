@@ -37,8 +37,11 @@ export function FavoritesClient() {
         typeFilter !== 'all' ? (typeFilter as 'rent' | 'sale') : undefined
       );
       setFavorites(response.properties || []);
-    } catch (error: any) {
-      toast.error(error?.response?.data?.message || 'Failed to fetch favorites');
+    } catch (error: unknown) {
+      const errorMessage = error && typeof error === 'object' && 'response' in error
+        ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
+        : undefined;
+      toast.error(errorMessage || 'Failed to fetch favorites');
       setFavorites([]);
     } finally {
       setLoading(false);
@@ -54,8 +57,11 @@ export function FavoritesClient() {
         toast.success('Removed from favorites');
       }
       fetchFavorites();
-    } catch (error: any) {
-      toast.error(error?.response?.data?.message || 'Failed to update favorites');
+    } catch (error: unknown) {
+      const errorMessage = error && typeof error === 'object' && 'response' in error
+        ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
+        : undefined;
+      toast.error(errorMessage || 'Failed to update favorites');
     }
   };
 
@@ -87,7 +93,7 @@ export function FavoritesClient() {
         <div>
           <h1 className="text-3xl font-bold">My Favorites</h1>
           <p className="text-muted-foreground mt-1">
-            Properties you've saved for later
+            Properties you&apos;ve saved for later
           </p>
         </div>
         <div className="flex gap-2">

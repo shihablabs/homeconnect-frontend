@@ -67,8 +67,11 @@ export function CategoriesManagementClient() {
     },
     staleTime: 300000, // 5 minutes
     refetchOnWindowFocus: false,
-    retry: (failureCount, error: any) => {
-      if (error?.response?.status === 429) return false;
+    retry: (failureCount, error: unknown) => {
+      if (error && typeof error === 'object' && 'response' in error) {
+        const err = error as { response?: { status?: number } };
+        if (err.response?.status === 429) return false;
+      }
       return failureCount < 2;
     },
   });
@@ -115,7 +118,8 @@ export function CategoriesManagementClient() {
       }
       setIsDialogOpen(false);
       refetch();
-    } catch (error: any) {
+    } catch (error: unknown) {
+      console.error('Failed to save category:', error);
       toast.error('Failed to save category');
     }
   };
@@ -152,13 +156,17 @@ export function CategoriesManagementClient() {
   }
 
   if (error) {
+    const errorMessage = error && typeof error === 'object' && 'response' in error
+      ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
+      : undefined;
+    
     return (
       <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col items-center justify-center py-12">
           <Building className="h-12 w-12 text-muted-foreground mb-4" />
           <h3 className="text-lg font-semibold mb-2">Failed to load categories</h3>
           <p className="text-muted-foreground text-center mb-4">
-            {(error as any)?.response?.data?.message || 'An error occurred while fetching categories'}
+            {errorMessage || 'An error occurred while fetching categories'}
           </p>
           <Button onClick={() => refetch()} variant="outline">
             <RefreshCw className="mr-2 h-4 w-4" />

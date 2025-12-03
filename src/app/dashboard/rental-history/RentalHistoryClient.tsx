@@ -34,11 +34,14 @@ export function RentalHistoryClient() {
     queryFn: () => bookingsApi.getUserBookings('tenant'),
     staleTime: 60000, // 1 minute
     refetchOnWindowFocus: false,
-    retry: 2,
-    onError: (error: any) => {
-      if (error?.response?.status !== 401 && error?.response?.status !== 403) {
-        toast.error(error?.response?.data?.message || 'Failed to fetch rental history');
+    retry: (failureCount, error: unknown) => {
+      if (error && typeof error === 'object' && 'response' in error) {
+        const err = error as { response?: { status?: number } };
+        if (err.response?.status === 401 || err.response?.status === 403) {
+          return false;
+        }
       }
+      return failureCount < 2;
     },
   });
 
@@ -89,6 +92,10 @@ export function RentalHistoryClient() {
   }
 
   if (error) {
+    const errorMessage = error && typeof error === 'object' && 'response' in error
+      ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
+      : undefined;
+    
     return (
       <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
         <div className="space-y-6">
@@ -98,7 +105,7 @@ export function RentalHistoryClient() {
                 <History className="h-12 w-12 text-muted-foreground mb-4" />
                 <h3 className="text-lg font-semibold mb-2">Failed to load rental history</h3>
                 <p className="text-muted-foreground mb-4">
-                  {(error as any)?.response?.data?.message || 'An error occurred while fetching your rental history'}
+                  {errorMessage || 'An error occurred while fetching your rental history'}
                 </p>
                 <Button onClick={() => refetch()}>
                   Try Again
@@ -150,7 +157,7 @@ export function RentalHistoryClient() {
               <p className="text-muted-foreground mb-4">
                 {statusFilter !== 'all'
                   ? 'No rentals found with this status'
-                  : 'You don\'t have any rental history yet'}
+                  : 'You don&apos;t have any rental history yet'}
               </p>
               {statusFilter !== 'all' && (
                 <Button variant="outline" onClick={() => setStatusFilter('all')}>

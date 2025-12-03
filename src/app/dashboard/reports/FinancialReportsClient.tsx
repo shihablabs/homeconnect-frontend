@@ -57,7 +57,8 @@ export function FinancialReportsClient() {
       // const reportsData = await reportsApi.getFinancialReports({ period, startDate, endDate });
       // setReports(reportsData);
       setReports([]);
-    } catch (error: any) {
+    } catch (error: unknown) {
+      console.error('Failed to fetch reports:', error);
       toast.error('Failed to fetch reports');
       setEarnings({
         totalEarnings: 0,

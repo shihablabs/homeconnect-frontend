@@ -88,8 +88,11 @@ export function VoteButtons({
       } else {
         toast.success('Vote recorded!');
       }
-    } catch (error: any) {
-      toast.error(error?.response?.data?.message || 'Failed to vote');
+    } catch (error: unknown) {
+      const errorMessage = error && typeof error === 'object' && 'response' in error
+        ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
+        : undefined;
+      toast.error(errorMessage || 'Failed to vote');
     } finally {
       setVoting(false);
       setVotingType(null);
@@ -112,8 +115,11 @@ export function VoteButtons({
       queryClient.invalidateQueries({ queryKey: ['votes', 'top-properties'] });
       
       toast.success('Vote removed');
-    } catch (error: any) {
-      toast.error(error?.response?.data?.message || 'Failed to remove vote');
+    } catch (error: unknown) {
+      const errorMessage = error && typeof error === 'object' && 'response' in error
+        ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
+        : undefined;
+      toast.error(errorMessage || 'Failed to remove vote');
     } finally {
       setVoting(false);
     }

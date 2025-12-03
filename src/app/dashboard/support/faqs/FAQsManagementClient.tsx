@@ -40,7 +40,7 @@ import {
 } from '@/components/ui/table';
 import { HelpCircle, Plus, Edit, Trash2, Search, Loader2, RefreshCw, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
-import { faqApi, type FAQ, type CreateFAQRequest } from '@/lib/api/support-api';
+import { faqApi, type FAQ, type CreateFAQRequest, type FAQCategory } from '@/lib/api/support-api';
 
 
 export function FAQsManagementClient() {
@@ -78,8 +78,11 @@ export function FAQsManagementClient() {
     staleTime: 60000, // 1 minute
     refetchOnWindowFocus: false,
     refetchInterval: false, // Disable auto-refetch by default
-    retry: (failureCount, error: any) => {
-      if (error?.response?.status === 429) return false;
+    retry: (failureCount, error: unknown) => {
+      if (error && typeof error === 'object' && 'response' in error) {
+        const err = error as { response?: { status?: number } };
+        if (err.response?.status === 429) return false;
+      }
       return failureCount < 2;
     },
   });
@@ -117,7 +120,7 @@ export function FAQsManagementClient() {
       const payload: CreateFAQRequest = {
         question: data.question,
         answer: data.answer,
-        category: data.category as any,
+        category: data.category as FAQCategory,
         order: data.order,
         isPublished: data.isPublished,
       };
@@ -128,8 +131,11 @@ export function FAQsManagementClient() {
       toast.success('FAQ created successfully');
       setIsDialogOpen(false);
     },
-    onError: (error: any) => {
-      toast.error(error?.message || 'Failed to create FAQ');
+    onError: (error: unknown) => {
+      const errorMessage = error && typeof error === 'object' && 'message' in error
+        ? String((error as { message?: unknown }).message)
+        : undefined;
+      toast.error(errorMessage || 'Failed to create FAQ');
     },
   });
 
@@ -138,7 +144,7 @@ export function FAQsManagementClient() {
       const payload = {
         question: data.question,
         answer: data.answer,
-        category: data.category as any,
+        category: data.category as FAQCategory,
         order: data.order,
         isPublished: data.isPublished,
       };
@@ -149,8 +155,11 @@ export function FAQsManagementClient() {
       toast.success('FAQ updated successfully');
       setIsDialogOpen(false);
     },
-    onError: (error: any) => {
-      toast.error(error?.message || 'Failed to update FAQ');
+    onError: (error: unknown) => {
+      const errorMessage = error && typeof error === 'object' && 'message' in error
+        ? String((error as { message?: unknown }).message)
+        : undefined;
+      toast.error(errorMessage || 'Failed to update FAQ');
     },
   });
 
@@ -162,8 +171,11 @@ export function FAQsManagementClient() {
       queryClient.invalidateQueries({ queryKey: ['support', 'faqs'] });
       toast.success('FAQ deleted successfully');
     },
-    onError: (error: any) => {
-      toast.error(error?.message || 'Failed to delete FAQ');
+    onError: (error: unknown) => {
+      const errorMessage = error && typeof error === 'object' && 'message' in error
+        ? String((error as { message?: unknown }).message)
+        : undefined;
+      toast.error(errorMessage || 'Failed to delete FAQ');
     },
   });
 

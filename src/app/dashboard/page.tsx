@@ -121,8 +121,11 @@ export default function DashboardPage() {
       // Invalidate and refetch dashboard data to get updated read status
       await queryClient.invalidateQueries({ queryKey: ['dashboard', 'overview'] });
       toast.success('Activity marked as read');
-    } catch (error: any) {
-      toast.error(error?.response?.data?.message || 'Failed to mark activity as read');
+    } catch (error: unknown) {
+      const errorMessage = error && typeof error === 'object' && 'response' in error
+        ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
+        : undefined;
+      toast.error(errorMessage || 'Failed to mark activity as read');
       console.error('Error marking activity as read:', error);
     } finally {
       setTimeout(() => setMarkingRead(null), 1000);
@@ -136,8 +139,11 @@ export default function DashboardPage() {
       // Invalidate and refetch dashboard data to get updated read status
       await queryClient.invalidateQueries({ queryKey: ['dashboard', 'overview'] });
       toast.success(`${result.count} activities marked as read`);
-    } catch (error: any) {
-      toast.error(error?.response?.data?.message || 'Failed to mark all activities as read');
+    } catch (error: unknown) {
+      const errorMessage = error && typeof error === 'object' && 'response' in error
+        ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
+        : undefined;
+      toast.error(errorMessage || 'Failed to mark all activities as read');
       console.error('Error marking all activities as read:', error);
     } finally {
       setMarkingAll(false);
@@ -592,7 +598,7 @@ export default function DashboardPage() {
               <CardHeader>
                 <CardTitle>No Data Available</CardTitle>
                 <CardDescription>
-                  We couldn't find any dashboard data at this time
+                  We couldn&apos;t find any dashboard data at this time
                 </CardDescription>
               </CardHeader>
               <CardContent>

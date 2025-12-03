@@ -34,8 +34,11 @@ export function EscrowManagementClient() {
       ]);
       setStats(statsData);
       setDisputedPayments(disputedData);
-    } catch (error: any) {
-      toast.error(error?.response?.data?.message || 'Failed to fetch escrow data');
+    } catch (error: unknown) {
+      const errorMessage = error && typeof error === 'object' && 'response' in error
+        ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
+        : undefined;
+      toast.error(errorMessage || 'Failed to fetch escrow data');
     } finally {
       setLoading(false);
     }
@@ -49,8 +52,11 @@ export function EscrowManagementClient() {
       });
       toast.success(`Dispute resolved: ${resolution === 'release' ? 'Funds released' : 'Refunded'}`);
       fetchData();
-    } catch (error: any) {
-      toast.error(error?.response?.data?.message || 'Failed to resolve dispute');
+    } catch (error: unknown) {
+      const errorMessage = error && typeof error === 'object' && 'response' in error
+        ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
+        : undefined;
+      toast.error(errorMessage || 'Failed to resolve dispute');
     }
   };
 

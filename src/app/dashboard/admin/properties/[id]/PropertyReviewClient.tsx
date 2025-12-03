@@ -29,8 +29,11 @@ export function PropertyReviewClient({ propertyId }: PropertyReviewClientProps) 
       setLoading(true);
       const data = await adminApi.getPropertyForReview(propertyId);
       setProperty(data);
-    } catch (error: any) {
-      toast.error(error?.response?.data?.message || 'Failed to fetch property details');
+    } catch (error: unknown) {
+      const errorMessage = error && typeof error === 'object' && 'response' in error
+        ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
+        : undefined;
+      toast.error(errorMessage || 'Failed to fetch property details');
       router.push('/dashboard/admin/properties');
     } finally {
       setLoading(false);

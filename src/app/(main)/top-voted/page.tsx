@@ -24,8 +24,11 @@ export default function TopVotedPage() {
       setLoading(true);
       const data = await votesApi.getTopVotedProperties({ limit });
       setProperties(data);
-    } catch (error: any) {
-      toast.error(error?.response?.data?.message || 'Failed to fetch top voted properties');
+    } catch (error: unknown) {
+      const errorMessage = error && typeof error === 'object' && 'response' in error
+        ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
+        : undefined;
+      toast.error(errorMessage || 'Failed to fetch top voted properties');
     } finally {
       setLoading(false);
     }

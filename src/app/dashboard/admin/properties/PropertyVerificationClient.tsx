@@ -54,7 +54,9 @@ export function PropertyVerificationClient() {
       const response = await adminApi.getPendingProperties({
         page,
         limit: 20,
-        status: statusFilter === 'all' ? undefined : statusFilter as any,
+        status: statusFilter === 'all' 
+          ? undefined 
+          : (statusFilter as 'pending' | 'under_review' | 'approved' | 'rejected'),
       });
       return {
         properties: response.properties || [],
@@ -64,10 +66,13 @@ export function PropertyVerificationClient() {
     staleTime: 30000, // Consider data fresh for 30 seconds
     refetchOnWindowFocus: true, // Refetch when window regains focus
     refetchInterval: 60000, // Auto-refetch every minute for real-time updates
-    retry: (failureCount, error: any) => {
+    retry: (failureCount, error: unknown) => {
       // Don't retry on rate limit errors
-      if (error?.response?.status === 429) {
-        return false;
+      if (error && typeof error === 'object' && 'response' in error) {
+        const err = error as { response?: { status?: number } };
+        if (err.response?.status === 429) {
+          return false;
+        }
       }
       return failureCount < 2;
     },
@@ -79,7 +84,7 @@ export function PropertyVerificationClient() {
   const statusChangeMutation = useMutation({
     mutationFn: async ({ id, status, notes }: { id: string; status: string; notes?: string }) => {
       return await adminApi.verifyProperty(id, {
-        verificationStatus: status as any,
+        verificationStatus: status as 'pending' | 'under_review' | 'approved' | 'rejected',
         verificationNotes: notes || `Status changed to ${status}`,
       });
     },
@@ -88,8 +93,11 @@ export function PropertyVerificationClient() {
       toast.success('Status updated successfully');
       setChangingStatus(null);
     },
-    onError: (error: any) => {
-      toast.error(error?.response?.data?.message || 'Failed to update status');
+    onError: (error: unknown) => {
+      const errorMessage = error && typeof error === 'object' && 'response' in error
+        ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
+        : undefined;
+      toast.error(errorMessage || 'Failed to update status');
       setChangingStatus(null);
     },
   });
@@ -102,8 +110,11 @@ export function PropertyVerificationClient() {
       queryClient.invalidateQueries({ queryKey: ['admin', 'properties', 'pending'] });
       toast.success('Property deleted successfully');
     },
-    onError: (error: any) => {
-      toast.error(error?.response?.data?.message || 'Failed to delete property');
+    onError: (error: unknown) => {
+      const errorMessage = error && typeof error === 'object' && 'response' in error
+        ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
+        : undefined;
+      toast.error(errorMessage || 'Failed to delete property');
     },
   });
 
@@ -193,7 +204,13 @@ export function PropertyVerificationClient() {
               <Building2 className="h-12 w-12 text-muted-foreground" />
               <h3 className="text-lg font-semibold">Failed to load properties</h3>
               <p className="text-muted-foreground text-center">
-                {(error as any)?.response?.data?.message || 'An error occurred while fetching properties'}
+                {(() => {
+                  if (error && typeof error === 'object' && 'response' in error) {
+                    const err = error as { response?: { data?: { message?: string } } };
+                    return err.response?.data?.message || 'An error occurred while fetching properties';
+                  }
+                  return 'An error occurred while fetching properties';
+                })()}
               </p>
               <Button onClick={() => refetch()} variant="outline">
                 <RefreshCw className="mr-2 h-4 w-4" />

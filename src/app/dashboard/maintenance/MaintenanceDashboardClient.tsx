@@ -67,7 +67,12 @@ export function MaintenanceDashboardClient() {
   const fetchRequests = async () => {
     try {
       setLoading(true);
-      const params: any = {
+      const params: {
+        page: number;
+        limit: number;
+        status?: string;
+        priority?: string;
+      } = {
         page,
         limit: 20,
       };
@@ -77,8 +82,11 @@ export function MaintenanceDashboardClient() {
       const response = await dashboardApi.getMaintenanceRequests(params);
       setRequests(response?.requests || []);
       setTotalPages(response?.totalPages || 1);
-    } catch (error: any) {
-      toast.error(error?.response?.data?.message || 'Failed to fetch maintenance requests');
+    } catch (error: unknown) {
+      const errorMessage = error && typeof error === 'object' && 'response' in error
+        ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
+        : undefined;
+      toast.error(errorMessage || 'Failed to fetch maintenance requests');
       setRequests([]); // Ensure requests is always an array
       setTotalPages(1);
     } finally {
@@ -104,8 +112,13 @@ export function MaintenanceDashboardClient() {
       setIsCreateDialogOpen(false);
       setCreateForm({ property: '', title: '', description: '', priority: 'medium' });
       fetchRequests();
-    } catch (error: any) {
-      toast.error(error?.response?.data?.message || error?.message || 'Failed to create maintenance request');
+    } catch (error: unknown) {
+      const errorMessage = error && typeof error === 'object' && 'response' in error
+        ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
+        : error && typeof error === 'object' && 'message' in error
+        ? String((error as { message?: unknown }).message)
+        : undefined;
+      toast.error(errorMessage || 'Failed to create maintenance request');
     } finally {
       setCreating(false);
     }
@@ -120,8 +133,11 @@ export function MaintenanceDashboardClient() {
       if (selectedRequest?.id === requestId) {
         setSelectedRequest({ ...selectedRequest, status });
       }
-    } catch (error: any) {
-      toast.error(error?.response?.data?.message || 'Failed to update maintenance request');
+    } catch (error: unknown) {
+      const errorMessage = error && typeof error === 'object' && 'response' in error
+        ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
+        : undefined;
+      toast.error(errorMessage || 'Failed to update maintenance request');
     } finally {
       setUpdating(false);
     }

@@ -60,12 +60,12 @@ export default function ForgotPasswordPage() {
       toast.success("Password reset link sent! Check your email.", {
         id: toastId,
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Forgot password error:", error);
-      const errorMessage =
-        error?.response?.data?.message ||
-        "Failed to send reset link. Please try again.";
-      toast.error(errorMessage, { id: toastId });
+      const errorMessage = error && typeof error === 'object' && 'response' in error
+        ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
+        : undefined;
+      toast.error(errorMessage || "Failed to send reset link. Please try again.", { id: toastId });
     } finally {
       setIsSubmitting(false);
     }
@@ -91,7 +91,7 @@ export default function ForgotPasswordPage() {
                     Check Your Email
                   </h2>
                   <p className="text-gray-600">
-                    We've sent a password reset link to{" "}
+                    We&apos;ve sent a password reset link to{" "}
                     <span className="font-semibold text-gray-900">
                       {form.getValues("email")}
                     </span>
@@ -100,7 +100,7 @@ export default function ForgotPasswordPage() {
 
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-left">
                   <p className="text-sm text-blue-800">
-                    <strong>Didn't receive the email?</strong>
+                    <strong>Didn&apos;t receive the email?</strong>
                   </p>
                   <ul className="text-sm text-blue-700 mt-2 space-y-1 list-disc list-inside">
                     <li>Check your spam/junk folder</li>
@@ -155,7 +155,7 @@ export default function ForgotPasswordPage() {
                   Forgot Password?
                 </CardTitle>
                 <CardDescription className="text-lg text-gray-600">
-                  Enter your email address and we'll send you a link to reset
+                  Enter your email address and we&apos;ll send you a link to reset
                   your password.
                 </CardDescription>
               </CardHeader>

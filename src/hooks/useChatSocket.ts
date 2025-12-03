@@ -19,7 +19,6 @@ export function useChatSocket(options: UseChatSocketOptions = {}) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [loading, setLoading] = useState(false);
-  const [isTyping, setIsTyping] = useState(false);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Join chat room when partner is selected
@@ -41,6 +40,20 @@ export function useChatSocket(options: UseChatSocketOptions = {}) {
       socket.off('chat_history', handleChatHistory);
     };
   }, [socket, isConnected, partnerId]);
+
+  // Fetch conversations list
+  const fetchConversations = useCallback(async () => {
+    try {
+      setLoading(true);
+      const data = await chatApi.getConversations();
+      setConversations(data);
+    } catch (error: unknown) {
+      console.error('[ChatSocket] Error fetching conversations:', error);
+      toast.error('Failed to fetch conversations');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   // Listen for new messages
   useEffect(() => {
@@ -102,7 +115,7 @@ export function useChatSocket(options: UseChatSocketOptions = {}) {
       socket.off('messages_read', handleMessagesRead);
       socket.off('error', handleError);
     };
-  }, [socket, isConnected, partnerId, onNewMessage, onMessagesRead]);
+  }, [socket, isConnected, partnerId, onNewMessage, onMessagesRead, fetchConversations]);
 
   // Listen for typing indicators
   useEffect(() => {
@@ -110,7 +123,6 @@ export function useChatSocket(options: UseChatSocketOptions = {}) {
 
     const handleTyping = (data: { userId: string; isTyping: boolean }) => {
       if (data.userId === partnerId) {
-        setIsTyping(data.isTyping);
         if (onTyping) {
           onTyping(data.userId, data.isTyping);
         }
@@ -123,6 +135,18 @@ export function useChatSocket(options: UseChatSocketOptions = {}) {
       socket.off('user_typing', handleTyping);
     };
   }, [socket, isConnected, partnerId, onTyping]);
+
+  // Stop typing indicator
+  const stopTyping = useCallback(() => {
+    if (!socket || !isConnected || !partnerId) return;
+
+    socket.emit('typing_stop', { recipientId: partnerId });
+
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+      typingTimeoutRef.current = null;
+    }
+  }, [socket, isConnected, partnerId]);
 
   // Send message via socket
   const sendMessage = useCallback(
@@ -144,7 +168,7 @@ export function useChatSocket(options: UseChatSocketOptions = {}) {
         toast.error('Failed to send message');
       }
     },
-    [socket, isConnected, partnerId]
+    [socket, isConnected, partnerId, stopTyping]
   );
 
   // Mark messages as read
@@ -176,33 +200,7 @@ export function useChatSocket(options: UseChatSocketOptions = {}) {
     typingTimeoutRef.current = setTimeout(() => {
       stopTyping();
     }, 3000);
-  }, [socket, isConnected, partnerId]);
-
-  // Stop typing indicator
-  const stopTyping = useCallback(() => {
-    if (!socket || !isConnected || !partnerId) return;
-
-    socket.emit('typing_stop', { recipientId: partnerId });
-
-    if (typingTimeoutRef.current) {
-      clearTimeout(typingTimeoutRef.current);
-      typingTimeoutRef.current = null;
-    }
-  }, [socket, isConnected, partnerId]);
-
-  // Fetch conversations list
-  const fetchConversations = useCallback(async () => {
-    try {
-      setLoading(true);
-      const data = await chatApi.getConversations();
-      setConversations(data);
-    } catch (error: any) {
-      console.error('[ChatSocket] Error fetching conversations:', error);
-      toast.error('Failed to fetch conversations');
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  }, [socket, isConnected, partnerId, stopTyping]);
 
   // Fetch messages (fallback to REST API)
   const fetchMessages = useCallback(
@@ -211,7 +209,7 @@ export function useChatSocket(options: UseChatSocketOptions = {}) {
         setLoading(true);
         const response = await chatApi.getChatHistory(partnerId, { limit: 50 });
         setMessages(response.messages.reverse());
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.error('[ChatSocket] Error fetching messages:', error);
         toast.error('Failed to fetch messages');
       } finally {

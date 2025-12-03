@@ -50,8 +50,11 @@ export function SiteSettingsClient() {
       // TODO: Implement API call to save settings
       await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate API call
       toast.success('Settings saved successfully');
-    } catch (error: any) {
-      toast.error(error?.response?.data?.message || 'Failed to save settings');
+    } catch (error: unknown) {
+      const errorMessage = error && typeof error === 'object' && 'response' in error
+        ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
+        : undefined;
+      toast.error(errorMessage || 'Failed to save settings');
     } finally {
       setSaving(false);
     }

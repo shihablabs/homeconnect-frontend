@@ -50,12 +50,20 @@ export function UsersDashboardClient() {
   const fetchUsers = async () => {
     try {
       setLoading(true);
-      const params: any = {
+      const params: {
+        page: number;
+        limit: number;
+        search?: string;
+        role?: 'tenant' | 'landlord' | 'admin' | 'support';
+        status?: 'active' | 'blocked' | 'all';
+      } = {
         page,
         limit: 20,
       };
       if (search) params.search = search;
-      if (roleFilter !== 'all') params.role = roleFilter;
+      if (roleFilter !== 'all') {
+        params.role = roleFilter as 'tenant' | 'landlord' | 'admin' | 'support';
+      }
       if (statusFilter !== 'all') {
         params.status = statusFilter === 'active' ? 'active' : 'blocked';
       }
@@ -64,8 +72,11 @@ export function UsersDashboardClient() {
       setUsers(response.users);
       setTotalPages(response.pagination.totalPages);
       setTotal(response.pagination.total);
-    } catch (error: any) {
-      toast.error(error?.response?.data?.message || 'Failed to fetch users');
+    } catch (error: unknown) {
+      const errorMessage = error && typeof error === 'object' && 'response' in error
+        ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
+        : undefined;
+      toast.error(errorMessage || 'Failed to fetch users');
     } finally {
       setLoading(false);
     }
@@ -107,8 +118,11 @@ export function UsersDashboardClient() {
       });
       toast.success(`User ${currentStatus ? 'blocked' : 'activated'} successfully`);
       fetchUsers();
-    } catch (error: any) {
-      toast.error(error?.response?.data?.message || 'Failed to update user status');
+    } catch (error: unknown) {
+      const errorMessage = error && typeof error === 'object' && 'response' in error
+        ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
+        : undefined;
+      toast.error(errorMessage || 'Failed to update user status');
     } finally {
       setUpdatingUsers(prev => {
         const newSet = new Set(prev);
@@ -124,8 +138,11 @@ export function UsersDashboardClient() {
       await adminApi.deleteUser(userId, 'Deleted by admin');
       toast.success('User deleted successfully');
       fetchUsers();
-    } catch (error: any) {
-      toast.error(error?.response?.data?.message || 'Failed to delete user');
+    } catch (error: unknown) {
+      const errorMessage = error && typeof error === 'object' && 'response' in error
+        ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
+        : undefined;
+      toast.error(errorMessage || 'Failed to delete user');
     } finally {
       setUpdatingUsers(prev => {
         const newSet = new Set(prev);

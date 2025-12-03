@@ -124,12 +124,12 @@ function ResetPasswordContent() {
       setTimeout(() => {
         router.push("/login");
       }, 2000);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Reset password error:", error);
-      const errorMessage =
-        error?.response?.data?.message ||
-        "Failed to reset password. The link may have expired.";
-      toast.error(errorMessage, { id: toastId });
+      const errorMessage = error && typeof error === 'object' && 'response' in error
+        ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
+        : undefined;
+      toast.error(errorMessage || "Failed to reset password. The link may have expired.", { id: toastId });
     } finally {
       setIsSubmitting(false);
     }

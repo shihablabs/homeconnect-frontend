@@ -43,8 +43,11 @@ export function TenantApplicationsClient() {
       // Filter only pending bookings (applications)
       const applications = (response?.bookings || []).filter((b) => b.status === 'pending');
       setBookings(applications);
-    } catch (error: any) {
-      toast.error(error?.response?.data?.message || 'Failed to fetch applications');
+    } catch (error: unknown) {
+      const errorMessage = error && typeof error === 'object' && 'response' in error
+        ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
+        : undefined;
+      toast.error(errorMessage || 'Failed to fetch applications');
       setBookings([]); // Ensure bookings is always an array
     } finally {
       setLoading(false);

@@ -29,7 +29,7 @@ interface ChatSession {
 
 export function LiveChatClient() {
   const [selectedSession, setSelectedSession] = useState<ChatSession | null>(null);
-  const [messages, setMessages] = useState<any[]>([]);
+  const [messages, setMessages] = useState<Array<{ id: string; content: string; sender: string; timestamp: string }>>([]);
   const [newMessage, setNewMessage] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -52,8 +52,11 @@ export function LiveChatClient() {
     staleTime: 10000, // 10 seconds (chat needs frequent updates)
     refetchOnWindowFocus: true,
     refetchInterval: 30000, // Auto-refetch every 30 seconds for live updates
-    retry: (failureCount, error: any) => {
-      if (error?.response?.status === 429) return false;
+    retry: (failureCount, error: unknown) => {
+      if (error && typeof error === 'object' && 'response' in error) {
+        const err = error as { response?: { status?: number } };
+        if (err.response?.status === 429) return false;
+      }
       return failureCount < 2;
     },
   });
@@ -134,7 +137,13 @@ export function LiveChatClient() {
                 <AlertCircle className="h-12 w-12 text-destructive mb-4" />
                 <h3 className="text-lg font-semibold mb-2">Failed to load chats</h3>
                 <p className="text-muted-foreground text-center mb-4">
-                  {(error as any)?.response?.data?.message || 'An error occurred while fetching chat sessions'}
+                  {(() => {
+                    if (error && typeof error === 'object' && 'response' in error) {
+                      const err = error as { response?: { data?: { message?: string } } };
+                      return err.response?.data?.message || 'An error occurred while fetching chat sessions';
+                    }
+                    return 'An error occurred while fetching chat sessions';
+                  })()}
                 </p>
                 <Button onClick={() => refetch()} variant="outline">
                   <RefreshCw className="mr-2 h-4 w-4" />
@@ -230,9 +239,9 @@ export function LiveChatClient() {
                     messages.map((message) => (
                       <div key={message.id} className="flex justify-start">
                         <div className="max-w-[70%] rounded-lg p-3 bg-muted">
-                          <p className="text-sm">{message.message}</p>
+                          <p className="text-sm">{message.content}</p>
                           <div className="text-xs text-muted-foreground mt-1">
-                            {new Date(message.createdAt).toLocaleTimeString()}
+                            {new Date(message.timestamp).toLocaleTimeString()}
                           </div>
                         </div>
                       </div>

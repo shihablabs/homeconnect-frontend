@@ -12,7 +12,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { PropertyResponse, isRentalResponse } from "@/types/property.types";
+import { PropertyResponse, isRentalResponse, PropertyType } from "@/types/property.types";
 import { useGetPropertiesQuery, useGetAvailableFiltersQuery } from "@/redux/features/property/propertyApiSlice";
 import { PropertyFilters } from "@/types/property.types";
 import L from "leaflet";
@@ -86,7 +86,7 @@ export default function MapSearchClient() {
       search: q,
       listingType,
       city,
-      propertyType: propertyType as any,
+      propertyType: propertyType as PropertyType | undefined,
       bedrooms,
       sortBy: "createdAt",
       sortOrder: "desc",
@@ -637,7 +637,7 @@ export default function MapSearchClient() {
                     )}
                     {filters.bedrooms && (
                       <Badge variant="secondary" className="pl-2 pr-1 py-1">
-                        {filters.bedrooms}+ beds
+                        {typeof filters.bedrooms === 'number' ? `${filters.bedrooms}+` : `${filters.bedrooms.min || 0}+`} beds
                         <Button
                           variant="ghost"
                           size="icon"

@@ -17,7 +17,7 @@ import { PropertyCard } from '@/components/cards/PropertyCard';
 import { propertiesApi, type PropertyFilters, type PropertyResponse as ApiPropertyResponse, type AvailableFilters, type PropertySearchResult } from '@/lib/api/properties-api';
 import { Search, Filter, X, SlidersHorizontal } from 'lucide-react';
 import { toast } from 'sonner';
-import type { PropertyResponse } from '@/types/property.types';
+import type { PropertyResponse, PropertyType, AreaUnit, PropertyStatus, PetPolicy, SmokingPolicy, PropertyCondition, OwnershipType } from '@/types/property.types';
 
 // Adapter function to convert API response to PropertyCard expected type
 const adaptProperty = (apiProperty: ApiPropertyResponse): PropertyResponse => {
@@ -32,7 +32,7 @@ const adaptProperty = (apiProperty: ApiPropertyResponse): PropertyResponse => {
     title: apiProperty.title,
     description: apiProperty.description,
     listingType: apiProperty.listingType,
-    propertyType: apiProperty.propertyType as any,
+    propertyType: apiProperty.propertyType as PropertyType,
     address: apiProperty.address,
     city: apiProperty.city,
     neighborhood: apiProperty.neighborhood,
@@ -44,16 +44,16 @@ const adaptProperty = (apiProperty: ApiPropertyResponse): PropertyResponse => {
     bedrooms: apiProperty.bedrooms,
     bathrooms: apiProperty.bathrooms,
     areaSize: apiProperty.areaSize,
-    areaUnit: apiProperty.areaUnit as any,
+    areaUnit: apiProperty.areaUnit as AreaUnit,
     yearBuilt: apiProperty.yearBuilt,
     lotSize: apiProperty.lotSize,
-    lotUnit: apiProperty.lotUnit as any,
+    lotUnit: apiProperty.lotUnit as AreaUnit,
     amenities: apiProperty.amenities,
     images: apiProperty.images,
     videos: apiProperty.videos,
     virtualTour: apiProperty.virtualTour,
     floorPlans: apiProperty.floorPlans,
-    status: apiProperty.status as any,
+    status: apiProperty.status as PropertyStatus,
     featured: apiProperty.featured,
     isVerified: apiProperty.isVerified,
     tags: apiProperty.tags,
@@ -79,8 +79,8 @@ const adaptProperty = (apiProperty: ApiPropertyResponse): PropertyResponse => {
       availableFrom: new Date().toISOString(),
       isFurnished: false,
       utilitiesIncluded: [],
-      petPolicy: 'case-by-case' as any,
-      smokingPolicy: 'not-allowed' as any,
+      petPolicy: 'case-by-case' as PetPolicy,
+      smokingPolicy: 'not-allowed' as SmokingPolicy,
       isAvailable: apiProperty.isAvailable ?? true,
     } as PropertyResponse;
   } else {
@@ -90,8 +90,8 @@ const adaptProperty = (apiProperty: ApiPropertyResponse): PropertyResponse => {
       salePrice: apiProperty.salePrice || 0,
       priceNegotiable: false,
       mortgageAvailable: false,
-      propertyCondition: 'good' as any,
-      ownershipType: 'freehold' as any,
+      propertyCondition: 'good' as PropertyCondition,
+      ownershipType: 'freehold' as OwnershipType,
       timeOnMarket: 0,
     } as PropertyResponse;
   }
@@ -129,8 +129,11 @@ export function PropertySearchClient() {
       const adaptedProperties = (result?.properties || []).map(adaptProperty);
       setProperties(adaptedProperties);
       setSearchResult(result);
-    } catch (error: any) {
-      toast.error(error?.response?.data?.message || 'Failed to search properties');
+    } catch (error: unknown) {
+      const errorMessage = error && typeof error === 'object' && 'response' in error
+        ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
+        : undefined;
+      toast.error(errorMessage || 'Failed to search properties');
       setProperties([]); // Ensure properties is always an array on error
       setSearchResult(null);
     } finally {
@@ -143,7 +146,7 @@ export function PropertySearchClient() {
     searchProperties();
   }, [searchProperties]);
 
-  const handleFilterChange = (key: keyof PropertyFilters, value: any) => {
+  const handleFilterChange = (key: keyof PropertyFilters, value: unknown) => {
     setFilters((prev) => ({
       ...prev,
       [key]: value,

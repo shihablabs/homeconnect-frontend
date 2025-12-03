@@ -66,7 +66,8 @@ export function PropertyToursClient() {
       // const toursData = await toursApi.getTourRequests();
       // setTours(toursData);
       setTours([]);
-    } catch (error: any) {
+    } catch (error: unknown) {
+      console.error('Failed to fetch data:', error);
       toast.error('Failed to fetch data');
       setProperties([]); // Ensure properties is always an array
       setTours([]);

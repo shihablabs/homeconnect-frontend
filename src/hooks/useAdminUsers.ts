@@ -1,6 +1,6 @@
 "use client";
 
-import { adminApi, type User } from "@/lib/api/admin-api";
+import { adminApi } from "@/lib/api/admin-api";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 interface UseAdminUsersOptions {
@@ -49,9 +49,12 @@ export const useAdminUsers = (options: UseAdminUsersOptions = {}) => {
     staleTime: 30000, // Consider data fresh for 30 seconds
     refetchOnWindowFocus: true,
     refetchInterval: 60000, // Auto-refetch every minute
-    retry: (failureCount, error: any) => {
-      if (error?.response?.status === 429) {
-        return false;
+    retry: (failureCount, error: unknown) => {
+      if (error && typeof error === 'object' && 'response' in error) {
+        const err = error as { response?: { status?: number } };
+        if (err.response?.status === 429) {
+          return false;
+        }
       }
       return failureCount < 2;
     },
