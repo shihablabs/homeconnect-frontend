@@ -80,12 +80,13 @@ export default function RegisterPage() {
   }, [isAuthenticated, user, router]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
-    if (isSuccess) {
+    if (isSuccess && isAuthenticated && user) {
+      toast.success("Account created successfully! Redirecting...");
       setTimeout(() => {
         handleRedirect();
       }, 1500);
     }
-  }, [isSuccess, user, router]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [isSuccess, isAuthenticated, user, router]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (error) {

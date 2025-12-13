@@ -12,7 +12,7 @@ import {
 import { useDebounce } from "@/hooks/useDebounce";
 import { PropertyFilters } from "@/types/property.types";
 import { Filter, Search } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 interface PropertyControlsProps {
   filters: PropertyFilters;
@@ -34,16 +34,40 @@ export function PropertyControls({
   console.log(totalResults);
   const [searchInput, setSearchInput] = useState(filters.search || "");
   const debouncedSearch = useDebounce(searchInput, 500);
+  const lastSyncedURLRef = useRef<string>(filters.search || "");
+  const skipNextSyncRef = useRef(false);
 
+  // Sync searchInput with filters.search from URL (browser navigation/back button)
+  // This handles when URL changes independently (browser back/forward, direct URL entry)
   useEffect(() => {
-    onFilterChange({ q: debouncedSearch.trim() || undefined });
-  }, [debouncedSearch, onFilterChange]);
+    const urlSearchValue = filters.search || "";
+    const lastSynced = lastSyncedURLRef.current;
 
-  useEffect(() => {
-    if (filters.search !== searchInput) {
-      setSearchInput(filters.search || "");
+    // If URL value changed from external source (browser nav), sync input
+    if (urlSearchValue !== lastSynced && !skipNextSyncRef.current) {
+      if (urlSearchValue !== searchInput) {
+        setSearchInput(urlSearchValue);
+      }
     }
+
+    // Always update ref to track current URL state
+    lastSyncedURLRef.current = urlSearchValue;
+    skipNextSyncRef.current = false;
   }, [filters.search, searchInput]);
+
+  // Update URL when debounced search changes (user typing)
+  useEffect(() => {
+    const trimmedSearch = debouncedSearch.trim();
+    const currentURLSearch = filters.search || "";
+
+    // Only update URL if debounced value differs from current URL value
+    // This prevents unnecessary API calls and rate limit issues
+    if (trimmedSearch !== currentURLSearch) {
+      // Mark that we're updating from user input to skip sync on next render
+      skipNextSyncRef.current = true;
+      onFilterChange({ q: trimmedSearch || undefined });
+    }
+  }, [debouncedSearch, filters.search, onFilterChange]);
 
   const handleSortChange = (value: string) => {
     const [sortBy, sortOrder] = value.split(":");
@@ -51,7 +75,7 @@ export function PropertyControls({
     if (value === "score:desc") {
       onFilterChange({ sortBy: undefined, sortOrder: undefined });
     } else {
-      onFilterChange({ 
+      onFilterChange({
         sortBy: sortBy === "createdAt" && sortOrder === "desc" ? undefined : sortBy,
         sortOrder: sortBy === "createdAt" && sortOrder === "desc" ? undefined : sortOrder
       });
