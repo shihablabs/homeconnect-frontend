@@ -1,15 +1,15 @@
 'use client';
 
+import { useDashboardCounts } from '@/hooks/useDashboardCounts';
 import { pacifico } from '@/lib/fonts';
+import { useLogoutMutation } from '@/redux/features/auth/authApiSlice';
 import { clsx } from 'clsx';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { useState, useEffect } from 'react';
-import { useDashboardCounts } from '@/hooks/useDashboardCounts';
-import { useLogoutMutation } from '@/redux/features/auth/authApiSlice';
-import { toast } from 'sonner';
+import { useEffect, useState } from 'react';
 import {
   TbBell,
+  TbBook,
   TbBuilding,
   TbCalendar,
   TbChartBar,
@@ -23,12 +23,12 @@ import {
   TbHomeSearch,
   TbLogout,
   TbMessage,
+  TbPackage,
   TbSettings,
-  TbShield,
-  TbThumbUp,
   TbUser,
   TbUsers
 } from 'react-icons/tb';
+import { toast } from 'sonner';
 
 interface DashboardSidebarProps {
   isOpen: boolean;
@@ -47,11 +47,8 @@ const menuConfig = {
       badge: null
     },
     {
-      type: 'link',
-      href: '/dashboard/search',
-      label: 'Find Properties',
-      icon: TbHomeSearch,
-      badge: null
+      type: 'section',
+      label: 'Rental Management'
     },
     {
       type: 'dropdown',
@@ -65,9 +62,27 @@ const menuConfig = {
     },
     {
       type: 'link',
+      href: '/dashboard/bookings',
+      label: 'Bookings & Tours',
+      icon: TbCalendar,
+      badge: null
+    },
+    {
+      type: 'link',
       href: '/dashboard/payments',
       label: 'Payments',
       icon: TbCreditCard,
+      badge: null
+    },
+    {
+      type: 'section',
+      label: 'Discovery'
+    },
+    {
+      type: 'link',
+      href: '/dashboard/search',
+      label: 'Find Properties',
+      icon: TbHomeSearch,
       badge: null
     },
     {
@@ -78,18 +93,26 @@ const menuConfig = {
       badge: null
     },
     {
+      type: 'section',
+      label: 'Services'
+    },
+    {
       type: 'link',
-      href: '/dashboard/votes',
-      label: 'My Votes',
-      icon: TbThumbUp,
+      href: '/dashboard/order-home',
+      label: 'Service Requisition',
+      icon: TbPackage,
       badge: null
     },
     {
       type: 'link',
-      href: '/dashboard/bookings',
-      label: 'Bookings',
-      icon: TbCalendar,
+      href: '/dashboard/my-orders',
+      label: 'My Requisitions',
+      icon: TbFileText,
       badge: null
+    },
+    {
+      type: 'section',
+      label: 'Support'
     },
     {
       type: 'link',
@@ -100,22 +123,15 @@ const menuConfig = {
     },
     {
       type: 'link',
-      href: '/dashboard/notifications',
-      label: 'Notifications',
-      icon: TbBell,
-      badge: null
-    },
-    {
-      type: 'link',
       href: '/dashboard/support',
-      label: 'Support',
+      label: 'Get Support',
       icon: TbHelp,
       badge: null
     },
     {
       type: 'link',
       href: '/dashboard/profile',
-      label: 'Profile Settings',
+      label: 'Settings',
       icon: TbUser,
       badge: null
     }
@@ -129,33 +145,28 @@ const menuConfig = {
       badge: null
     },
     {
+      type: 'section',
+      label: 'Property Management'
+    },
+    {
       type: 'dropdown',
       label: 'Properties',
       icon: TbBuilding,
       items: [
         { href: '/dashboard/properties', label: 'All Properties' },
-        { href: '/dashboard/add-property', label: 'Add New Property' },
-        { href: '/dashboard/property-tours', label: 'Property Tours' },
+        { href: '/dashboard/add-property', label: 'List New Property' },
+        { href: '/dashboard/property-tours', label: 'Tour Requests' },
       ]
     },
     {
       type: 'dropdown',
-      label: 'Tenants',
+      label: 'Tenants & Leases',
       icon: TbUsers,
       items: [
-        { href: '/dashboard/tenants', label: 'Manage Tenants' },
+        { href: '/dashboard/tenants', label: 'Active Tenants' },
         { href: '/dashboard/tenant-applications', label: 'Applications' },
-        { href: '/dashboard/tenant-screening', label: 'Tenant Screening' },
-      ]
-    },
-    {
-      type: 'dropdown',
-      label: 'Finances',
-      icon: TbCreditCard,
-      items: [
-        { href: '/dashboard/rent-collection', label: 'Rent Collection' },
-        { href: '/dashboard/expenses', label: 'Expenses' },
-        { href: '/dashboard/reports', label: 'Financial Reports' },
+        { href: '/dashboard/tenant-screening', label: 'Screening' },
+        { href: '/dashboard/lease-templates', label: 'Lease Templates' },
       ]
     },
     {
@@ -166,11 +177,22 @@ const menuConfig = {
       badge: '3'
     },
     {
-      type: 'link',
-      href: '/dashboard/bookings',
-      label: 'Bookings',
-      icon: TbCalendar,
-      badge: null
+      type: 'section',
+      label: 'Financials'
+    },
+    {
+      type: 'dropdown',
+      label: 'Finances',
+      icon: TbCreditCard,
+      items: [
+        { href: '/dashboard/rent-collection', label: 'Rent Collection' },
+        { href: '/dashboard/expenses', label: 'Expense Tracking' },
+        { href: '/dashboard/reports', label: 'Financial Reports' },
+      ]
+    },
+    {
+      type: 'section',
+      label: 'Communication'
     },
     {
       type: 'link',
@@ -188,15 +210,8 @@ const menuConfig = {
     },
     {
       type: 'link',
-      href: '/dashboard/lease-templates',
-      label: 'Lease Templates',
-      icon: TbFileText,
-      badge: null
-    },
-    {
-      type: 'link',
       href: '/dashboard/profile',
-      label: 'Profile Settings',
+      label: 'Settings',
       icon: TbUser,
       badge: null
     }
@@ -205,14 +220,18 @@ const menuConfig = {
     {
       type: 'link',
       href: '/dashboard',
-      label: 'Admin Dashboard',
+      label: 'Overview',
       icon: TbChartBar,
       badge: null
     },
     {
+      type: 'section',
+      label: 'System Management'
+    },
+    {
       type: 'link',
       href: '/dashboard/admin/users',
-      label: 'User Management',
+      label: 'Users & Roles',
       icon: TbUsers,
       badge: null
     },
@@ -221,32 +240,50 @@ const menuConfig = {
       label: 'Properties',
       icon: TbBuilding,
       items: [
-        { href: '/dashboard/admin/properties', label: 'Property Verification' },
-        { href: '/dashboard/admin/categories', label: 'Categories & Types' },
+        { href: '/dashboard/admin/properties', label: 'Verification Queue' },
+        { href: '/dashboard/admin/categories', label: 'Categories' },
       ]
     },
     {
-      type: 'dropdown',
-      label: 'Financial',
-      icon: TbCreditCard,
-      items: [
-        { href: '/dashboard/admin/transactions', label: 'All Transactions' },
-        { href: '/dashboard/admin/commissions', label: 'Commissions' },
-        { href: '/dashboard/admin/reports', label: 'Financial Reports' },
-      ]
+      type: 'section',
+      label: 'Operations'
     },
     {
       type: 'link',
-      href: '/dashboard/admin/site-settings',
-      label: 'Site Settings',
-      icon: TbSettings,
+      href: '/dashboard/admin/orders',
+      label: 'Order Management',
+      icon: TbPackage,
       badge: null
     },
     {
+      type: 'dropdown',
+      label: 'Financials',
+      icon: TbCreditCard,
+      items: [
+        { href: '/dashboard/admin/transactions', label: 'Transactions' },
+        { href: '/dashboard/admin/commissions', label: 'Platform Fees' },
+        { href: '/dashboard/admin/escrow', label: 'Escrow Management' },
+        { href: '/dashboard/admin/reports', label: 'Global Reports' },
+      ]
+    },
+    {
+      type: 'section',
+      label: 'Content & Support'
+    },
+    {
+      type: 'dropdown',
+      label: 'CMS',
+      icon: TbBook,
+      items: [
+        { href: '/dashboard/admin/cms/navigation', label: 'Navigation' },
+        { href: '/dashboard/admin/cms/sections', label: 'Sections' },
+      ]
+    },
+    {
       type: 'link',
-      href: '/dashboard/notifications',
-      label: 'Notifications',
-      icon: TbBell,
+      href: '/dashboard/blogs',
+      label: 'Blog Management',
+      icon: TbBook,
       badge: null
     },
     {
@@ -257,17 +294,21 @@ const menuConfig = {
       badge: '25'
     },
     {
+      type: 'section',
+      label: 'Configuration'
+    },
+    {
       type: 'link',
-      href: '/dashboard/admin/analytics',
-      label: 'Analytics',
-      icon: TbChartBar,
+      href: '/dashboard/admin/site-settings',
+      label: 'Site Settings',
+      icon: TbSettings,
       badge: null
     },
     {
       type: 'link',
-      href: '/dashboard/profile',
-      label: 'Profile Settings',
-      icon: TbUser,
+      href: '/dashboard/admin/analytics',
+      label: 'Platform Analytics',
+      icon: TbChartBar,
       badge: null
     }
   ],
@@ -275,8 +316,19 @@ const menuConfig = {
     {
       type: 'link',
       href: '/dashboard',
-      label: 'Dashboard',
+      label: 'Overview',
       icon: TbChartBar,
+      badge: null
+    },
+    {
+      type: 'section',
+      label: 'Ticket Management'
+    },
+    {
+      type: 'link',
+      href: '/dashboard/support/tickets',
+      label: 'All Tickets',
+      icon: TbMessage,
       badge: null
     },
     {
@@ -288,47 +340,37 @@ const menuConfig = {
     },
     {
       type: 'link',
-      href: '/dashboard/support/tickets',
-      label: 'Support Tickets',
-      icon: TbMessage,
+      href: '/dashboard/support/orders',
+      label: 'Order Processing',
+      icon: TbPackage,
       badge: null
+    },
+    {
+      type: 'section',
+      label: 'User Assistance'
     },
     {
       type: 'link',
       href: '/dashboard/users',
-      label: 'View Users',
+      label: 'User Lookup',
       icon: TbUsers,
       badge: null
     },
     {
-      type: 'link',
-      href: '/dashboard/bookings',
-      label: 'Bookings',
-      icon: TbCalendar,
-      badge: null
-    },
-    {
-      type: 'link',
-      href: '/dashboard/notifications',
-      label: 'Notifications',
-      icon: TbBell,
-      badge: null
-    },
-    {
       type: 'dropdown',
-      label: 'Help Center',
+      label: 'Help Resources',
       icon: TbHelp,
       items: [
         { href: '/dashboard/support/knowledge-base', label: 'Knowledge Base' },
-        { href: '/dashboard/support/faqs', label: 'FAQs Management' },
+        { href: '/dashboard/support/faqs', label: 'Manage FAQs' },
         { href: '/dashboard/support/guides', label: 'User Guides' },
       ]
     },
     {
       type: 'link',
-      href: '/dashboard/profile',
-      label: 'Profile Settings',
-      icon: TbUser,
+      href: '/dashboard/blogs',
+      label: 'Blog Management',
+      icon: TbBook,
       badge: null
     }
   ]
@@ -350,7 +392,7 @@ export default function DashboardSidebar({ isOpen, onClose, role }: DashboardSid
       console.error('Failed to log out:', err);
     }
   };
-  
+
   // Initialize with empty Set to prevent hydration mismatch
   // Load from localStorage only on client after mount
   const [openDropdowns, setOpenDropdowns] = useState<Set<string>>(new Set());
@@ -477,10 +519,23 @@ export default function DashboardSidebar({ isOpen, onClose, role }: DashboardSid
         {/* Enhanced Navigation - Scrollable */}
         <nav className="flex-1 overflow-y-auto mt-8 px-4 pb-24">
           <div className="space-y-2">
-            {menuItems.map((item) => {
+            {menuItems.map((item, idx) => {
+              if (item.type === 'section') {
+                return (
+                  <div key={`${item.label}-${idx}`} className="px-4 py-2 mt-4 mb-2">
+                    <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                      {item.label}
+                    </p>
+                  </div>
+                );
+              }
+
               const IconComponent = item.icon;
               const isActive = pathname === item.href;
               const isDropdownOpen = openDropdowns.has(item.label);
+
+              // Type guard for items with icons
+              if (!IconComponent) return null;
 
               if (item.type === 'dropdown') {
                 return (
@@ -557,7 +612,7 @@ export default function DashboardSidebar({ isOpen, onClose, role }: DashboardSid
         {/* Enhanced Footer Section */}
         <div className="absolute bottom-0 left-0 right-0 p-6 border-t border-gray-200/40 bg-white/50 backdrop-blur-sm">
           <div className="space-y-3">
-            <button 
+            <button
               onClick={handleLogout}
               disabled={isLoggingOut}
               className="flex items-center w-full px-4 py-3 text-sm font-medium text-red-600 rounded-xl hover:bg-red-50/80 transition-all duration-200 group disabled:opacity-50 disabled:cursor-not-allowed"

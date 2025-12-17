@@ -9,8 +9,8 @@ import { PropertyCard } from "../cards/PropertyCard";
 
 function LoadingSkeleton() {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {Array.from({ length: 3 }).map((_, i) => (
+    <div className=" gap-6 grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
+      {Array.from({ length: 5 }).map((_, i) => (
         <Card key={i} className="animate-pulse pt-0">
           <div className="h-56 bg-gray-200 rounded-t-lg" />
           <div className="p-4 space-y-3">
@@ -77,7 +77,7 @@ export function FeaturedProperties() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 mb-12">
           {featuredProperties.map((property) => (
             <PropertyCard key={property.id} property={property} />
           ))}

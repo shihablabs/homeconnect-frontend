@@ -2,19 +2,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
-import {
-  FieldErrors,
-  FormProvider,
-  useForm,
-  useFormContext,
-} from "react-hook-form";
-import { toast } from "sonner";
-import { z } from "zod";
-
 import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -26,6 +15,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
   Select,
@@ -40,24 +30,51 @@ import {
   getDistrictOptions,
   getDivisionOptions,
 } from "@/lib/bangladeshLocations";
+import { cn } from "@/lib/utils";
 import { useCreatePropertyMutation } from "@/redux/features/property/propertyApiSlice";
-import { Loader2 } from "lucide-react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { format } from "date-fns";
+import { CalendarIcon, Loader2 } from "lucide-react";
 import dynamic from "next/dynamic";
+import { useRouter } from "next/navigation";
+import { useMemo, useState } from "react";
+import {
+  FieldErrors,
+  FormProvider,
+  useForm,
+  useFormContext,
+} from "react-hook-form";
+import { toast } from "sonner";
+import Swal from "sweetalert2";
+import { z } from "zod";
 import { FormImageUpload } from "./FormImageUpload";
 import { FormStepper } from "./FormStepper";
 // --- START: Updated Constants and Schemas ---
 
 // 1. CONSTANTS
-const propertyTypes = [
+// 1. CONSTANTS
+const RENT_PROPERTY_TYPES = [
   "apartment",
   "house",
-  "condo",
   "villa",
-  "townhouse",
   "studio",
-  "land",
-  "commercial",
+  "penthouse",
+  "room",        // Sublet/Room share
+  "office",      // Commercial rent
+  "shop",        // Commercial rent
 ] as const;
+
+const SALE_PROPERTY_TYPES = [
+  "apartment",   // Flat
+  "house",       // Standalone building
+  "land",        // Plot
+  "commercial",  // Commercial space
+  "office",      // Office space
+  "warehouse",   // Industrial
+] as const;
+
+// Combined list for validation (unique values)
+const allPropertyTypes = Array.from(new Set([...RENT_PROPERTY_TYPES, ...SALE_PROPERTY_TYPES])) as [string, ...string[]];
 
 const areaUnits = ["sqft", "sqm", "acres", "hectares"] as const;
 const currencies = ["BDT", "USD", "EUR", "GBP"] as const;
@@ -98,9 +115,10 @@ const amenitiesList = [
   "Pet Friendly",
 ];
 
-// 2. VALIDATION SCHEMA (Updated with your schema)
+// 2. VALIDATION SCHEMA (Simplified & Fixed)
 const requiredString = z.string().min(1, "This field is required");
-const requiredNumber = z.number().positive("Must be a positive number");
+// Use coerce to handle string inputs from forms safely
+const requiredNumber = z.coerce.number().min(1, "This field is required");
 
 // Individual Schemas
 const CurrencySchema = z.enum(currencies);
@@ -113,7 +131,9 @@ const HOAFrequencySchema = z.enum(hoaFrequencies);
 const baseSchema = z.object({
   title: z.string().min(10, "Title must be at least 10 characters").max(100),
   description: z.string().min(50, "Description must be at least 50 characters"),
-  propertyType: z.enum(propertyTypes),
+  propertyType: z.enum(allPropertyTypes, {
+    error: () => ({ message: "Please select a valid property type" }),
+  }),
 
   address: requiredString,
   city: requiredString,
@@ -150,7 +170,6 @@ const baseSchema = z.object({
     ),
 
   videos: z.array(z.string().url("Must be a valid URL")).optional(),
-  virtualTour: z.string().url("Must be a valid URL").optional(),
   floorPlans: z.array(z.string().url("Must be a valid URL")).optional(),
 
   agent: z.string().optional(),
@@ -242,7 +261,7 @@ const saleSchema = baseSchema.extend({
     .max(new Date().getFullYear() + 1, "Tax year cannot be in the future")
     .optional(),
   openHouseDates: z.array(z.string().min(1)).optional().default([]),
-  offerDeadline: z.string().optional(),
+  offerDeadline: z.date().optional(),
 });
 
 export const propertyFormSchema = z.discriminatedUnion("listingType", [
@@ -276,16 +295,15 @@ const initialFormData: Partial<PropertyFormData> & Record<string, any> = {
   tags: [],
   imageFiles: [],
   videos: [],
-  virtualTour: "",
   floorPlans: [],
   agent: "",
   managementCompany: "",
 
   // Rental specific
-  rentPrice: 0,
+  rentPrice: undefined, // undefined to show placeholder
   currency: "BDT",
-  securityDeposit: 0,
-  utilityDeposit: 0,
+  securityDeposit: undefined,
+  utilityDeposit: undefined,
   maintenanceFee: undefined,
   minimumStay: 12,
   maximumStay: undefined,
@@ -299,7 +317,7 @@ const initialFormData: Partial<PropertyFormData> & Record<string, any> = {
   smokingPolicy: "not-allowed",
 
   // Sale specific
-  salePrice: 0,
+  salePrice: undefined,
   originalPrice: undefined,
   priceNegotiable: true,
   mortgageAvailable: false,
@@ -310,7 +328,7 @@ const initialFormData: Partial<PropertyFormData> & Record<string, any> = {
   taxAmount: undefined,
   taxYear: undefined,
   openHouseDates: [],
-  offerDeadline: "",
+  offerDeadline: undefined,
 };
 
 // --- END: Updated Definitions ---
@@ -332,6 +350,7 @@ export function AddPropertyForm() {
   const form = useForm<PropertyFormData>({
     resolver: zodResolver(propertyFormSchema) as any,
     defaultValues: initialFormData as any,
+    mode: "onBlur",
   });
 
   const { watch, trigger } = form;
@@ -380,6 +399,15 @@ export function AddPropertyForm() {
             ? ["rentPrice", "currency", "availableFrom"]
             : ["salePrice", "currency", "propertyCondition"]
         );
+        // Additional check: valid if price > 0
+        if (listingType === "rent" && form.getValues("rentPrice") <= 0) {
+          form.setError("rentPrice", { type: "manual", message: "Rent price must be greater than 0" });
+          isValid = false;
+        }
+        if (listingType === "sale" && form.getValues("salePrice") <= 0) {
+          form.setError("salePrice", { type: "manual", message: "Sale price must be greater than 0" });
+          isValid = false;
+        }
         break;
     }
 
@@ -429,14 +457,14 @@ export function AddPropertyForm() {
       // Clean up data - remove undefined/null values and ensure proper types
       Object.keys(finalData).forEach(key => {
         const value = finalData[key];
-        
+
         // Skip special handling for required fields
         if (value === undefined || value === null) {
           // Only delete optional fields
-          if (['zipCode', 'yearBuilt', 'lotSize', 'agent', 'managementCompany', 'virtualTour', 'videos', 'floorPlans', 'tags'].includes(key)) {
+          if (['zipCode', 'yearBuilt', 'lotSize', 'agent', 'managementCompany', 'videos', 'floorPlans', 'tags'].includes(key)) {
             delete finalData[key];
           }
-        } else if (value === '' && ['zipCode', 'agent', 'managementCompany', 'virtualTour'].includes(key)) {
+        } else if (value === '' && ['zipCode', 'agent', 'managementCompany'].includes(key)) {
           // Remove empty optional strings
           delete finalData[key];
         }
@@ -459,23 +487,63 @@ export function AddPropertyForm() {
         finalData.floorPlans = [];
       }
 
-      await toast.promise(
-        createProperty({ data: finalData, images }).unwrap(),
-        {
-          loading: "Adding your property...",
-          success: (response) => {
+      // Handle offerDeadline
+      if (finalData.offerDeadline instanceof Date) {
+        finalData.offerDeadline = finalData.offerDeadline.toISOString();
+      } else {
+        delete finalData.offerDeadline;
+      }
+
+      // Show loading with SweetAlert2
+      Swal.fire({
+        title: "Submitting Property...",
+        text: "Please wait while we list your property.",
+        allowOutsideClick: false,
+        showConfirmButton: false,
+        willOpen: () => {
+          Swal.showLoading();
+        },
+      });
+
+      try {
+        const response = await createProperty({ data: finalData, images }).unwrap();
+
+        // Show Success SweetAlert2
+        Swal.fire({
+          icon: "success",
+          title: "Property Listed!",
+          text: "Your property has been successfully added to the listings.",
+          confirmButtonText: "View Property",
+          confirmButtonColor: "#3085d6",
+        }).then((result) => {
+          if (result.isConfirmed) {
             router.push(`/properties/${response.id}`);
-            return "Property listed successfully!";
-          },
-          error: (err: any) => {
-            const errorMessage = err?.data?.message || err?.message || "Failed to list property. Please check all required fields.";
-            return errorMessage;
-          },
-        }
-      );
+          } else {
+            // Optional: Redirect to dashboard or stay on page (reset form?)
+            // For now, let's redirect to properties list or just the new property
+            router.push(`/properties/${response.id}`);
+          }
+        });
+
+      } catch (err: any) {
+        console.error('Property creation error:', err);
+        const errorMessage = err?.data?.message || err?.message || "Failed to list property. Please check all required fields.";
+
+        Swal.fire({
+          icon: "error",
+          title: "Submission Failed",
+          text: errorMessage,
+          confirmButtonColor: "#d33",
+        });
+      }
     } catch (error: any) {
       console.error('Property creation error:', error);
-      toast.error(error?.data?.message || error?.message || "Failed to create property. Please try again.");
+      Swal.fire({
+        icon: "error",
+        title: "Unexpected Error",
+        text: error?.data?.message || error?.message || "An unexpected error occurred. Please try again.",
+        confirmButtonColor: "#d33",
+      });
     }
   };
 
@@ -539,66 +607,62 @@ export function AddPropertyForm() {
 // --- Updated Step Components ---
 
 function Step1() {
-  const { control } = useFormContext<PropertyFormData>();
+  const { control, watch, setValue } = useFormContext<PropertyFormData>();
+  const listingType = watch("listingType");
+  const propertyType = watch("propertyType");
+
+  // Dynamic Property Types based on Listing Type
+  const availableTypes = listingType === "rent" ? RENT_PROPERTY_TYPES : SALE_PROPERTY_TYPES;
+
+  // Reset property type if current selection is invalid for new mode
+  // Using useEffect to handle side-effect of changing listingType
+  // We need to allow the component to render first, so we check on render
+  if (listingType === "rent" && !RENT_PROPERTY_TYPES.includes(propertyType as any)) {
+    // Default for Rent
+    // We should do this via an effect, but in RHF changing during render is risky. 
+    // Better to do it in the onChange handler of listingType below.
+  }
+
   return (
-    <div className="space-y-6">
-      <FormField
-        control={control}
-        name="title"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Property Title</FormLabel>
-            <FormControl>
-              <Input
-                placeholder="e.g., Luxurious 3-Bedroom Apartment in Gulshan"
-                {...field}
-              />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-      <FormField
-        control={control}
-        name="description"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Description</FormLabel>
-            <FormControl>
-              <Textarea
-                placeholder="Describe your property..."
-                {...field}
-                rows={6}
-              />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      {/* Listing Type - Pro Card Style */}
+      {/* Row 1: Listing Type & Property Category */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
+        {/* Listing Type - Spans 2 columns to give equal width to its 2 buttons */}
         <FormField
           control={control}
           name="listingType"
           render={({ field }) => (
-            <FormItem>
-              <FormLabel>Listing Type</FormLabel>
+            <FormItem className="space-y-3 md:col-span-2">
+              <FormLabel className="text-lg font-semibold text-gray-800">I want to...</FormLabel>
               <FormControl>
                 <RadioGroup
-                  onValueChange={field.onChange}
+                  onValueChange={(val) => {
+                    field.onChange(val);
+                    // Auto-switch property type default to avoid mismatch
+                    if (val === "rent") setValue("propertyType", "apartment");
+                    else setValue("propertyType", "apartment");
+                  }}
                   defaultValue={field.value}
-                  className="flex gap-4 pt-2"
+                  className="grid grid-cols-2 gap-4"
                 >
-                  <FormItem className="flex items-center space-x-3">
+                  <FormItem>
                     <FormControl>
-                      <RadioGroupItem value="rent" />
+                      <RadioGroupItem value="rent" className="peer sr-only" />
                     </FormControl>
-                    <FormLabel className="font-normal">For Rent</FormLabel>
+                    <FormLabel className="flex h-[52px] items-center justify-center gap-2 rounded-lg border bg-white px-3 text-gray-600 hover:bg-gray-50 hover:text-gray-900 peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/5 peer-data-[state=checked]:text-primary cursor-pointer transition-all duration-200 ease-in-out">
+                      <span className="text-lg">🏠</span>
+                      <span className="font-medium">Rent Out</span>
+                    </FormLabel>
                   </FormItem>
-                  <FormItem className="flex items-center space-x-3">
+                  <FormItem>
                     <FormControl>
-                      <RadioGroupItem value="sale" />
+                      <RadioGroupItem value="sale" className="peer sr-only" />
                     </FormControl>
-                    <FormLabel className="font-normal">For Sale</FormLabel>
+                    <FormLabel className="flex h-[52px] items-center justify-center gap-2 rounded-lg border bg-white px-3 text-gray-600 hover:bg-gray-50 hover:text-gray-900 peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/5 peer-data-[state=checked]:text-primary cursor-pointer transition-all duration-200 ease-in-out">
+                      <span className="text-lg">🏷️</span>
+                      <span className="font-medium">Sell Property</span>
+                    </FormLabel>
                   </FormItem>
                 </RadioGroup>
               </FormControl>
@@ -606,21 +670,27 @@ function Step1() {
             </FormItem>
           )}
         />
+
+        {/* Property Category - 1 Column */}
         <FormField
           control={control}
           name="propertyType"
           render={({ field }) => (
-            <FormItem>
-              <FormLabel>Property Type</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
+            <FormItem className="space-y-3">
+              <FormLabel className="text-lg font-semibold text-gray-800">Property Category</FormLabel>
+              <Select
+                onValueChange={field.onChange}
+                defaultValue={field.value}
+                value={field.value}
+              >
                 <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a type" />
+                  <SelectTrigger className="h-[52px] shadow-sm">
+                    <SelectValue placeholder="Select Category" />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  {propertyTypes.map((type) => (
-                    <SelectItem key={type} value={type} className="capitalize">
+                  {availableTypes.map((type) => (
+                    <SelectItem key={type} value={type} className="capitalize cursor-pointer">
                       {type}
                     </SelectItem>
                   ))}
@@ -631,6 +701,43 @@ function Step1() {
           )}
         />
       </div>
+
+      <FormField
+        control={control}
+        name="title"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Property Title</FormLabel>
+            <FormControl>
+              <Input
+                placeholder={listingType === 'rent' ? "e.g. Modern Apartment in Gulshan" : "e.g. Luxury Villa for Sale"}
+                className="h-11 shadow-sm focus-visible:ring-primary/20"
+                {...field}
+              />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+
+      <FormField
+        control={control}
+        name="description"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Description</FormLabel>
+            <FormControl>
+              <Textarea
+                placeholder="Describe the key features, neighborhood, and amenities..."
+                {...field}
+                rows={5}
+                className="resize-none shadow-sm focus-visible:ring-primary/20"
+              />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
     </div>
   );
 }
@@ -942,26 +1049,14 @@ function Step4() {
       <FormField
         control={control}
         name="imageFiles"
-        render={({ field }) => (
+        render={({ field, fieldState }) => (
           <FormItem>
             <FormLabel>Property Images</FormLabel>
             <FormControl>
-              <FormImageUpload value={field.value} onChange={field.onChange} />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-      <FormField
-        control={control}
-        name="virtualTour"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Virtual Tour URL (Optional)</FormLabel>
-            <FormControl>
-              <Input
-                placeholder="https://your-virtual-tour-link.com"
-                {...field}
+              <FormImageUpload
+                value={field.value}
+                onChange={field.onChange}
+                error={fieldState.error?.message}
               />
             </FormControl>
             <FormMessage />
@@ -1004,10 +1099,10 @@ function Step5() {
                               return checked
                                 ? field.onChange([...(field.value || []), item])
                                 : field.onChange(
-                                    field.value?.filter(
-                                      (value) => value !== item
-                                    )
-                                  );
+                                  field.value?.filter(
+                                    (value) => value !== item
+                                  )
+                                );
                             }}
                           />
                         </FormControl>
@@ -1050,14 +1145,14 @@ function Step5() {
                                 onCheckedChange={(checked) => {
                                   return checked
                                     ? field.onChange([
-                                        ...(field.value || []),
-                                        item,
-                                      ])
+                                      ...(field.value || []),
+                                      item,
+                                    ])
                                     : field.onChange(
-                                        field.value?.filter(
-                                          (value) => value !== item
-                                        )
-                                      );
+                                      field.value?.filter(
+                                        (value) => value !== item
+                                      )
+                                    );
                                 }}
                               />
                             </FormControl>
@@ -1563,6 +1658,8 @@ function Step6({ listingType }: { listingType: "rent" | "sale" }) {
             />
           </div>
 
+
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <FormField
               control={control}
@@ -1595,8 +1692,53 @@ function Step6({ listingType }: { listingType: "rent" | "sale" }) {
               )}
             />
           </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
+            <FormField
+              control={control}
+              name="offerDeadline"
+              render={({ field }) => (
+                <FormItem className="flex flex-col">
+                  <FormLabel>Offer Deadline (Optional)</FormLabel>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <FormControl>
+                        <Button
+                          variant={"outline"}
+                          className={cn(
+                            "w-full pl-3 text-left font-normal",
+                            !field.value && "text-muted-foreground"
+                          )}
+                        >
+                          {field.value ? (
+                            format(field.value, "PPP")
+                          ) : (
+                            <span>Pick a date</span>
+                          )}
+                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                        </Button>
+                      </FormControl>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={field.value}
+                        onSelect={field.onChange}
+                        disabled={(date) =>
+                          date < new Date(new Date().setHours(0, 0, 0, 0))
+                        }
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
         </>
-      )}
-    </div>
+      )
+      }
+    </div >
   );
 }

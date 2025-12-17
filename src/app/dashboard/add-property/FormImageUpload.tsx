@@ -2,16 +2,16 @@
 "use client";
 
 import { Input } from "@/components/ui/input";
-import { Image as ImageIcon, UploadCloud, X } from "lucide-react";
-import Image from "next/image";
+import { UploadCloud, X } from "lucide-react";
 import { useEffect, useMemo } from "react";
 
 interface FormImageUploadProps {
   value: File[];
   onChange: (files: File[]) => void;
+  error?: string; // Add error prop
 }
 
-export function FormImageUpload({ value, onChange }: FormImageUploadProps) {
+export function FormImageUpload({ value, onChange, error }: FormImageUploadProps) {
   const files = value || [];
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -37,22 +37,26 @@ export function FormImageUpload({ value, onChange }: FormImageUploadProps) {
 
   return (
     <div>
-      <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-4">
+      <div className={`grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-4 p-4 border-2 border-dashed rounded-lg transition-colors ${error ? 'border-red-500 bg-red-50' : 'border-gray-300 hover:border-primary'}`}>
         {previews.map((src, index) => (
           <div
             key={index}
-            className="relative aspect-square rounded-lg overflow-hidden border"
+            className="relative aspect-square rounded-lg overflow-hidden border bg-gray-100"
           >
-            <Image
+            {/* 
+              Using standard <img> instead of Next.js <Image> for Blob URLs 
+              to avoid optimization issues and net::ERR_FILE_NOT_FOUND errors.
+            */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
               src={src}
               alt={`Preview ${index + 1}`}
-              fill
-              className="object-cover"
+              className="object-cover w-full h-full"
             />
             <button
               type="button"
               onClick={() => removeImage(index)}
-              className="absolute top-1 right-1 bg-red-600 text-white rounded-full p-0.5"
+              className="absolute top-1 right-1 bg-red-600 hover:bg-red-700 text-white rounded-full p-1 transition-colors"
             >
               <X className="w-3 h-3" />
             </button>
@@ -60,7 +64,7 @@ export function FormImageUpload({ value, onChange }: FormImageUploadProps) {
         ))}
 
         {files.length < 10 && (
-          <label className="relative aspect-square rounded-lg border-2 border-dashed border-gray-300 flex flex-col items-center justify-center text-gray-500 hover:border-primary hover:text-primary cursor-pointer transition-colors">
+          <label className="relative aspect-square rounded-lg border-2 border-dashed border-gray-300 flex flex-col items-center justify-center text-gray-500 hover:border-primary hover:text-primary cursor-pointer transition-colors bg-white">
             <UploadCloud className="w-8 h-8" />
             <span className="text-xs text-center mt-2">
               Upload ({files.length}/10)
@@ -75,12 +79,20 @@ export function FormImageUpload({ value, onChange }: FormImageUploadProps) {
           </label>
         )}
       </div>
+
+      {/* Empty State / Help Text */}
       {files.length === 0 && (
-        <div className="mt-4 p-6 border-2 border-dashed border-gray-200 rounded-lg flex flex-col items-center justify-center text-gray-400">
-          <ImageIcon className="w-12 h-12" />
-          <p className="mt-2 text-sm">No images uploaded yet.</p>
+        <div className="mt-2 flex flex-col items-center justify-center text-gray-400">
           <p className="text-xs">Upload up to 10 images.</p>
         </div>
+      )}
+
+      {/* Error Message Display */}
+      {error && (
+        <p className="mt-2 text-sm font-medium text-red-600 flex items-center gap-2">
+          <X className="w-4 h-4" />
+          {error}
+        </p>
       )}
     </div>
   );

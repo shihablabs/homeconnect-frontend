@@ -56,6 +56,7 @@ export const apiSlice = createApi({
     "FILTERS",
     "Booking",
     "Favorite",
+    "Content",
   ],
   endpoints: (builder) => ({}),
 });

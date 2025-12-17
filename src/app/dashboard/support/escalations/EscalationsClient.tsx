@@ -1,9 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import {
   Select,
@@ -20,7 +19,8 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { AlertTriangle, Search, Eye, CheckCircle2, Clock } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, Clock, Eye, Search } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
 interface EscalatedIssue {
@@ -58,7 +58,7 @@ export function EscalationsClient() {
       // const response = await supportApi.getEscalations({ status: statusFilter, priority: priorityFilter });
       // setEscalations(response.escalations);
       setEscalations([]);
-    } catch (error) {
+    } catch {
       toast.error('Failed to fetch escalations');
     } finally {
       setLoading(false);

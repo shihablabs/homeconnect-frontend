@@ -5,7 +5,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export function PropertySkeleton() {
   return (
-    <div className="container mx-auto px-4 pt-28 pb-16 animate-pulse">
+    <div className="container mx-auto px-4 pb-16 animate-pulse">
       <Skeleton className="h-[450px] w-full rounded-xl" />
 
       <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-8">

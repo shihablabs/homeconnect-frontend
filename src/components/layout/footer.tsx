@@ -26,28 +26,27 @@ export default function Footer() {
     {
       title: "Discover",
       links: [
-        { name: "Featured Listings", href: "#" },
-        { name: "New Properties", href: "#" },
-        { name: "Price Alerts", href: "#" },
-        { name: "Virtual Tours", href: "#" },
+        { name: "Featured Listings", href: "/featured" },
+        { name: "New Properties", href: "/new" },
+        { name: "Price Alerts", href: "/price-alerts" },
       ],
     },
     {
       title: "Resources",
       links: [
-        { name: "Buying Guide", href: "#" },
-        { name: "Renting Tips", href: "#" },
-        { name: "Market Insights", href: "#" },
+        { name: "Buying Guide", href: "/buying-guide" },
+        { name: "Renting Tips", href: "/renting-tips" },
+        { name: "Market Insights", href: "/market-trends" },
         { name: "FAQ", href: "/faq" },
       ],
     },
     {
       title: "Company",
       links: [
-        { name: "About Us", href: "#" },
+        { name: "About Us", href: "/about-us" },
         { name: "Careers", href: "/careers" },
-        { name: "Blog", href: "#" },
-        { name: "Contact", href: "#" },
+        { name: "Blog", href: "/blog" },
+        { name: "Contact", href: "/contact" },
       ],
     },
     {
@@ -55,8 +54,8 @@ export default function Footer() {
       links: [
         { name: "Privacy Policy", href: "/privacy" },
         { name: "Terms of Service", href: "/terms" },
-        { name: "Cookie Policy", href: "#" },
-        { name: "Security", href: "#" },
+        { name: "Cookie Policy", href: "/cookie-policy" },
+        { name: "Security", href: "/security" },
       ],
     },
   ];

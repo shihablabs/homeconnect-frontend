@@ -1,12 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Dialog,
   DialogContent,
@@ -16,12 +12,16 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { bookingsApi, type Booking } from '@/lib/api/bookings-api';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { useAuthState } from '@/hooks/useAuthState';
-import { ArrowLeft, Calendar, Home, User, CreditCard, CheckCircle2, XCircle, Clock, MapPin } from 'lucide-react';
-import { toast } from 'sonner';
-import Link from 'next/link';
+import { bookingsApi, type Booking } from '@/lib/api/bookings-api';
+import { ArrowLeft, Calendar, CheckCircle2, Clock, CreditCard, Home, MapPin, User, XCircle } from 'lucide-react';
 import Image from 'next/image';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
 
 interface BookingDetailsClientProps {
   bookingId: string;
@@ -35,10 +35,6 @@ export function BookingDetailsClient({ bookingId }: BookingDetailsClientProps) {
   const [cancelling, setCancelling] = useState(false);
   const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
   const [cancelReason, setCancelReason] = useState('');
-
-  useEffect(() => {
-    fetchBooking();
-  }, [bookingId]);
 
   const fetchBooking = async () => {
     try {
@@ -55,6 +51,11 @@ export function BookingDetailsClient({ bookingId }: BookingDetailsClientProps) {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchBooking();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [bookingId]);
 
   const handlePay = async () => {
     if (!booking) return;

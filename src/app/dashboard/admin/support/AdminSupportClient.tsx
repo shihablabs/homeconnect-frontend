@@ -1,10 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import {
   Select,
@@ -21,7 +19,8 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { HelpCircle, MessageSquare, AlertTriangle, CheckCircle2, Clock, Search, Loader2 } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, Clock, HelpCircle, Loader2, MessageSquare, Search } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
 interface SupportTicket {
@@ -57,7 +56,7 @@ export function AdminSupportClient() {
       // const response = await adminApi.getSupportTickets({ status: statusFilter, priority: priorityFilter });
       // setTickets(response.tickets);
       setTickets([]);
-    } catch (error) {
+    } catch {
       toast.error('Failed to fetch tickets');
     } finally {
       setLoading(false);

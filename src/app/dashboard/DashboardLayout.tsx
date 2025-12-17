@@ -26,6 +26,7 @@ import { useRouter } from 'next/navigation';
 import { useMemo, useState } from 'react';
 import { toast } from "sonner";
 import DashboardSidebar from './DashboardSidebar';
+import Breadcrumb from '@/components/layout/Breadcrumb';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -127,7 +128,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   {user?.role === 'landlord' && (
                     <>
                       <DropdownMenuItem asChild>
-                        <Link href="/dashboard/my-properties" className="cursor-pointer">
+                        <Link href="/dashboard/properties" className="cursor-pointer">
                           <Home className="mr-2 h-4 w-4" />
                           My Properties
                         </Link>
@@ -180,6 +181,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         {/* Main Content - Perfect width calculation */}
         <main className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 flex-1 overflow-y-auto scroll-smooth w-full">
           <div className="w-full h-full">
+            <Breadcrumb />
             {children}
           </div>
         </main>

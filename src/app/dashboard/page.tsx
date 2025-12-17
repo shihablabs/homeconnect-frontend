@@ -9,13 +9,12 @@ import {
   Eye,
   Home,
   Link as LinkIcon,
+  Loader2,
   Plus,
   Receipt,
   UserRound,
   Users,
-  Wrench,
-  Loader2,
-  AlertCircle
+  Wrench
 } from 'lucide-react';
 
 import Image from 'next/image';
@@ -27,15 +26,15 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 import { StatCard } from '@/components/cards/StatCard.tsx';
-import { ProtectedRoute } from '@/components/protected-route';
-import { useDashboard } from '@/hooks/useDashboard';
-import { selectCurrentUser } from '@/redux/features/auth/authSlice';
-import { useAppSelector } from '@/redux/hooks';
-import { dashboardApi } from '@/lib/api/dashboard';
-import { toast } from 'sonner';
-import { useQueryClient } from '@tanstack/react-query';
 import { DashboardSkeleton } from '@/components/dashboard/DashboardSkeleton';
 import { ErrorState } from '@/components/dashboard/ErrorState';
+import { ProtectedRoute } from '@/components/protected-route';
+import { useDashboard } from '@/hooks/useDashboard';
+import { dashboardApi } from '@/lib/api/dashboard';
+import { selectCurrentUser } from '@/redux/features/auth/authSlice';
+import { useAppSelector } from '@/redux/hooks';
+import { useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 
 const formatCurrency = (amount: number | undefined) => {
   if (amount === undefined) return 'BDT 0';
@@ -91,11 +90,11 @@ const getPriorityColor = (priority: string | undefined) => {
 export default function DashboardPage() {
   // Get user from Redux state
   const user = useAppSelector(selectCurrentUser);
-  
+
   // Fetch dashboard data using hook
   const { stats, activities, properties, isLoading, error, refetch, isFetching } = useDashboard();
   const queryClient = useQueryClient();
-  
+
   const [markingRead, setMarkingRead] = useState<string | null>(null);
   const [markingAll, setMarkingAll] = useState(false);
 
@@ -106,13 +105,7 @@ export default function DashboardPage() {
     pendingMaintenanceRequests: properties,
   } : null;
 
-  // Progressive loading: Show partial data if available even while fetching
-  const showProgressiveData = dashboardData && !isLoading;
 
-  // Get read activities from API data (activities already have read status from backend)
-  const readActivities = new Set(
-    activities.filter(a => a.read).map(a => a.id)
-  );
 
   const handleMarkAsRead = async (id: string) => {
     setMarkingRead(id);
@@ -178,15 +171,15 @@ export default function DashboardPage() {
                 </p>
               </div>
               {isFetching && !isLoading && (
-                <Loader2 
-                  className="h-5 w-5 animate-spin text-blue-600" 
+                <Loader2
+                  className="h-5 w-5 animate-spin text-blue-600"
                   aria-label="Refreshing data"
                 />
               )}
             </div>
             <div className="flex flex-wrap gap-3">
               {user?.role === 'landlord' && (
-                <Link href="/properties/add">
+                <Link href="/dashboard/add-property">
                   <Button className="bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2">
                     <Plus className="h-4 w-4" />
                     Add New Property
@@ -378,28 +371,28 @@ export default function DashboardPage() {
                       <CardDescription>Latest updates and requests</CardDescription>
                     </div>
                     <div className="flex gap-2">
-                      {dashboardData?.recentActivity?.length > 0 && 
-                       activities.some(a => !a.read) && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={handleMarkAllAsRead}
-                          disabled={markingAll}
-                          className="text-xs"
-                        >
-                          {markingAll ? (
-                            <>
-                              <Loader2 className="h-3 w-3 mr-1 animate-spin" />
-                              Marking...
-                            </>
-                          ) : (
-                            <>
-                              <Eye className="h-3 w-3 mr-1" />
-                              Mark All Read
-                            </>
-                          )}
-                        </Button>
-                      )}
+                      {dashboardData?.recentActivity?.length > 0 &&
+                        activities.some(a => !a.read) && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={handleMarkAllAsRead}
+                            disabled={markingAll}
+                            className="text-xs"
+                          >
+                            {markingAll ? (
+                              <>
+                                <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                                Marking...
+                              </>
+                            ) : (
+                              <>
+                                <Eye className="h-3 w-3 mr-1" />
+                                Mark All Read
+                              </>
+                            )}
+                          </Button>
+                        )}
                       <Link href="/dashboard/activities">
                         <Button variant="ghost" size="sm">
                           View All
@@ -412,11 +405,10 @@ export default function DashboardPage() {
                       {dashboardData?.recentActivity?.slice(0, 6).map((activity) => (
                         <div
                           key={activity.id}
-                          className={`flex items-start space-x-3 p-3 rounded-lg border transition-colors duration-200 ${
-                            !activity.read
+                          className={`flex items-start space-x-3 p-3 rounded-lg border transition-colors duration-200 ${!activity.read
                               ? 'bg-blue-50 border-blue-200'
                               : 'bg-white border-gray-200'
-                          }`}
+                            }`}
                         >
                           <span className="text-lg mt-0.5 flex-shrink-0">
                             {getActivityIcon(activity.action)}
@@ -545,7 +537,7 @@ export default function DashboardPage() {
                 <CardContent>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     {user?.role === 'landlord' && (
-                      <Link href="/properties/add">
+                      <Link href="/dashboard/add-property">
                         <Button variant="outline" className="w-full h-16 flex-col gap-1">
                           <Plus className="h-5 w-5" />
                           <span className="text-xs">Add Property</span>

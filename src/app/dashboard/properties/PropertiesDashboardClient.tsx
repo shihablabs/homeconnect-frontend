@@ -6,11 +6,15 @@ import { Button } from "@/components/ui/button";
 import {
   Pagination,
   PaginationContent,
+  PaginationEllipsis,
   PaginationItem,
+  PaginationLink,
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
 import { Skeleton } from "@/components/ui/skeleton";
+import { generatePaginationItems } from "@/lib/pagination-utils";
+import { cn } from "@/lib/utils";
 import { useGetMyPropertiesQuery } from "@/redux/features/property/propertyApiSlice";
 import { Building, Plus, ServerCrash } from "lucide-react";
 import Link from "next/link";
@@ -122,35 +126,64 @@ export function PropertiesDashboardClient() {
 
       <PropertiesListTable properties={properties} />
 
-      <Pagination>
-        <PaginationContent>
-          <PaginationItem>
-            <PaginationPrevious
-              href="#"
-              onClick={(e) => {
-                e.preventDefault();
-                if (hasPrev) handlePageChange(page - 1);
-              }}
-              className={!hasPrev ? "pointer-events-none opacity-50" : ""}
-            />
-          </PaginationItem>
-          <PaginationItem>
-            <span className="text-sm font-medium px-4">
-              Page {page} of {searchResult.totalPages}
-            </span>
-          </PaginationItem>
-          <PaginationItem>
-            <PaginationNext
-              href="#"
-              onClick={(e) => {
-                e.preventDefault();
-                if (hasNext) handlePageChange(page + 1);
-              }}
-              className={!hasNext ? "pointer-events-none opacity-50" : ""}
-            />
-          </PaginationItem>
-        </PaginationContent>
-      </Pagination>
+      <div className="flex justify-center pb-8">
+        <Pagination className="bg-white/80 backdrop-blur-sm border rounded-full px-4 py-2 shadow-sm inline-flex w-auto mt-6">
+          <PaginationContent className="gap-2">
+            <PaginationItem>
+              <PaginationPrevious
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  if (hasPrev) handlePageChange(page - 1);
+                }}
+                className={cn(
+                  "transition-all duration-200 hover:bg-primary/10 hover:text-primary rounded-full",
+                  !hasPrev ? "pointer-events-none opacity-40" : "cursor-pointer"
+                )}
+              />
+            </PaginationItem>
+
+            {generatePaginationItems(page, searchResult.totalPages).map((pageNum, idx) => (
+              <PaginationItem key={idx}>
+                {pageNum === 'ellipsis' ? (
+                  <PaginationEllipsis className="text-muted-foreground/50" />
+                ) : (
+                  <PaginationLink
+                    href="#"
+                    isActive={page === pageNum}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handlePageChange(pageNum as number);
+                    }}
+                    className={cn(
+                      "rounded-full w-9 h-9 transition-all duration-200 font-medium",
+                      page === pageNum
+                        ? "bg-primary text-primary-foreground shadow-md scale-110 hover:bg-primary hover:text-primary-foreground"
+                        : "hover:bg-primary/10 hover:text-primary text-muted-foreground"
+                    )}
+                  >
+                    {pageNum}
+                  </PaginationLink>
+                )}
+              </PaginationItem>
+            ))}
+
+            <PaginationItem>
+              <PaginationNext
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  if (hasNext) handlePageChange(page + 1);
+                }}
+                className={cn(
+                  "transition-all duration-200 hover:bg-primary/10 hover:text-primary rounded-full",
+                  !hasNext ? "pointer-events-none opacity-40" : "cursor-pointer"
+                )}
+              />
+            </PaginationItem>
+          </PaginationContent>
+        </Pagination>
+      </div>
     </div>
   );
 }

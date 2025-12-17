@@ -1,10 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Table,
   TableBody,
@@ -13,11 +11,13 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { paymentsApi, type Payment, type UpcomingPayment, type PaymentSummary, type LandlordEarnings } from '@/lib/api/payments-api';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuthState } from '@/hooks/useAuthState';
-import { CreditCard, TrendingUp, Clock, DollarSign, Eye, Calendar, ArrowUpRight } from 'lucide-react';
-import { toast } from 'sonner';
+import { paymentsApi, type LandlordEarnings, type Payment, type PaymentSummary, type UpcomingPayment } from '@/lib/api/payments-api';
+import { Calendar, Clock, CreditCard, DollarSign, Eye, TrendingUp } from 'lucide-react';
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
 
 export function PaymentsDashboardClient() {
   const { user } = useAuthState();
@@ -29,35 +29,35 @@ export function PaymentsDashboardClient() {
   const [activeTab, setActiveTab] = useState('overview');
 
   useEffect(() => {
-    fetchData();
-  }, [activeTab]);
-
-  const fetchData = async () => {
-    try {
-      setLoading(true);
-      if (activeTab === 'overview') {
-        const [summaryData, upcomingData] = await Promise.all([
-          paymentsApi.getPaymentSummary(),
-          paymentsApi.getUpcomingPayments(30),
-        ]);
-        setSummary(summaryData);
-        setUpcomingPayments(upcomingData);
-      } else if (activeTab === 'history') {
-        const response = await paymentsApi.getPaymentHistory({ limit: 50 });
-        setPayments(response.payments);
-      } else if (activeTab === 'earnings' && user?.role === 'landlord') {
-        const earningsData = await paymentsApi.getLandlordEarnings();
-        setEarnings(earningsData);
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        if (activeTab === 'overview') {
+          const [summaryData, upcomingData] = await Promise.all([
+            paymentsApi.getPaymentSummary(),
+            paymentsApi.getUpcomingPayments(30),
+          ]);
+          setSummary(summaryData);
+          setUpcomingPayments(upcomingData);
+        } else if (activeTab === 'history') {
+          const response = await paymentsApi.getPaymentHistory({ limit: 50 });
+          setPayments(response.payments);
+        } else if (activeTab === 'earnings' && user?.role === 'landlord') {
+          const earningsData = await paymentsApi.getLandlordEarnings();
+          setEarnings(earningsData);
+        }
+      } catch (error: unknown) {
+        const errorMessage = error && typeof error === 'object' && 'response' in error
+          ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
+          : undefined;
+        toast.error(errorMessage || 'Failed to fetch payment data');
+      } finally {
+        setLoading(false);
       }
-    } catch (error: unknown) {
-      const errorMessage = error && typeof error === 'object' && 'response' in error
-        ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
-        : undefined;
-      toast.error(errorMessage || 'Failed to fetch payment data');
-    } finally {
-      setLoading(false);
-    }
-  };
+    };
+
+    fetchData();
+  }, [activeTab, user?.role]);
 
   const handlePay = async (paymentId: string) => {
     try {

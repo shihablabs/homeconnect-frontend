@@ -24,11 +24,11 @@ export default function PropertyTypeGrid() {
           {types.map(({ label, slug, Icon }) => (
             <Link
               key={slug}
-              href={`/search?type=${slug}`}
+              href={`/properties?propertyType=${slug}`}
               className="group"
             >
-              <div className="flex flex-col items-center text-center p-6 rounded-xl border border-gray-200 hover:border-cyan-300 hover:bg-cyan-50/50 transition-all duration-300 group-hover:shadow-md">
-                <div className="w-12 h-12 bg-gradient-to-br from-cyan-500 to-blue-500 rounded-xl flex items-center justify-center text-white mb-3 group-hover:scale-110 transition-transform duration-300">
+              <div className="flex flex-col items-center text-center p-6 rounded-xl border border-gray-200 hover:border-blue-300 hover:bg-blue-50/50 transition-all duration-300 group-hover:shadow-md">
+                <div className="w-12 h-12 bg-primary rounded-xl flex items-center justify-center text-white mb-3 group-hover:scale-110 transition-transform duration-300">
                   <Icon className="w-6 h-6" />
                 </div>
                 <h3 className="font-semibold text-gray-900 mb-1">{label}</h3>

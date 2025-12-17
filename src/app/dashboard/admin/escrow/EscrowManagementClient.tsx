@@ -1,9 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Table,
   TableBody,
@@ -12,8 +10,9 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { adminApi, type EscrowStats, type DisputedPayment } from '@/lib/api/admin-api';
-import { CreditCard, AlertTriangle, TrendingUp, DollarSign, Clock, Loader2 } from 'lucide-react';
+import { adminApi, type DisputedPayment, type EscrowStats } from '@/lib/api/admin-api';
+import { AlertTriangle, CreditCard, DollarSign, Loader2, TrendingUp } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
 export function EscrowManagementClient() {

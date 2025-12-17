@@ -1,15 +1,15 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
-import { paymentsApi, type Payment, type EscrowStatus } from '@/lib/api/payments-api';
-import { ArrowLeft, CreditCard, Calendar, DollarSign, Clock, AlertTriangle, CheckCircle2 } from 'lucide-react';
-import { toast } from 'sonner';
+import { paymentsApi, type EscrowStatus, type Payment } from '@/lib/api/payments-api';
+import { ArrowLeft, CheckCircle2, Clock, CreditCard } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
 
 interface PaymentDetailsClientProps {
   paymentId: string;
@@ -22,28 +22,28 @@ export function PaymentDetailsClient({ paymentId }: PaymentDetailsClientProps) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchPayment();
-  }, [paymentId]);
+    const fetchPayment = async () => {
+      try {
+        setLoading(true);
+        const [paymentData, escrowData] = await Promise.all([
+          paymentsApi.getPayment(paymentId),
+          paymentsApi.getEscrowStatus(paymentId).catch(() => null),
+        ]);
+        setPayment(paymentData);
+        setEscrowStatus(escrowData);
+      } catch (error: unknown) {
+        const errorMessage = error && typeof error === 'object' && 'response' in error
+          ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
+          : undefined;
+        toast.error(errorMessage || 'Failed to fetch payment details');
+        router.push('/dashboard/payments');
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const fetchPayment = async () => {
-    try {
-      setLoading(true);
-      const [paymentData, escrowData] = await Promise.all([
-        paymentsApi.getPayment(paymentId),
-        paymentsApi.getEscrowStatus(paymentId).catch(() => null),
-      ]);
-      setPayment(paymentData);
-      setEscrowStatus(escrowData);
-    } catch (error: unknown) {
-      const errorMessage = error && typeof error === 'object' && 'response' in error
-        ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
-        : undefined;
-      toast.error(errorMessage || 'Failed to fetch payment details');
-      router.push('/dashboard/payments');
-    } finally {
-      setLoading(false);
-    }
-  };
+    fetchPayment();
+  }, [paymentId, router]);
 
   const handlePay = async () => {
     if (!payment) return;

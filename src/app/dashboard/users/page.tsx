@@ -5,7 +5,7 @@ import { UsersDashboardClient } from './UsersDashboardClient';
 
 export default function UsersPage() {
   return (
-    <ProtectedRoute requiredRole="admin">
+    <ProtectedRoute requiredRole={["admin", "support"]}>
       <UsersDashboardClient />
     </ProtectedRoute>
   );

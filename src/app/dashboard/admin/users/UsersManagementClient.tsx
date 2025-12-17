@@ -1,11 +1,19 @@
 'use client';
 
-import { useState } from 'react';
-import { useAdminUsers } from '@/hooks/useAdminUsers';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
@@ -21,13 +29,14 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { type User } from '@/lib/api/admin-api';
-import { Users, Search, Eye, Shield, ShieldOff, Loader2, RefreshCw, Trash2 } from 'lucide-react';
-import { toast } from 'sonner';
-import Link from 'next/link';
-import { useAppSelector } from '@/redux/hooks';
+import { useAdminUsers } from '@/hooks/useAdminUsers';
 import { selectCurrentUser } from '@/redux/features/auth/authSlice';
-import { ConfirmDialog } from '@/components/ui/confirm-dialog';
+import { useAppSelector } from '@/redux/hooks';
+import { Eye, Loader2, RefreshCw, Search, Shield, ShieldOff, Trash2, Users } from 'lucide-react';
+import Image from 'next/image';
+import Link from 'next/link';
+import { useState } from 'react';
+import { toast } from 'sonner';
 
 export function UsersManagementClient() {
   const currentUser = useAppSelector(selectCurrentUser);
@@ -48,6 +57,15 @@ export function UsersManagementClient() {
     currentStatus?: boolean;
   }>({ open: false, type: 'status' });
 
+  const [createStaffDialog, setCreateStaffDialog] = useState({
+    open: false,
+    name: '',
+    email: '',
+    password: '',
+    phone: '',
+    role: 'support' as 'support' | 'admin',
+  });
+
   const {
     users,
     pagination,
@@ -59,6 +77,8 @@ export function UsersManagementClient() {
     isUpdatingStatus,
     deleteUserAsync,
     isDeleting,
+    createStaffAsync,
+    isCreatingStaff,
   } = useAdminUsers({
     role: roleFilter === 'all' ? undefined : roleFilter as 'tenant' | 'landlord' | 'admin' | 'support',
     page,
@@ -120,6 +140,38 @@ export function UsersManagementClient() {
     }
   };
 
+  const handleCreateStaff = async () => {
+    try {
+      if (!createStaffDialog.name || !createStaffDialog.email || !createStaffDialog.password) {
+        toast.error('Please fill in all required fields');
+        return;
+      }
+
+      await createStaffAsync({
+        name: createStaffDialog.name,
+        email: createStaffDialog.email,
+        password: createStaffDialog.password,
+        role: createStaffDialog.role,
+        phone: createStaffDialog.phone,
+      });
+
+      toast.success(`${createStaffDialog.role === 'admin' ? 'Admin' : 'Support'} account created successfully`);
+      setCreateStaffDialog({
+        open: false,
+        name: '',
+        email: '',
+        password: '',
+        phone: '',
+        role: 'support',
+      });
+    } catch (error: unknown) {
+      const errorMessage = error && typeof error === 'object' && 'response' in error
+        ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
+        : undefined;
+      toast.error(errorMessage || 'Failed to create staff account');
+    }
+  };
+
   const getRoleBadge = (role: string) => {
     const variants: Record<string, 'default' | 'secondary' | 'outline' | 'destructive'> = {
       admin: 'default',
@@ -161,262 +213,273 @@ export function UsersManagementClient() {
   return (
     <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
       <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-primary/10 rounded-lg">
-            <Users className="h-6 w-6 text-primary" />
-          </div>
-          <div>
-            <h1 className="text-3xl font-bold">User Management</h1>
-            <p className="text-muted-foreground mt-1">
-              Manage all platform users - tenants, landlords, admins, and support staff
-            </p>
-          </div>
-        </div>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => refetch()}
-          disabled={isFetching}
-        >
-          {isFetching ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Refreshing...
-            </>
-          ) : (
-            <>
-              <RefreshCw className="mr-2 h-4 w-4" />
-              Refresh
-            </>
-          )}
-        </Button>
-      </div>
-
-      {/* Filters */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Filters & Search</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-4 md:grid-cols-5">
-            <div className="md:col-span-2">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search by name or email..."
-                  value={searchQuery}
-                  onChange={(e) => {
-                    setSearchQuery(e.target.value);
-                    setPage(1); // Reset to first page on search
-                  }}
-                  className="pl-10"
-                />
-              </div>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-primary/10 rounded-lg">
+              <Users className="h-6 w-6 text-primary" />
             </div>
-            <Select value={roleFilter} onValueChange={(value) => { setRoleFilter(value); setPage(1); }}>
-              <SelectTrigger>
-                <SelectValue placeholder="Filter by role" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Roles</SelectItem>
-                <SelectItem value="tenant">Tenants</SelectItem>
-                <SelectItem value="landlord">Landlords</SelectItem>
-                <SelectItem value="admin">Admins</SelectItem>
-                <SelectItem value="support">Support</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select value={statusFilter} onValueChange={(value) => { setStatusFilter(value); setPage(1); }}>
-              <SelectTrigger>
-                <SelectValue placeholder="Filter by status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="active">Active</SelectItem>
-                <SelectItem value="blocked">Blocked</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select value={`${sortBy}-${sortOrder}`} onValueChange={(value) => {
-              const [field, order] = value.split('-');
-              setSortBy(field as typeof sortBy);
-              setSortOrder(order as typeof sortOrder);
-            }}>
-              <SelectTrigger>
-                <SelectValue placeholder="Sort by" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="createdAt-desc">Newest First</SelectItem>
-                <SelectItem value="createdAt-asc">Oldest First</SelectItem>
-                <SelectItem value="name-asc">Name (A-Z)</SelectItem>
-                <SelectItem value="name-desc">Name (Z-A)</SelectItem>
-                <SelectItem value="email-asc">Email (A-Z)</SelectItem>
-                <SelectItem value="lastLogin-desc">Last Login</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Users Table */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Users</CardTitle>
-          <CardDescription>
-            {isLoading ? 'Loading...' : `${pagination.total} user${pagination.total !== 1 ? 's' : ''} found${isFetching ? ' (updating...)' : ''}`}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {isLoading && users.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-12">
-              <Loader2 className="h-8 w-8 animate-spin text-primary mb-4" />
-              <p className="text-muted-foreground">Loading users...</p>
-            </div>
-          ) : users.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-12 text-center">
-              <Users className="h-12 w-12 text-muted-foreground mb-4" />
-              <h3 className="text-lg font-semibold mb-2">No users found</h3>
-              <p className="text-muted-foreground">
-                Try adjusting your filters or search query
+            <div>
+              <h1 className="text-3xl font-bold">User Management</h1>
+              <p className="text-muted-foreground mt-1">
+                Manage all platform users - tenants, landlords, admins, and support staff
               </p>
             </div>
-          ) : (
-            <>
-              <div className="rounded-lg border overflow-hidden">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>User</TableHead>
-                      <TableHead>Role</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Email Verified</TableHead>
-                      <TableHead>Joined</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {users.map((user) => (
-                      <TableRow key={user.id}>
-                        <TableCell>
-                          <div className="flex items-center gap-3">
-                            {user.avatar ? (
-                              <img
-                                src={user.avatar}
-                                alt={user.name}
-                                className="h-10 w-10 rounded-full"
-                              />
-                            ) : (
-                              <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                                <Users className="h-5 w-5 text-primary" />
-                              </div>
-                            )}
-                            <div>
-                              <div className="font-medium">{user.name}</div>
-                              <div className="text-sm text-muted-foreground">{user.email}</div>
-                            </div>
-                          </div>
-                        </TableCell>
-                        <TableCell>{getRoleBadge(user.role)}</TableCell>
-                        <TableCell>
-                          {user.isActive ? (
-                            <Badge variant="default" className="gap-1">
-                              <Shield className="h-3 w-3" />
-                              Active
-                            </Badge>
-                          ) : (
-                            <Badge variant="destructive" className="gap-1">
-                              <ShieldOff className="h-3 w-3" />
-                              Blocked
-                            </Badge>
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          {user.isEmailVerified ? (
-                            <Badge variant="outline" className="text-green-600">Verified</Badge>
-                          ) : (
-                            <Badge variant="outline" className="text-yellow-600">Unverified</Badge>
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          {new Date(user.createdAt).toLocaleDateString()}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex items-center justify-end gap-2">
-                            <Link href={`/dashboard/admin/users/${user.id}`}>
-                              <Button variant="outline" size="sm">
-                                <Eye className="mr-2 h-4 w-4" />
-                                View
-                              </Button>
-                            </Link>
-                            {/* Only admins can block/activate staff (admin/support), support can only manage tenants/landlords */}
-                            {((isAdmin) || (isSupport && user.role !== 'admin' && user.role !== 'support')) && (
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => handleStatusToggleClick(user.id, user.name, user.email, user.isActive)}
-                                disabled={isUpdatingStatus}
-                              >
-                                {user.isActive ? (
-                                  <>
-                                    <ShieldOff className="mr-2 h-4 w-4" />
-                                    Block
-                                  </>
-                                ) : (
-                                  <>
-                                    <Shield className="mr-2 h-4 w-4" />
-                                    Activate
-                                  </>
-                                )}
-                              </Button>
-                            )}
-                            {/* Only admins can delete users, and cannot delete admin/support staff */}
-                            {isAdmin && user.role !== 'admin' && user.role !== 'support' && (
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => handleDeleteClick(user.id, user.name, user.email)}
-                                disabled={isDeleting}
-                                className="text-destructive hover:text-destructive"
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            )}
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-              {/* Pagination */}
-              {pagination.totalPages > 1 && (
-                <div className="flex items-center justify-between mt-4">
-                  <div className="text-sm text-muted-foreground">
-                    Page {pagination.page} of {pagination.totalPages} ({pagination.total} total)
-                  </div>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setPage((p) => Math.max(1, p - 1))}
-                      disabled={pagination.page === 1 || isLoading}
-                    >
-                      Previous
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setPage((p) => Math.min(pagination.totalPages, p + 1))}
-                      disabled={pagination.page === pagination.totalPages || isLoading}
-                    >
-                      Next
-                    </Button>
-                  </div>
-                </div>
-              )}
-            </>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => refetch()}
+            disabled={isFetching}
+          >
+            {isFetching ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Refreshing...
+              </>
+            ) : (
+              <>
+                <RefreshCw className="mr-2 h-4 w-4" />
+                Refresh
+              </>
+            )}
+          </Button>
+          {(isAdmin) && (
+            <Button
+              onClick={() => setCreateStaffDialog({ ...createStaffDialog, open: true })}
+              className="ml-2 gap-2"
+            >
+              <Users className="h-4 w-4" />
+              Create Staff
+            </Button>
           )}
-        </CardContent>
-      </Card>
+        </div>
+
+        {/* Filters */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Filters & Search</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-4 md:grid-cols-5">
+              <div className="md:col-span-2">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Search by name or email..."
+                    value={searchQuery}
+                    onChange={(e) => {
+                      setSearchQuery(e.target.value);
+                      setPage(1); // Reset to first page on search
+                    }}
+                    className="pl-10"
+                  />
+                </div>
+              </div>
+              <Select value={roleFilter} onValueChange={(value) => { setRoleFilter(value); setPage(1); }}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Filter by role" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Roles</SelectItem>
+                  <SelectItem value="tenant">Tenants</SelectItem>
+                  <SelectItem value="landlord">Landlords</SelectItem>
+                  <SelectItem value="admin">Admins</SelectItem>
+                  <SelectItem value="support">Support</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select value={statusFilter} onValueChange={(value) => { setStatusFilter(value); setPage(1); }}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Filter by status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Status</SelectItem>
+                  <SelectItem value="active">Active</SelectItem>
+                  <SelectItem value="blocked">Blocked</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select value={`${sortBy}-${sortOrder}`} onValueChange={(value) => {
+                const [field, order] = value.split('-');
+                setSortBy(field as typeof sortBy);
+                setSortOrder(order as typeof sortOrder);
+              }}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Sort by" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="createdAt-desc">Newest First</SelectItem>
+                  <SelectItem value="createdAt-asc">Oldest First</SelectItem>
+                  <SelectItem value="name-asc">Name (A-Z)</SelectItem>
+                  <SelectItem value="name-desc">Name (Z-A)</SelectItem>
+                  <SelectItem value="email-asc">Email (A-Z)</SelectItem>
+                  <SelectItem value="lastLogin-desc">Last Login</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Users Table */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Users</CardTitle>
+            <CardDescription>
+              {isLoading ? 'Loading...' : `${pagination.total} user${pagination.total !== 1 ? 's' : ''} found${isFetching ? ' (updating...)' : ''}`}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {isLoading && users.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-12">
+                <Loader2 className="h-8 w-8 animate-spin text-primary mb-4" />
+                <p className="text-muted-foreground">Loading users...</p>
+              </div>
+            ) : users.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-12 text-center">
+                <Users className="h-12 w-12 text-muted-foreground mb-4" />
+                <h3 className="text-lg font-semibold mb-2">No users found</h3>
+                <p className="text-muted-foreground">
+                  Try adjusting your filters or search query
+                </p>
+              </div>
+            ) : (
+              <>
+                <div className="rounded-lg border overflow-hidden">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>User</TableHead>
+                        <TableHead>Role</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Email Verified</TableHead>
+                        <TableHead>Joined</TableHead>
+                        <TableHead className="text-right">Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {users.map((user) => (
+                        <TableRow key={user.id}>
+                          <TableCell>
+                            <div className="flex items-center gap-3">
+                              {user.avatar ? (
+                                <Image
+                                  src={user.avatar}
+                                  alt={user.name}
+                                  width={40}
+                                  height={40}
+                                  className="rounded-full object-cover"
+                                />
+                              ) : (
+                                <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                                  <Users className="h-5 w-5 text-primary" />
+                                </div>
+                              )}
+                              <div>
+                                <div className="font-medium">{user.name}</div>
+                                <div className="text-sm text-muted-foreground">{user.email}</div>
+                              </div>
+                            </div>
+                          </TableCell>
+                          <TableCell>{getRoleBadge(user.role)}</TableCell>
+                          <TableCell>
+                            {user.isActive ? (
+                              <Badge variant="default" className="gap-1">
+                                <Shield className="h-3 w-3" />
+                                Active
+                              </Badge>
+                            ) : (
+                              <Badge variant="destructive" className="gap-1">
+                                <ShieldOff className="h-3 w-3" />
+                                Blocked
+                              </Badge>
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            {user.isEmailVerified ? (
+                              <Badge variant="outline" className="text-green-600">Verified</Badge>
+                            ) : (
+                              <Badge variant="outline" className="text-yellow-600">Unverified</Badge>
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            {new Date(user.createdAt).toLocaleDateString()}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <div className="flex items-center justify-end gap-2">
+                              <Link href={`/dashboard/admin/users/${user.slug || user.id}`}>
+                                <Button variant="outline" size="sm">
+                                  <Eye className="mr-2 h-4 w-4" />
+                                  View
+                                </Button>
+                              </Link>
+                              {/* Only admins can block/activate staff (admin/support), support can only manage tenants/landlords */}
+                              {((isAdmin) || (isSupport && user.role !== 'admin' && user.role !== 'support')) && (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => handleStatusToggleClick(user.id, user.name, user.email, user.isActive)}
+                                  disabled={isUpdatingStatus}
+                                >
+                                  {user.isActive ? (
+                                    <>
+                                      <ShieldOff className="mr-2 h-4 w-4" />
+                                      Block
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Shield className="mr-2 h-4 w-4" />
+                                      Activate
+                                    </>
+                                  )}
+                                </Button>
+                              )}
+                              {/* Only admins can delete users, and cannot delete admin/support staff */}
+                              {isAdmin && user.role !== 'admin' && user.role !== 'support' && (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => handleDeleteClick(user.id, user.name, user.email)}
+                                  disabled={isDeleting}
+                                  className="text-destructive hover:text-destructive"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              )}
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+                {/* Pagination */}
+                {pagination.totalPages > 1 && (
+                  <div className="flex items-center justify-between mt-4">
+                    <div className="text-sm text-muted-foreground">
+                      Page {pagination.page} of {pagination.totalPages} ({pagination.total} total)
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setPage((p) => Math.max(1, p - 1))}
+                        disabled={pagination.page === 1 || isLoading}
+                      >
+                        Previous
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setPage((p) => Math.min(pagination.totalPages, p + 1))}
+                        disabled={pagination.page === pagination.totalPages || isLoading}
+                      >
+                        Next
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
+          </CardContent>
+        </Card>
       </div>
 
       {/* Status Toggle Confirmation Dialog */}
@@ -452,6 +515,103 @@ export function UsersManagementClient() {
         onConfirm={handleDeleteConfirm}
         isLoading={isDeleting}
       />
+
+      {/* Create Staff Dialog */}
+      <Dialog
+        open={createStaffDialog.open}
+        onOpenChange={(open) => setCreateStaffDialog({ ...createStaffDialog, open })}
+      >
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Create Staff Account</DialogTitle>
+            <DialogDescription>
+              Create a new Admin or Support account. Support accounts are pre-verified.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="name" className="text-right">
+                Name <span className="text-red-500">*</span>
+              </Label>
+              <Input
+                id="name"
+                value={createStaffDialog.name}
+                onChange={(e) => setCreateStaffDialog({ ...createStaffDialog, name: e.target.value })}
+                className="col-span-3"
+                placeholder="John Doe"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="email" className="text-right">
+                Email <span className="text-red-500">*</span>
+              </Label>
+              <Input
+                id="email"
+                type="email"
+                value={createStaffDialog.email}
+                onChange={(e) => setCreateStaffDialog({ ...createStaffDialog, email: e.target.value })}
+                className="col-span-3"
+                placeholder="john@example.com"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="password" className="text-right">
+                Password <span className="text-red-500">*</span>
+              </Label>
+              <Input
+                id="password"
+                type="password"
+                value={createStaffDialog.password}
+                onChange={(e) => setCreateStaffDialog({ ...createStaffDialog, password: e.target.value })}
+                className="col-span-3"
+                placeholder="******"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="phone" className="text-right">
+                Phone
+              </Label>
+              <Input
+                id="phone"
+                value={createStaffDialog.phone}
+                onChange={(e) => setCreateStaffDialog({ ...createStaffDialog, phone: e.target.value })}
+                className="col-span-3"
+                placeholder="+1234567890"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="role" className="text-right">
+                Role <span className="text-red-500">*</span>
+              </Label>
+              <Select
+                value={createStaffDialog.role}
+                onValueChange={(value: 'support' | 'admin') => setCreateStaffDialog({ ...createStaffDialog, role: value })}
+              >
+                <SelectTrigger className="col-span-3">
+                  <SelectValue placeholder="Select role" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="support">Support</SelectItem>
+                  <SelectItem value="admin">Admin</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setCreateStaffDialog({ ...createStaffDialog, open: false })}
+              disabled={isCreatingStaff}
+            >
+              Cancel
+            </Button>
+            <Button onClick={handleCreateStaff} disabled={isCreatingStaff}>
+              {isCreatingStaff && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Create Account
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

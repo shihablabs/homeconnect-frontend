@@ -23,6 +23,7 @@ export interface AdminStats {
 
 export interface PendingProperty {
   id: string;
+  slug: string;
   title: string;
   address: string;
   city: string;
@@ -72,6 +73,7 @@ export interface AddDocumentRequest {
 
 export interface User {
   id: string;
+  slug: string; // Add slug field
   name: string;
   email: string;
   role: 'tenant' | 'landlord' | 'admin' | 'support';

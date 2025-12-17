@@ -1,10 +1,8 @@
 'use client';
 
-import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Dialog,
   DialogContent,
@@ -16,7 +14,6 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import {
   Select,
   SelectContent,
@@ -32,9 +29,12 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Book, Plus, Edit, Trash2, Search, Eye, Download, Loader2, RefreshCw, AlertCircle } from 'lucide-react';
+import { Textarea } from '@/components/ui/textarea';
+import { userGuideApi, type CreateUserGuideRequest, type GuideCategory, type UserGuide } from '@/lib/api/support-api';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { AlertCircle, Book, Edit, Eye, Loader2, Plus, RefreshCw, Search, Trash2 } from 'lucide-react';
+import { useState } from 'react';
 import { toast } from 'sonner';
-import { userGuideApi, type UserGuide, type CreateUserGuideRequest, type GuideCategory } from '@/lib/api/support-api';
 
 
 export function UserGuidesClient() {
@@ -225,250 +225,250 @@ export function UserGuidesClient() {
               <RefreshCw className={`mr-2 h-4 w-4 ${isFetching ? 'animate-spin' : ''}`} />
               Refresh
             </Button>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button onClick={handleCreate}>
-              <Plus className="mr-2 h-4 w-4" />
-              Create Guide
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>{isEditMode ? 'Edit Guide' : 'Create New Guide'}</DialogTitle>
-              <DialogDescription>
-                {isEditMode ? 'Update user guide' : 'Create a new user guide or tutorial'}
-              </DialogDescription>
-            </DialogHeader>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="title">Title *</Label>
-                <Input
-                  id="title"
-                  placeholder="Guide title..."
-                  value={guideForm.title}
-                  onChange={(e) => setGuideForm({ ...guideForm, title: e.target.value })}
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="description">Description</Label>
-                <Textarea
-                  id="description"
-                  placeholder="Brief description..."
-                  value={guideForm.description}
-                  onChange={(e) => setGuideForm({ ...guideForm, description: e.target.value })}
-                  rows={2}
-                />
-              </div>
-              <div className="grid gap-4 md:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="category">Category *</Label>
-                  <Select
-                    value={guideForm.category}
-                    onValueChange={(value) => setGuideForm({ ...guideForm, category: value })}
-                    required
-                  >
-                    <SelectTrigger id="category">
-                      <SelectValue placeholder="Select category" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="getting-started">Getting Started</SelectItem>
-                      <SelectItem value="booking">Booking Guide</SelectItem>
-                      <SelectItem value="payment">Payment Guide</SelectItem>
-                      <SelectItem value="property">Property Management</SelectItem>
-                      <SelectItem value="account">Account Settings</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="targetAudience">Target Audience</Label>
-                  <Select
-                    value={guideForm.targetAudience}
-                    onValueChange={(value: 'tenant' | 'landlord' | 'all') =>
-                      setGuideForm({ ...guideForm, targetAudience: value })
-                    }
-                  >
-                    <SelectTrigger id="targetAudience">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Users</SelectItem>
-                      <SelectItem value="tenant">Tenants</SelectItem>
-                      <SelectItem value="landlord">Landlords</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="content">Content *</Label>
-                <Textarea
-                  id="content"
-                  placeholder="Guide content (supports markdown)..."
-                  value={guideForm.content}
-                  onChange={(e) => setGuideForm({ ...guideForm, content: e.target.value })}
-                  rows={15}
-                  className="font-mono text-sm"
-                  required
-                />
-              </div>
-              <DialogFooter>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setIsDialogOpen(false)}
-                >
-                  Cancel
+            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+              <DialogTrigger asChild>
+                <Button onClick={handleCreate}>
+                  <Plus className="mr-2 h-4 w-4" />
+                  Create Guide
                 </Button>
-                <Button 
-                  type="submit" 
-                  disabled={createMutation.isPending || updateMutation.isPending}
-                >
-                  {(createMutation.isPending || updateMutation.isPending) && (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  )}
-                  {isEditMode ? 'Update' : 'Create'} Guide
-                </Button>
-              </DialogFooter>
-            </form>
-          </DialogContent>
-        </Dialog>
+              </DialogTrigger>
+              <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle>{isEditMode ? 'Edit Guide' : 'Create New Guide'}</DialogTitle>
+                  <DialogDescription>
+                    {isEditMode ? 'Update user guide' : 'Create a new user guide or tutorial'}
+                  </DialogDescription>
+                </DialogHeader>
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="title">Title *</Label>
+                    <Input
+                      id="title"
+                      placeholder="Guide title..."
+                      value={guideForm.title}
+                      onChange={(e) => setGuideForm({ ...guideForm, title: e.target.value })}
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="description">Description</Label>
+                    <Textarea
+                      id="description"
+                      placeholder="Brief description..."
+                      value={guideForm.description}
+                      onChange={(e) => setGuideForm({ ...guideForm, description: e.target.value })}
+                      rows={2}
+                    />
+                  </div>
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label htmlFor="category">Category *</Label>
+                      <Select
+                        value={guideForm.category}
+                        onValueChange={(value) => setGuideForm({ ...guideForm, category: value })}
+                        required
+                      >
+                        <SelectTrigger id="category">
+                          <SelectValue placeholder="Select category" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="getting-started">Getting Started</SelectItem>
+                          <SelectItem value="booking">Booking Guide</SelectItem>
+                          <SelectItem value="payment">Payment Guide</SelectItem>
+                          <SelectItem value="property">Property Management</SelectItem>
+                          <SelectItem value="account">Account Settings</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="targetAudience">Target Audience</Label>
+                      <Select
+                        value={guideForm.targetAudience}
+                        onValueChange={(value: 'tenant' | 'landlord' | 'all') =>
+                          setGuideForm({ ...guideForm, targetAudience: value })
+                        }
+                      >
+                        <SelectTrigger id="targetAudience">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All Users</SelectItem>
+                          <SelectItem value="tenant">Tenants</SelectItem>
+                          <SelectItem value="landlord">Landlords</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="content">Content *</Label>
+                    <Textarea
+                      id="content"
+                      placeholder="Guide content (supports markdown)..."
+                      value={guideForm.content}
+                      onChange={(e) => setGuideForm({ ...guideForm, content: e.target.value })}
+                      rows={15}
+                      className="font-mono text-sm"
+                      required
+                    />
+                  </div>
+                  <DialogFooter>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => setIsDialogOpen(false)}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      type="submit"
+                      disabled={createMutation.isPending || updateMutation.isPending}
+                    >
+                      {(createMutation.isPending || updateMutation.isPending) && (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      )}
+                      {isEditMode ? 'Update' : 'Create'} Guide
+                    </Button>
+                  </DialogFooter>
+                </form>
+              </DialogContent>
+            </Dialog>
           </div>
         </div>
 
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle>All Guides</CardTitle>
-              <CardDescription>
-                {filteredGuides.length} guide{filteredGuides.length !== 1 ? 's' : ''} found
-              </CardDescription>
-            </div>
-            <div className="flex gap-2">
-              <div className="relative w-64">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search guides..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10"
-                />
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle>All Guides</CardTitle>
+                <CardDescription>
+                  {filteredGuides.length} guide{filteredGuides.length !== 1 ? 's' : ''} found
+                </CardDescription>
               </div>
-              <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                <SelectTrigger className="w-[150px]">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Categories</SelectItem>
-                  <SelectItem value="getting-started">Getting Started</SelectItem>
-                  <SelectItem value="booking">Booking</SelectItem>
-                  <SelectItem value="payment">Payment</SelectItem>
-                  <SelectItem value="property">Property</SelectItem>
-                  <SelectItem value="account">Account</SelectItem>
-                </SelectContent>
-              </Select>
+              <div className="flex gap-2">
+                <div className="relative w-64">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Search guides..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
+                <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                  <SelectTrigger className="w-[150px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Categories</SelectItem>
+                    <SelectItem value="getting-started">Getting Started</SelectItem>
+                    <SelectItem value="booking">Booking</SelectItem>
+                    <SelectItem value="payment">Payment</SelectItem>
+                    <SelectItem value="property">Property</SelectItem>
+                    <SelectItem value="account">Account</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          {loading ? (
-            <div className="flex flex-col items-center justify-center py-12">
-              <Loader2 className="h-8 w-8 animate-spin text-primary mb-4" />
-              <p className="text-muted-foreground">Loading guides...</p>
-            </div>
-          ) : error ? (
-            <div className="flex flex-col items-center justify-center py-12 text-center">
-              <AlertCircle className="h-12 w-12 text-destructive mb-4" />
-              <h3 className="text-lg font-semibold mb-2">Failed to load guides</h3>
-              <p className="text-muted-foreground mb-4">
-                {error instanceof Error ? error.message : 'An unexpected error occurred'}
-              </p>
-              <Button onClick={() => refetch()} variant="outline">
-                <RefreshCw className="mr-2 h-4 w-4" />
-                Try Again
-              </Button>
-            </div>
-          ) : filteredGuides.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-12 text-center">
-              <Book className="h-12 w-12 text-muted-foreground mb-4" />
-              <h3 className="text-lg font-semibold mb-2">No guides found</h3>
-              <p className="text-muted-foreground">
-                {searchQuery || categoryFilter !== 'all'
-                  ? 'Try adjusting your filters'
-                  : 'Create your first user guide'}
-              </p>
-            </div>
-          ) : (
-            <div className="rounded-lg border overflow-hidden">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Title</TableHead>
-                    <TableHead>Category</TableHead>
-                    <TableHead>Audience</TableHead>
-                    <TableHead>Views</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Updated</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredGuides.map((guide) => (
-                    <TableRow key={guide.id}>
-                      <TableCell className="font-medium">{guide.title}</TableCell>
-                      <TableCell>
-                        <Badge variant="outline" className="capitalize">
-                          {guide.category.replace('-', ' ')}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="secondary" className="capitalize">
-                          {guide.targetAudience}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>{guide.views}</TableCell>
-                      <TableCell>
-                        {guide.isPublished ? (
-                          <Badge variant="default">Published</Badge>
-                        ) : (
-                          <Badge variant="outline">Draft</Badge>
-                        )}
-                      </TableCell>
-                      <TableCell className="text-sm text-muted-foreground">
-                        {new Date(guide.updatedAt).toLocaleDateString()}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex gap-2 justify-end">
-                          <Button variant="outline" size="sm">
-                            <Eye className="mr-2 h-4 w-4" />
-                            View
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleEdit(guide)}
-                          >
-                            <Edit className="mr-2 h-4 w-4" />
-                            Edit
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleDelete(guide.id)}
-                          >
-                            <Trash2 className="mr-2 h-4 w-4" />
-                            Delete
-                          </Button>
-                        </div>
-                      </TableCell>
+          </CardHeader>
+          <CardContent>
+            {loading ? (
+              <div className="flex flex-col items-center justify-center py-12">
+                <Loader2 className="h-8 w-8 animate-spin text-primary mb-4" />
+                <p className="text-muted-foreground">Loading guides...</p>
+              </div>
+            ) : error ? (
+              <div className="flex flex-col items-center justify-center py-12 text-center">
+                <AlertCircle className="h-12 w-12 text-destructive mb-4" />
+                <h3 className="text-lg font-semibold mb-2">Failed to load guides</h3>
+                <p className="text-muted-foreground mb-4">
+                  {error instanceof Error ? error.message : 'An unexpected error occurred'}
+                </p>
+                <Button onClick={() => refetch()} variant="outline">
+                  <RefreshCw className="mr-2 h-4 w-4" />
+                  Try Again
+                </Button>
+              </div>
+            ) : filteredGuides.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-12 text-center">
+                <Book className="h-12 w-12 text-muted-foreground mb-4" />
+                <h3 className="text-lg font-semibold mb-2">No guides found</h3>
+                <p className="text-muted-foreground">
+                  {searchQuery || categoryFilter !== 'all'
+                    ? 'Try adjusting your filters'
+                    : 'Create your first user guide'}
+                </p>
+              </div>
+            ) : (
+              <div className="rounded-lg border overflow-hidden">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Title</TableHead>
+                      <TableHead>Category</TableHead>
+                      <TableHead>Audience</TableHead>
+                      <TableHead>Views</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Updated</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredGuides.map((guide) => (
+                      <TableRow key={guide.id}>
+                        <TableCell className="font-medium">{guide.title}</TableCell>
+                        <TableCell>
+                          <Badge variant="outline" className="capitalize">
+                            {guide.category.replace('-', ' ')}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="secondary" className="capitalize">
+                            {guide.targetAudience}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>{guide.views}</TableCell>
+                        <TableCell>
+                          {guide.isPublished ? (
+                            <Badge variant="default">Published</Badge>
+                          ) : (
+                            <Badge variant="outline">Draft</Badge>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-sm text-muted-foreground">
+                          {new Date(guide.updatedAt).toLocaleDateString()}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex gap-2 justify-end">
+                            <Button variant="outline" size="sm">
+                              <Eye className="mr-2 h-4 w-4" />
+                              View
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleEdit(guide)}
+                            >
+                              <Edit className="mr-2 h-4 w-4" />
+                              Edit
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleDelete(guide.id)}
+                            >
+                              <Trash2 className="mr-2 h-4 w-4" />
+                              Delete
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

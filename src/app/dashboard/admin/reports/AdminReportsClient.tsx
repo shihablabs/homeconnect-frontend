@@ -1,9 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -13,8 +11,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAdminStats } from '@/hooks/useAdminStats';
-import { BarChart3, TrendingUp, Users, Building, DollarSign, Download, FileText, Loader2, RefreshCw } from 'lucide-react';
+import { BarChart3, Building, DollarSign, Download, FileText, Loader2, RefreshCw, Users } from 'lucide-react';
+import { useState } from 'react';
 import { toast } from 'sonner';
 
 export function AdminReportsClient() {
@@ -29,7 +29,7 @@ export function AdminReportsClient() {
     try {
       // TODO: Implement report generation API
       toast.info('Report generation feature coming soon');
-    } catch (error) {
+    } catch {
       toast.error('Failed to generate report');
     }
   };
@@ -38,7 +38,7 @@ export function AdminReportsClient() {
     try {
       // TODO: Implement export API
       toast.info(`${format.toUpperCase()} export feature coming soon`);
-    } catch (error) {
+    } catch {
       toast.error(`Failed to export ${format}`);
     }
   };

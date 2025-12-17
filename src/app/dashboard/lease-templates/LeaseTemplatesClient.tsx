@@ -1,9 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Dialog,
   DialogContent,
@@ -15,7 +14,6 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import {
   Table,
   TableBody,
@@ -24,7 +22,9 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { FileText, Plus, Edit, Trash2, Download, Eye, Copy } from 'lucide-react';
+import { Textarea } from '@/components/ui/textarea';
+import { Copy, Download, Edit, FileText, Plus, Trash2 } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
 interface LeaseTemplate {
@@ -59,7 +59,7 @@ export function LeaseTemplatesClient() {
       // TODO: Implement templates API
       // const response = await templatesApi.getLeaseTemplates();
       // setTemplates(response.templates);
-      
+
       // Mock default template
       setTemplates([
         {
@@ -130,7 +130,7 @@ export function LeaseTemplatesClient() {
   };
 
   const handleDelete = async (templateId: string) => {
-    if (!confirm('Are you sure you want to delete this template?')) return;
+    if (!confirm(`Are you sure you want to delete template ${templateId}?`)) return;
 
     try {
       // TODO: Implement template deletion API
@@ -143,11 +143,12 @@ export function LeaseTemplatesClient() {
     }
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleDownload = async (template: LeaseTemplate) => {
     try {
       // TODO: Implement template download API
       toast.info('Template download feature coming soon');
-    } catch (error) {
+    } catch {
       toast.error('Failed to download template');
     }
   };

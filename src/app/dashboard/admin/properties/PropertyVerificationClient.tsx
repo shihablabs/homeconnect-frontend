@@ -1,10 +1,16 @@
 'use client';
 
-import { useState } from 'react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { ConfirmDialogWithInput } from '@/components/ui/confirm-dialog-with-input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import {
   Table,
   TableBody,
@@ -13,21 +19,13 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { adminApi, type PendingProperty } from '@/lib/api/admin-api';
-import { Building2, CheckCircle2, XCircle, Eye, FileCheck, Loader2, RefreshCw, Trash2 } from 'lucide-react';
-import Link from 'next/link';
-import { toast } from 'sonner';
-import { useMutation } from '@tanstack/react-query';
+import { adminApi } from '@/lib/api/admin-api';
 import { propertiesApi } from '@/lib/api/properties-api';
-import { ConfirmDialog } from '@/components/ui/confirm-dialog';
-import { ConfirmDialogWithInput } from '@/components/ui/confirm-dialog-with-input';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { Building2, CheckCircle2, Eye, FileCheck, Loader2, RefreshCw, Trash2, XCircle } from 'lucide-react';
+import Link from 'next/link';
+import { useState } from 'react';
+import { toast } from 'sonner';
 
 export function PropertyVerificationClient() {
   const [page, setPage] = useState(1);
@@ -54,8 +52,8 @@ export function PropertyVerificationClient() {
       const response = await adminApi.getPendingProperties({
         page,
         limit: 20,
-        status: statusFilter === 'all' 
-          ? undefined 
+        status: statusFilter === 'all'
+          ? undefined
           : (statusFilter as 'pending' | 'under_review' | 'approved' | 'rejected'),
       });
       return {
@@ -131,8 +129,8 @@ export function PropertyVerificationClient() {
   const handleStatusChangeConfirm = async (message?: string) => {
     if (!confirmDialog.propertyId || !confirmDialog.newStatus) return;
     setChangingStatus(confirmDialog.propertyId);
-    statusChangeMutation.mutate({ 
-      id: confirmDialog.propertyId, 
+    statusChangeMutation.mutate({
+      id: confirmDialog.propertyId,
       status: confirmDialog.newStatus,
       notes: message,
     });
@@ -226,195 +224,195 @@ export function PropertyVerificationClient() {
   return (
     <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
       <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Property Verification</h1>
-          <p className="text-muted-foreground mt-1">
-            Review and verify property listings
-          </p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold">Property Verification</h1>
+            <p className="text-muted-foreground mt-1">
+              Review and verify property listings
+            </p>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => refetch()}
+            disabled={isFetching}
+          >
+            {isFetching ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Refreshing...
+              </>
+            ) : (
+              <>
+                <RefreshCw className="mr-2 h-4 w-4" />
+                Refresh
+              </>
+            )}
+          </Button>
         </div>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => refetch()}
-          disabled={isFetching}
-        >
-          {isFetching ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Refreshing...
-            </>
-          ) : (
-            <>
-              <RefreshCw className="mr-2 h-4 w-4" />
-              Refresh
-            </>
-          )}
-        </Button>
-      </div>
 
-      {/* Filter */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Filters</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-[200px]">
-              <SelectValue placeholder="Filter by status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Status</SelectItem>
-              <SelectItem value="pending">Pending</SelectItem>
-              <SelectItem value="under_review">Under Review</SelectItem>
-              <SelectItem value="approved">Approved</SelectItem>
-              <SelectItem value="rejected">Rejected</SelectItem>
-            </SelectContent>
-          </Select>
-        </CardContent>
-      </Card>
+        {/* Filter */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Filters</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="w-[200px]">
+                <SelectValue placeholder="Filter by status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Status</SelectItem>
+                <SelectItem value="pending">Pending</SelectItem>
+                <SelectItem value="under_review">Under Review</SelectItem>
+                <SelectItem value="approved">Approved</SelectItem>
+                <SelectItem value="rejected">Rejected</SelectItem>
+              </SelectContent>
+            </Select>
+          </CardContent>
+        </Card>
 
-      {/* Properties Table */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Properties</CardTitle>
-          <CardDescription>
-            {loading ? 'Loading...' : `${properties.length} propert${properties.length !== 1 ? 'ies' : 'y'} found${isFetching ? ' (updating...)' : ''}`}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {!properties || properties.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-12 text-center">
-              <Building2 className="h-12 w-12 text-muted-foreground mb-4" />
-              <h3 className="text-lg font-semibold mb-2">No properties found</h3>
-              <p className="text-muted-foreground">
-                Try adjusting your filters
-              </p>
-            </div>
-          ) : (
-            <>
-              <div className="rounded-lg border overflow-hidden">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Property</TableHead>
-                      <TableHead>Owner</TableHead>
-                      <TableHead>Location</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Created</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {properties.map((property) => (
-                      <TableRow key={property.id}>
-                        <TableCell>
-                          <div className="font-medium">{property.title}</div>
-                          <div className="text-sm text-muted-foreground">
-                            ID: {property.id.slice(0, 8)}...
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div>
-                            <div className="font-medium">{property.owner?.name}</div>
-                            <div className="text-sm text-muted-foreground">
-                              {property.owner?.email}
-                            </div>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div>
-                            <div>{property.address}</div>
-                            <div className="text-sm text-muted-foreground">
-                              {property.city}
-                            </div>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            {getStatusBadge(property.verificationStatus)}
-                            {changingStatus === property.id ? (
-                              <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />
-                            ) : (
-                              <Select
-                                value={property.verificationStatus}
-                                onValueChange={(value) => {
-                                  if (value !== property.verificationStatus) {
-                                    handleStatusChangeClick(property.id, property.title, value);
-                                  }
-                                }}
-                                disabled={changingStatus === property.id}
-                              >
-                                <SelectTrigger className="w-[140px] h-7 text-xs">
-                                  <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="pending">Pending</SelectItem>
-                                  <SelectItem value="under_review">Under Review</SelectItem>
-                                  <SelectItem value="approved">Approved</SelectItem>
-                                  <SelectItem value="rejected">Rejected</SelectItem>
-                                </SelectContent>
-                              </Select>
-                            )}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          {new Date(property.createdAt).toLocaleDateString()}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex items-center justify-end gap-2">
-                            <Link href={`/dashboard/admin/properties/${property.id}`}>
-                              <Button variant="outline" size="sm">
-                                <Eye className="mr-2 h-4 w-4" />
-                                Review
-                              </Button>
-                            </Link>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleDeleteClick(property.id, property.title)}
-                              disabled={deleteMutation.isPending}
-                              className="text-destructive hover:text-destructive"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+        {/* Properties Table */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Properties</CardTitle>
+            <CardDescription>
+              {loading ? 'Loading...' : `${properties.length} propert${properties.length !== 1 ? 'ies' : 'y'} found${isFetching ? ' (updating...)' : ''}`}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {!properties || properties.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-12 text-center">
+                <Building2 className="h-12 w-12 text-muted-foreground mb-4" />
+                <h3 className="text-lg font-semibold mb-2">No properties found</h3>
+                <p className="text-muted-foreground">
+                  Try adjusting your filters
+                </p>
               </div>
-              {/* Pagination */}
-              {totalPages > 1 && (
-                <div className="flex items-center justify-between mt-4">
-                  <div className="text-sm text-muted-foreground">
-                    Page {page} of {totalPages}
-                  </div>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setPage((p) => Math.max(1, p - 1))}
-                      disabled={page === 1}
-                    >
-                      Previous
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                      disabled={page === totalPages}
-                    >
-                      Next
-                    </Button>
-                  </div>
+            ) : (
+              <>
+                <div className="rounded-lg border overflow-hidden">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Property</TableHead>
+                        <TableHead>Owner</TableHead>
+                        <TableHead>Location</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Created</TableHead>
+                        <TableHead className="text-right">Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {properties.map((property) => (
+                        <TableRow key={property.id}>
+                          <TableCell>
+                            <div className="font-medium">{property.title}</div>
+                            <div className="text-sm text-muted-foreground">
+                              ID: {property.id.slice(0, 8)}...
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div>
+                              <div className="font-medium">{property.owner?.name}</div>
+                              <div className="text-sm text-muted-foreground">
+                                {property.owner?.email}
+                              </div>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div>
+                              <div>{property.address}</div>
+                              <div className="text-sm text-muted-foreground">
+                                {property.city}
+                              </div>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-2">
+                              {getStatusBadge(property.verificationStatus)}
+                              {changingStatus === property.id ? (
+                                <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />
+                              ) : (
+                                <Select
+                                  value={property.verificationStatus}
+                                  onValueChange={(value) => {
+                                    if (value !== property.verificationStatus) {
+                                      handleStatusChangeClick(property.id, property.title, value);
+                                    }
+                                  }}
+                                  disabled={changingStatus === property.id}
+                                >
+                                  <SelectTrigger className="w-[140px] h-7 text-xs">
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="pending">Pending</SelectItem>
+                                    <SelectItem value="under_review">Under Review</SelectItem>
+                                    <SelectItem value="approved">Approved</SelectItem>
+                                    <SelectItem value="rejected">Rejected</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              )}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            {new Date(property.createdAt).toLocaleDateString()}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <div className="flex items-center justify-end gap-2">
+                              <Link href={`/dashboard/admin/properties/${property.slug || property.id}`}>
+                                <Button variant="outline" size="sm">
+                                  <Eye className="mr-2 h-4 w-4" />
+                                  Review
+                                </Button>
+                              </Link>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleDeleteClick(property.id, property.title)}
+                                disabled={deleteMutation.isPending}
+                                className="text-destructive hover:text-destructive"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
                 </div>
-              )}
-            </>
-          )}
-        </CardContent>
-      </Card>
+                {/* Pagination */}
+                {totalPages > 1 && (
+                  <div className="flex items-center justify-between mt-4">
+                    <div className="text-sm text-muted-foreground">
+                      Page {page} of {totalPages}
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setPage((p) => Math.max(1, p - 1))}
+                        disabled={page === 1}
+                      >
+                        Previous
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                        disabled={page === totalPages}
+                      >
+                        Next
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
+          </CardContent>
+        </Card>
       </div>
 
       {/* Status Change Confirmation Dialog with Message Input */}

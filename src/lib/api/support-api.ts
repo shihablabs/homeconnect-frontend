@@ -33,6 +33,9 @@ export type GuideCategory =
 
 export type TargetAudience = "tenant" | "landlord" | "all";
 
+export type TicketStatus = "open" | "in_progress" | "resolved" | "closed";
+export type TicketPriority = "low" | "medium" | "high" | "urgent";
+
 export interface KnowledgeArticle {
   id: string;
   title: string;
@@ -77,6 +80,53 @@ export interface GetSupportContentOptions {
   search?: string;
   isPublished?: boolean;
   targetAudience?: string;
+}
+
+export interface GetTicketsOptions {
+  page?: number;
+  limit?: number;
+  status?: string;
+  priority?: string;
+  search?: string;
+  userId?: string;
+  assignedTo?: string;
+}
+
+export interface SupportTicket {
+  id: string;
+  subject: string;
+  description: string;
+  user: {
+    _id: string;
+    name: string;
+    email: string;
+  } | string;
+  status: TicketStatus;
+  priority: TicketPriority;
+  category: string;
+  images: string[];
+  assignedTo?: {
+    _id: string;
+    name: string;
+    email: string;
+  } | string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateTicketRequest {
+  subject: string;
+  description: string;
+  priority: TicketPriority;
+  category: string;
+  images?: string[];
+}
+
+export interface UpdateTicketRequest {
+  status?: TicketStatus;
+  priority?: TicketPriority;
+  assignedTo?: string;
+  reply?: string;
 }
 
 export interface CreateKnowledgeArticleRequest {
@@ -138,6 +188,77 @@ export interface SupportContentResponse<T> {
 }
 
 // ==================== API METHODS ====================
+
+// ==================== TICKET API ====================
+
+export const ticketApi = {
+  /**
+   * Get tickets
+   */
+  getTickets: async (
+    options: GetTicketsOptions = {},
+  ): Promise<SupportContentResponse<SupportTicket>> => {
+    const params = new URLSearchParams();
+    if (options.page) params.append("page", options.page.toString());
+    if (options.limit) params.append("limit", options.limit.toString());
+    if (options.status) params.append("status", options.status);
+    if (options.priority) params.append("priority", options.priority);
+    if (options.search) params.append("search", options.search);
+    if (options.userId) params.append("userId", options.userId);
+    if (options.assignedTo) params.append("assignedTo", options.assignedTo);
+
+    const response = await axios.get(
+      `${API_BASE_URL}/support/tickets?${params.toString()}`,
+      { headers: getAuthHeaders() },
+    );
+
+    return {
+      data: response.data.data || [],
+      meta: response.data.meta || { total: 0, hasNext: false },
+    };
+  },
+
+  /**
+   * Get ticket by ID
+   */
+  getTicketById: async (ticketId: string): Promise<SupportTicket> => {
+    const response = await axios.get(
+      `${API_BASE_URL}/support/tickets/${ticketId}`,
+      { headers: getAuthHeaders() },
+    );
+
+    return response.data.data;
+  },
+
+  /**
+   * Create ticket
+   */
+  createTicket: async (data: CreateTicketRequest): Promise<SupportTicket> => {
+    const response = await axios.post(
+      `${API_BASE_URL}/support/tickets`,
+      data,
+      { headers: getAuthHeaders() },
+    );
+
+    return response.data.data;
+  },
+
+  /**
+   * Update ticket
+   */
+  updateTicket: async (
+    ticketId: string,
+    data: UpdateTicketRequest,
+  ): Promise<SupportTicket> => {
+    const response = await axios.patch(
+      `${API_BASE_URL}/support/tickets/${ticketId}`,
+      data,
+      { headers: getAuthHeaders() },
+    );
+
+    return response.data.data;
+  },
+};
 
 /**
  * Get authorization headers

@@ -1,11 +1,9 @@
 'use client';
 
-import { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import {
   Select,
   SelectContent,
@@ -14,7 +12,10 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { HelpCircle, MessageSquare, FileText, Send, Search } from 'lucide-react';
+import { Textarea } from '@/components/ui/textarea';
+import { ticketApi, type CreateTicketRequest, type TicketPriority } from '@/lib/api/support-api';
+import { FileText, MessageSquare, Send } from 'lucide-react';
+import { useState } from 'react';
 import { toast } from 'sonner';
 
 export function TenantSupportClient() {
@@ -35,8 +36,14 @@ export function TenantSupportClient() {
 
     try {
       setSubmitting(true);
-      // TODO: Implement support ticket creation API
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const payload: CreateTicketRequest = {
+        subject: ticketForm.subject,
+        category: ticketForm.category,
+        priority: ticketForm.priority as TicketPriority,
+        description: ticketForm.description,
+      };
+      await ticketApi.createTicket(payload);
+
       toast.success('Support ticket created successfully!');
       setTicketForm({
         subject: '',

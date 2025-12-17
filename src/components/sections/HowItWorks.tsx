@@ -1,4 +1,4 @@
-import { ArrowRight, CalendarDays, CheckCircle, FileSignature, Search, Sparkles } from "lucide-react";
+import { ArrowRight, CheckCircle, FileSignature, Search, Sparkles } from "lucide-react";
 
 const steps = [
   {
@@ -6,12 +6,6 @@ const steps = [
     desc: "Use AI-powered filters to find your perfect match with personalized recommendations.",
     Icon: Search,
     features: ["AI Recommendations", "Smart Filters", "Price Alerts"]
-  },
-  {
-    title: "Virtual Tour",
-    desc: "Schedule live video tours or explore properties with immersive 360° virtual views.",
-    Icon: CalendarDays,
-    features: ["360° Virtual Tours", "Live Video Calls", "Flexible Scheduling"]
   },
   {
     title: "Digital Signing",
@@ -34,14 +28,14 @@ export default function HowItWorks() {
         <div className="text-center max-w-3xl mx-auto mb-16">
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full text-white text-sm font-medium mb-6 shadow-lg shadow-cyan-500/25">
             <Sparkles className="w-4 h-4" />
-            Simple 3-Step Process
+            Simple 2-Step Process
           </div>
 
           <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
             Find Your Dream Home in{" "}
             <span className="relative inline-block">
               <span className="relative z-10 bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent">
-                3 Easy Steps
+                2 Easy Steps
               </span>
               <div className="absolute bottom-2 left-0 w-full h-3 bg-cyan-200/40 -z-10 rounded-full" />
             </span>
@@ -54,7 +48,7 @@ export default function HowItWorks() {
         </div>
 
         {/* Steps Grid */}
-        <div className="grid gap-8 lg:grid-cols-3 max-w-7xl mx-auto">
+        <div className="grid gap-8 lg:grid-cols-2 max-w-5xl mx-auto">
           {steps.map(({ title, desc, Icon, features }, index) => (
             <div
               key={title}

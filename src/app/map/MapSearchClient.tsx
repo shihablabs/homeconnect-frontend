@@ -1,33 +1,25 @@
 "use client";
 
+import { FilterSidebar } from "@/app/(main)/properties/FilterSidebar";
 import { PropertyCard } from "@/components/cards/PropertyCard";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { PropertyResponse, isRentalResponse, PropertyType } from "@/types/property.types";
-import { useGetPropertiesQuery, useGetAvailableFiltersQuery } from "@/redux/features/property/propertyApiSlice";
-import { PropertyFilters } from "@/types/property.types";
-import L from "leaflet";
-import "leaflet/dist/leaflet.css";
-import { Filter, Search, X, Loader2, MapPin, RefreshCw } from "lucide-react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useDebounce } from "../../hooks/useDebounce";
-import { useRouter, useSearchParams } from "next/navigation";
-import { FilterSidebar } from "@/app/(main)/properties/FilterSidebar";
 import {
   Sheet,
   SheetContent,
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { useGetAvailableFiltersQuery, useGetPropertiesQuery } from "@/redux/features/property/propertyApiSlice";
+import { isRentalResponse, PropertyFilters, PropertyResponse, PropertyType } from "@/types/property.types";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
+import { Filter, Loader2, MapPin, RefreshCw, Search, X } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useDebounce } from "../../hooks/useDebounce";
 
 type MapItem = PropertyResponse;
 
@@ -286,6 +278,7 @@ export default function MapSearchClient() {
         mapRef.current = null;
       }
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Update markers when items or selection change
@@ -326,22 +319,18 @@ export default function MapSearchClient() {
         const html = `
           <div style="font-size:12px; line-height:1.2; max-width:250px">
             <div style="font-weight:600; margin-bottom:2px;">${p.title}</div>
-            <div style="color:#6b7280">${
-              p.neighborhood ? `${p.neighborhood}, ` : ""
-            }${p.city}</div>
+            <div style="color:#6b7280">${p.neighborhood ? `${p.neighborhood}, ` : ""
+          }${p.city}</div>
             <div style="margin-top:4px; font-weight:500">
-              ${currencyValue} ${priceValue.toLocaleString()}${
-          p.listingType === "rent" ? "/mo" : ""
-        }
+              ${currencyValue} ${priceValue.toLocaleString()}${p.listingType === "rent" ? "/mo" : ""
+          }
             </div>
             <div style="margin-top:2px; font-size:11px; color:#6b7280">
-              ${p.bedrooms} bed • ${
-          p.bathrooms
-        } bath • ${p.areaSize.toLocaleString()} ${p.areaUnit ?? "sqft"}
+              ${p.bedrooms} bed • ${p.bathrooms
+          } bath • ${p.areaSize.toLocaleString()} ${p.areaUnit ?? "sqft"}
             </div>
-            <a href="/properties/${
-              p.id
-            }" style="color:#2563eb; text-decoration:underline; font-size:11px; display:inline-block; margin-top:4px;">View details</a>
+            <a href="/properties/${p.id
+          }" style="color:#2563eb; text-decoration:underline; font-size:11px; display:inline-block; margin-top:4px;">View details</a>
           </div>
         `;
 
@@ -412,7 +401,7 @@ export default function MapSearchClient() {
     <div className="grid gap-6 md:grid-cols-12 mt-20">
       {/* Map */}
       <section className="md:col-span-7 lg:col-span-8">
-        <div className="overflow-hidden rounded-xl border h-[70vh] md:h-[80vh] sticky top-20 relative">
+        <div className="overflow-hidden rounded-xl border h-[70vh] md:h-[80vh] sticky top-20">
           {/* Map Container */}
           <div
             ref={mapElRef}
@@ -712,11 +701,10 @@ export default function MapSearchClient() {
                 items.map((property) => (
                   <div
                     key={property.id}
-                    className={`rounded-lg border p-3 cursor-pointer transition-all ${
-                      selectedId === property.id
-                        ? "ring-2 ring-primary border-primary bg-primary/5"
-                        : "hover:border-primary/50"
-                    }`}
+                    className={`rounded-lg border p-3 cursor-pointer transition-all ${selectedId === property.id
+                      ? "ring-2 ring-primary border-primary bg-primary/5"
+                      : "hover:border-primary/50"
+                      }`}
                     onClick={() => setSelectedId(property.id)}
                   >
                     <PropertyCard property={property} />

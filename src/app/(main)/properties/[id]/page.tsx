@@ -19,7 +19,6 @@ export default function Page() {
     isError,
     error,
   } = useGetPropertyByIdQuery(id ?? "");
-  console.log("Test checking single properties:", apiResponse);
 
   if (isLoading) {
     return <PropertySkeleton />;

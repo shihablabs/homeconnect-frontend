@@ -46,6 +46,7 @@ export interface PropertyFilters {
 
 export interface PropertyResponse {
   id: string;
+  slug: string;
   title: string;
   description: string;
   listingType: 'rent' | 'sale';
@@ -73,7 +74,6 @@ export interface PropertyResponse {
   amenities: string[];
   images: string[];
   videos?: string[];
-  virtualTour?: string;
   floorPlans?: string[];
   status: string;
   featured: boolean;
@@ -133,7 +133,6 @@ export interface CreatePropertyData {
   amenities: string[];
   images: string[];
   videos?: string[];
-  virtualTour?: string;
   floorPlans?: string[];
   tags?: string[];
   agent?: string;
@@ -316,7 +315,7 @@ export const propertiesApi = {
 
   // Get user's favorite properties
   getUserFavoriteProperties: async (
-    page: number = 1, 
+    page: number = 1,
     limit: number = 20,
     listingType?: 'rent' | 'sale'
   ): Promise<PropertySearchResult> => {

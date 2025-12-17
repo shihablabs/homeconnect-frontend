@@ -1,9 +1,15 @@
 'use client';
 
-import { useState, useMemo } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import {
   Table,
   TableBody,
@@ -12,19 +18,12 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { bookingsApi, type Booking } from '@/lib/api/bookings-api';
-import { History, Calendar, Home, MapPin, Eye, Loader2 } from 'lucide-react';
-import { toast } from 'sonner';
-import Link from 'next/link';
-import Image from 'next/image';
 import { useQuery } from '@tanstack/react-query';
+import { Calendar, Eye, History, Home, Loader2, MapPin } from 'lucide-react';
+import Image from 'next/image';
+import Link from 'next/link';
+import { useMemo, useState } from 'react';
 
 export function RentalHistoryClient() {
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -95,7 +94,7 @@ export function RentalHistoryClient() {
     const errorMessage = error && typeof error === 'object' && 'response' in error
       ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
       : undefined;
-    
+
     return (
       <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
         <div className="space-y-6">
@@ -121,140 +120,140 @@ export function RentalHistoryClient() {
   return (
     <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
       <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Rental History</h1>
-          <p className="text-muted-foreground mt-1">
-            View your past rental bookings and transactions
-          </p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold">Rental History</h1>
+            <p className="text-muted-foreground mt-1">
+              View your past rental bookings and transactions
+            </p>
+          </div>
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Status</SelectItem>
+              <SelectItem value="completed">Completed</SelectItem>
+              <SelectItem value="cancelled">Cancelled</SelectItem>
+              <SelectItem value="confirmed">Confirmed</SelectItem>
+              <SelectItem value="pending">Pending</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
-        <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-[180px]">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Status</SelectItem>
-            <SelectItem value="completed">Completed</SelectItem>
-            <SelectItem value="cancelled">Cancelled</SelectItem>
-            <SelectItem value="confirmed">Confirmed</SelectItem>
-            <SelectItem value="pending">Pending</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>All Rentals</CardTitle>
-          <CardDescription>
-            {filteredBookings.length} rental{filteredBookings.length !== 1 ? 's' : ''} found
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {filteredBookings.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-12 text-center">
-              <History className="h-12 w-12 text-muted-foreground mb-4" />
-              <h3 className="text-lg font-semibold mb-2">No rental history</h3>
-              <p className="text-muted-foreground mb-4">
-                {statusFilter !== 'all'
-                  ? 'No rentals found with this status'
-                  : 'You don&apos;t have any rental history yet'}
-              </p>
-              {statusFilter !== 'all' && (
-                <Button variant="outline" onClick={() => setStatusFilter('all')}>
-                  Show All
-                </Button>
-              )}
-            </div>
-          ) : (
-            <div className="rounded-lg border overflow-hidden">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Property</TableHead>
-                    <TableHead>Landlord</TableHead>
-                    <TableHead>Check-in</TableHead>
-                    <TableHead>Check-out</TableHead>
-                    <TableHead>Amount</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Date</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredBookings.map((booking: Booking) => (
-                    <TableRow key={booking.id}>
-                      <TableCell>
-                        <div className="flex items-center gap-3">
-                          {booking.property.images && booking.property.images.length > 0 ? (
-                            <Image
-                              src={booking.property.images[0]}
-                              alt={booking.property.title}
-                              width={64}
-                              height={64}
-                              className="rounded-md object-cover h-16 w-16"
-                            />
-                          ) : (
-                            <div className="h-16 w-16 rounded-md bg-muted flex items-center justify-center">
-                              <Home className="h-6 w-6 text-muted-foreground" />
-                            </div>
-                          )}
-                          <div>
-                            <Link
-                              href={`/properties/${booking.property.id}`}
-                              className="font-medium hover:text-primary transition-colors"
-                            >
-                              {booking.property.title}
-                            </Link>
-                            <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                              <MapPin className="h-3 w-3" />
-                              {booking.property.city}
-                            </div>
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div>
-                          <div className="font-medium">{booking.landlord.name}</div>
-                          <div className="text-sm text-muted-foreground">
-                            {booking.landlord.email}
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <Calendar className="h-4 w-4 text-muted-foreground" />
-                          {new Date(booking.checkIn).toLocaleDateString()}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <Calendar className="h-4 w-4 text-muted-foreground" />
-                          {new Date(booking.checkOut).toLocaleDateString()}
-                        </div>
-                      </TableCell>
-                      <TableCell className="font-medium">
-                        ৳{booking.totalAmount.toLocaleString()}
-                      </TableCell>
-                      <TableCell>{getStatusBadge(booking.status)}</TableCell>
-                      <TableCell className="text-sm text-muted-foreground">
-                        {new Date(booking.createdAt).toLocaleDateString()}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <Link href={`/dashboard/bookings/${booking.id}`}>
-                          <Button variant="outline" size="sm">
-                            <Eye className="mr-2 h-4 w-4" />
-                            View
-                          </Button>
-                        </Link>
-                      </TableCell>
+        <Card>
+          <CardHeader>
+            <CardTitle>All Rentals</CardTitle>
+            <CardDescription>
+              {filteredBookings.length} rental{filteredBookings.length !== 1 ? 's' : ''} found
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {filteredBookings.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-12 text-center">
+                <History className="h-12 w-12 text-muted-foreground mb-4" />
+                <h3 className="text-lg font-semibold mb-2">No rental history</h3>
+                <p className="text-muted-foreground mb-4">
+                  {statusFilter !== 'all'
+                    ? 'No rentals found with this status'
+                    : 'You don&apos;t have any rental history yet'}
+                </p>
+                {statusFilter !== 'all' && (
+                  <Button variant="outline" onClick={() => setStatusFilter('all')}>
+                    Show All
+                  </Button>
+                )}
+              </div>
+            ) : (
+              <div className="rounded-lg border overflow-hidden">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Property</TableHead>
+                      <TableHead>Landlord</TableHead>
+                      <TableHead>Check-in</TableHead>
+                      <TableHead>Check-out</TableHead>
+                      <TableHead>Amount</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Date</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredBookings.map((booking: Booking) => (
+                      <TableRow key={booking.id}>
+                        <TableCell>
+                          <div className="flex items-center gap-3">
+                            {booking.property.images && booking.property.images.length > 0 ? (
+                              <Image
+                                src={booking.property.images[0]}
+                                alt={booking.property.title}
+                                width={64}
+                                height={64}
+                                className="rounded-md object-cover h-16 w-16"
+                              />
+                            ) : (
+                              <div className="h-16 w-16 rounded-md bg-muted flex items-center justify-center">
+                                <Home className="h-6 w-6 text-muted-foreground" />
+                              </div>
+                            )}
+                            <div>
+                              <Link
+                                href={`/properties/${booking.property.id}`}
+                                className="font-medium hover:text-primary transition-colors"
+                              >
+                                {booking.property.title}
+                              </Link>
+                              <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                                <MapPin className="h-3 w-3" />
+                                {booking.property.city}
+                              </div>
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div>
+                            <div className="font-medium">{booking.landlord.name}</div>
+                            <div className="text-sm text-muted-foreground">
+                              {booking.landlord.email}
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <Calendar className="h-4 w-4 text-muted-foreground" />
+                            {new Date(booking.checkIn).toLocaleDateString()}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <Calendar className="h-4 w-4 text-muted-foreground" />
+                            {new Date(booking.checkOut).toLocaleDateString()}
+                          </div>
+                        </TableCell>
+                        <TableCell className="font-medium">
+                          ৳{booking.totalAmount.toLocaleString()}
+                        </TableCell>
+                        <TableCell>{getStatusBadge(booking.status)}</TableCell>
+                        <TableCell className="text-sm text-muted-foreground">
+                          {new Date(booking.createdAt).toLocaleDateString()}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <Link href={`/dashboard/bookings/${booking.id}`}>
+                            <Button variant="outline" size="sm">
+                              <Eye className="mr-2 h-4 w-4" />
+                              View
+                            </Button>
+                          </Link>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

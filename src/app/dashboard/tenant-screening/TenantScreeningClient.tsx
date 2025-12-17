@@ -1,10 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Table,
   TableBody,
@@ -13,10 +11,11 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { bookingsApi, type Booking } from '@/lib/api/bookings-api';
-import { Shield, CheckCircle2, XCircle, Clock, User, FileText, Eye } from 'lucide-react';
+import { CheckCircle2, Clock, Eye, Shield, User, XCircle } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import Link from 'next/link';
 
 interface ScreeningResult {
   tenantId: string;
@@ -66,11 +65,11 @@ export function TenantScreeningClient() {
     }
   };
 
-  const handleRunScreening = async (tenantId: string) => {
+  const handleRunScreening = async () => {
     try {
       // TODO: Implement screening API
       toast.info('Screening feature coming soon');
-    } catch (error) {
+    } catch {
       toast.error('Failed to run screening');
     }
   };
@@ -125,176 +124,176 @@ export function TenantScreeningClient() {
   return (
     <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
       <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">Tenant Screening</h1>
-        <p className="text-muted-foreground mt-1">
-          Screen and verify potential tenants
-        </p>
-      </div>
+        <div>
+          <h1 className="text-3xl font-bold">Tenant Screening</h1>
+          <p className="text-muted-foreground mt-1">
+            Screen and verify potential tenants
+          </p>
+        </div>
 
-      <Tabs defaultValue="tenants" className="space-y-6">
-        <TabsList>
-          <TabsTrigger value="tenants">
-            <User className="mr-2 h-4 w-4" />
-            Tenants
-          </TabsTrigger>
-          <TabsTrigger value="screenings">
-            <Shield className="mr-2 h-4 w-4" />
-            Screening Results
-          </TabsTrigger>
-        </TabsList>
+        <Tabs defaultValue="tenants" className="space-y-6">
+          <TabsList>
+            <TabsTrigger value="tenants">
+              <User className="mr-2 h-4 w-4" />
+              Tenants
+            </TabsTrigger>
+            <TabsTrigger value="screenings">
+              <Shield className="mr-2 h-4 w-4" />
+              Screening Results
+            </TabsTrigger>
+          </TabsList>
 
-        <TabsContent value="tenants" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Potential Tenants</CardTitle>
-              <CardDescription>
-                Run background checks on tenants who have applied for your properties
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {uniqueTenants.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-12 text-center">
-                  <User className="h-12 w-12 text-muted-foreground mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">No tenants found</h3>
-                  <p className="text-muted-foreground">
-                    Tenants who apply for your properties will appear here
-                  </p>
-                </div>
-              ) : (
-                <div className="rounded-lg border overflow-hidden">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Tenant</TableHead>
-                        <TableHead>Contact</TableHead>
-                        <TableHead>Bookings</TableHead>
-                        <TableHead className="text-right">Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {uniqueTenants.map((tenant) => {
-                        const tenantBookings = (bookings || []).filter((b) => b.tenant.id === tenant.id);
-                        return (
-                          <TableRow key={tenant.id}>
-                            <TableCell>
-                              <div className="flex items-center gap-3">
-                                <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                                  <User className="h-5 w-5 text-primary" />
-                                </div>
-                                <div>
-                                  <div className="font-medium">{tenant.name}</div>
-                                  <div className="text-sm text-muted-foreground">
-                                    {tenant.email}
+          <TabsContent value="tenants" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Potential Tenants</CardTitle>
+                <CardDescription>
+                  Run background checks on tenants who have applied for your properties
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {uniqueTenants.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-12 text-center">
+                    <User className="h-12 w-12 text-muted-foreground mb-4" />
+                    <h3 className="text-lg font-semibold mb-2">No tenants found</h3>
+                    <p className="text-muted-foreground">
+                      Tenants who apply for your properties will appear here
+                    </p>
+                  </div>
+                ) : (
+                  <div className="rounded-lg border overflow-hidden">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Tenant</TableHead>
+                          <TableHead>Contact</TableHead>
+                          <TableHead>Bookings</TableHead>
+                          <TableHead className="text-right">Actions</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {uniqueTenants.map((tenant) => {
+                          const tenantBookings = (bookings || []).filter((b) => b.tenant.id === tenant.id);
+                          return (
+                            <TableRow key={tenant.id}>
+                              <TableCell>
+                                <div className="flex items-center gap-3">
+                                  <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                                    <User className="h-5 w-5 text-primary" />
+                                  </div>
+                                  <div>
+                                    <div className="font-medium">{tenant.name}</div>
+                                    <div className="text-sm text-muted-foreground">
+                                      {tenant.email}
+                                    </div>
                                   </div>
                                 </div>
+                              </TableCell>
+                              <TableCell>
+                                <div className="text-sm">
+                                  {tenant.email}
+                                  {tenant.phone && (
+                                    <div className="text-muted-foreground">{tenant.phone}</div>
+                                  )}
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <Badge variant="outline">{tenantBookings.length} booking(s)</Badge>
+                              </TableCell>
+                              <TableCell className="text-right">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => handleRunScreening()}
+                                >
+                                  <Shield className="mr-2 h-4 w-4" />
+                                  Run Screening
+                                </Button>
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })}
+                      </TableBody>
+                    </Table>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="screenings" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Screening Results</CardTitle>
+                <CardDescription>
+                  View detailed screening reports for tenants
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {screenings.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-12 text-center">
+                    <Shield className="h-12 w-12 text-muted-foreground mb-4" />
+                    <h3 className="text-lg font-semibold mb-2">No screening results</h3>
+                    <p className="text-muted-foreground">
+                      Screening results will appear here after running background checks
+                    </p>
+                  </div>
+                ) : (
+                  <div className="rounded-lg border overflow-hidden">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Tenant</TableHead>
+                          <TableHead>Score</TableHead>
+                          <TableHead>Checks</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead className="text-right">Actions</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {screenings.map((screening) => (
+                          <TableRow key={screening.tenantId}>
+                            <TableCell>
+                              <div>
+                                <div className="font-medium">{screening.tenant.name}</div>
+                                <div className="text-sm text-muted-foreground">
+                                  {screening.tenant.email}
+                                </div>
                               </div>
                             </TableCell>
                             <TableCell>
-                              <div className="text-sm">
-                                {tenant.email}
-                                {tenant.phone && (
-                                  <div className="text-muted-foreground">{tenant.phone}</div>
-                                )}
-                              </div>
+                              <div className="text-2xl font-bold">{screening.score}%</div>
                             </TableCell>
                             <TableCell>
-                              <Badge variant="outline">{tenantBookings.length} booking(s)</Badge>
+                              <div className="flex gap-2">
+                                {Object.entries(screening.checks).map(([key, value]) => (
+                                  <Badge
+                                    key={key}
+                                    variant={value ? 'default' : 'outline'}
+                                    className="text-xs"
+                                  >
+                                    {key}
+                                  </Badge>
+                                ))}
+                              </div>
                             </TableCell>
+                            <TableCell>{getStatusBadge(screening.status)}</TableCell>
                             <TableCell className="text-right">
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => handleRunScreening(tenant.id)}
-                              >
-                                <Shield className="mr-2 h-4 w-4" />
-                                Run Screening
+                              <Button variant="outline" size="sm">
+                                <Eye className="mr-2 h-4 w-4" />
+                                View Report
                               </Button>
                             </TableCell>
                           </TableRow>
-                        );
-                      })}
-                    </TableBody>
-                  </Table>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="screenings" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Screening Results</CardTitle>
-              <CardDescription>
-                View detailed screening reports for tenants
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {screenings.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-12 text-center">
-                  <Shield className="h-12 w-12 text-muted-foreground mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">No screening results</h3>
-                  <p className="text-muted-foreground">
-                    Screening results will appear here after running background checks
-                  </p>
-                </div>
-              ) : (
-                <div className="rounded-lg border overflow-hidden">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Tenant</TableHead>
-                        <TableHead>Score</TableHead>
-                        <TableHead>Checks</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead className="text-right">Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {screenings.map((screening) => (
-                        <TableRow key={screening.tenantId}>
-                          <TableCell>
-                            <div>
-                              <div className="font-medium">{screening.tenant.name}</div>
-                              <div className="text-sm text-muted-foreground">
-                                {screening.tenant.email}
-                              </div>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <div className="text-2xl font-bold">{screening.score}%</div>
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex gap-2">
-                              {Object.entries(screening.checks).map(([key, value]) => (
-                                <Badge
-                                  key={key}
-                                  variant={value ? 'default' : 'outline'}
-                                  className="text-xs"
-                                >
-                                  {key}
-                                </Badge>
-                              ))}
-                            </div>
-                          </TableCell>
-                          <TableCell>{getStatusBadge(screening.status)}</TableCell>
-                          <TableCell className="text-right">
-                            <Button variant="outline" size="sm">
-                              <Eye className="mr-2 h-4 w-4" />
-                              View Report
-                            </Button>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );

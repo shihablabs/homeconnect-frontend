@@ -1,15 +1,5 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { usersApi } from '@/lib/api/users-api';
-import { adminApi, type User } from '@/lib/api/admin-api';
-import { ArrowLeft, User as UserIcon, Mail, Phone, Shield, Ban, CheckCircle2, Calendar, Loader2, Trash2, RotateCcw } from 'lucide-react';
-import { toast } from 'sonner';
-import Link from 'next/link';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -21,6 +11,16 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { adminApi, type User } from '@/lib/api/admin-api';
+import { ArrowLeft, Ban, Calendar, CheckCircle2, Loader2, Mail, Phone, RotateCcw, Shield, Trash2, User as UserIcon } from 'lucide-react';
+import Image from 'next/image';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useCallback, useEffect, useState } from 'react';
+import { toast } from 'sonner';
 
 interface UserDetailsClientProps {
   userId: string;
@@ -32,11 +32,7 @@ export function UserDetailsClient({ userId }: UserDetailsClientProps) {
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
 
-  useEffect(() => {
-    fetchUser();
-  }, [userId]);
-
-  const fetchUser = async () => {
+  const fetchUser = useCallback(async () => {
     try {
       setLoading(true);
       const userData = await adminApi.getUserById(userId);
@@ -50,11 +46,15 @@ export function UserDetailsClient({ userId }: UserDetailsClientProps) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [userId, router]);
+
+  useEffect(() => {
+    fetchUser();
+  }, [fetchUser]);
 
   const handleStatusToggle = async () => {
     if (!user) return;
-    
+
     try {
       setUpdating(true);
       await adminApi.updateUserStatus(userId, {
@@ -75,7 +75,7 @@ export function UserDetailsClient({ userId }: UserDetailsClientProps) {
 
   const handleDeleteUser = async () => {
     if (!user) return;
-    
+
     try {
       setUpdating(true);
       await adminApi.deleteUser(userId, 'Deleted by admin from user details page');
@@ -93,7 +93,7 @@ export function UserDetailsClient({ userId }: UserDetailsClientProps) {
 
   const handleRestoreUser = async () => {
     if (!user) return;
-    
+
     try {
       setUpdating(true);
       await adminApi.restoreUser(userId);
@@ -167,10 +167,12 @@ export function UserDetailsClient({ userId }: UserDetailsClientProps) {
           <CardContent className="space-y-4">
             <div className="flex items-center gap-4">
               {user.avatar ? (
-                <img
+                <Image
                   src={user.avatar}
                   alt={user.name}
-                  className="h-20 w-20 rounded-full"
+                  width={80}
+                  height={80}
+                  className="rounded-full object-cover"
                 />
               ) : (
                 <div className="h-20 w-20 rounded-full bg-primary/10 flex items-center justify-center">

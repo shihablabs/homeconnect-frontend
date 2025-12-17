@@ -16,7 +16,7 @@ export function PropertyClientPage({
   console.log("Check Muster By Client: ", property);
   return (
     <div className="bg-white">
-      <div className="container mx-auto px-4 pt-28 pb-16">
+      <div className="container mx-auto px-4 pb-16">
         <PropertyImageGallery
           images={property?.images}
           title={property?.title}
@@ -41,6 +41,7 @@ export function PropertyClientPage({
               currency={property.currency}
               listingType={property.listingType}
               propertyId={property.id}
+              propertySlug={property.slug}
               propertyTitle={property.title}
             />
           </aside>

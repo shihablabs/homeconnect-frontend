@@ -1,9 +1,8 @@
 // app/faq/page.tsx
+import { PageHeader } from "@/components/layout/PageHeader";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { pacifico } from "@/lib/fonts";
 import { HelpCircle } from "lucide-react";
 import type { Metadata } from "next";
 
@@ -68,20 +67,13 @@ export default function FAQPage() {
 
   return (
     <main className="pb-24">
-      <section className="relative overflow-hidden">
-        <div className="absolute inset-0 -z-10 bg-gradient-to-b from-primary/10 via-background to-background" />
-        <div className="container mx-auto max-w-5xl px-4 pt-16 lg:pt-24">
-          <div className="max-w-3xl">
-            <Badge variant="outline" className={`${pacifico.className} mb-4`}>Helpful resources</Badge>
-            <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">Frequently Asked Questions</h1>
-            <p className="mt-3 text-muted-foreground">
-              Quick answers for renters, buyers, and landlords. Can’t find it? Reach out to our team.
-            </p>
-          </div>
-        </div>
-      </section>
+      <PageHeader
+        title="Frequently Asked Questions"
+        description="Quick answers for renters, buyers, and landlords. Can’t find it? Reach out to our team."
+        badge="Support"
+      />
 
-      <section className="container mx-auto max-w-5xl px-4 mt-10 lg:mt-14">
+      <section className="container mx-auto max-w-5xl px-4 -mt-8 relative z-10">
         <Card className="shadow-sm">
           <CardContent className="p-6 md:p-10">
             <div className="flex items-start gap-3 rounded-md border p-4 bg-muted/30 mb-6">

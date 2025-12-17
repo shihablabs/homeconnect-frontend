@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
+import { LandlordOnly } from "@/components/shared/RoleGuard";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,23 +14,33 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { pacifico } from "@/lib/fonts";
 import { useLogoutMutation } from "@/redux/features/auth/authApiSlice";
+// import { useGetContentQuery } from "@/redux/features/content/contentApi";
 import {
   selectCurrentUser,
   selectIsAuthenticated,
 } from "@/redux/features/auth/authSlice";
 import { AppDispatch } from "@/redux/store";
+import * as LucideIcons from "lucide-react";
 import {
+  Bell,
+  BookOpen,
+  Building,
+  Calculator,
+  ChevronDown,
   Heart,
   Home,
   LayoutDashboard,
   LogOut,
-  MessageCircle,
+  MapPin,
+  Phone,
   PlusCircle,
   Settings,
+  TrendingUp
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { FiMenu, FiX } from "react-icons/fi";
 import { TbHomeSearch } from "react-icons/tb";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "sonner";
@@ -38,11 +49,22 @@ export default function Header() {
   const pathname = usePathname();
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
 
   const user = useSelector(selectCurrentUser);
   const isAuthenticated = useSelector(selectIsAuthenticated);
 
   const [logoutUser, { isLoading: isLoggingOut }] = useLogoutMutation();
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 10);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   function isActive(href?: string): boolean {
     if (!href) return false;
@@ -54,195 +76,502 @@ export default function Header() {
     const n = user?.name?.trim();
     if (!n) return "U";
     const parts = n.split(" ").filter(Boolean);
-    return (parts[0]?.[0] ?? "U").toUpperCase() + (parts[1]?.[0]?.toUpperCase() ?? "");
+    return (
+      (parts[0]?.[0] ?? "U").toUpperCase() +
+      (parts[1]?.[0]?.toUpperCase() ?? "")
+    );
   }, [user?.name]);
 
   const handleSignOut = async () => {
     try {
       await logoutUser().unwrap();
       toast.success("Logged out successfully.");
-      router.push('/login');
+      router.push("/login");
+      setIsMobileMenuOpen(false);
     } catch (err) {
       toast.error("Failed to log out. Please try again.");
-      console.error('Failed to log out:', err);
+      console.error("Failed to log out:", err);
     }
   };
 
+  // ... (inside component)
+  // const { data: contentData } = useGetContentQuery("main-header");
+  // const navContent = contentData?.data?.items;
+
+  // Icon mapping helper
+  const getIcon = (iconName: string) => {
+    // @ts-expect-error - Lucide icons are dynamic
+    return LucideIcons[iconName] || LucideIcons.HelpCircle;
+  };
+
+  const mainNavItems = [
+    {
+      href: "/properties",
+      label: "Properties", // Renamed from Browse
+      icon: Home,
+      showAlways: true,
+      hasDropdown: true,
+      dropdownType: "properties"
+    },
+    {
+      href: "/market-trends",
+      label: "Market Trends",
+      icon: TrendingUp,
+      showAlways: true,
+      hasDropdown: false
+    },
+    {
+      href: "/blogs", // Assuming /blogs based on prev conversations, verified existence in generic sense
+      label: "Blogs",
+      icon: BookOpen,
+      showAlways: true,
+      hasDropdown: false
+    },
+    {
+      href: "/about-us", // Standard route convention
+      label: "About Us",
+      icon: Building,
+      showAlways: true,
+      hasDropdown: false
+    },
+    {
+      href: "/contact",
+      label: "Contact",
+      icon: Phone,
+      showAlways: true,
+      hasDropdown: false
+    },
+  ];
+
+
+  // Property type dropdown items (no icons) - Combined for Sale and Rent
+  const propertyTypes = [
+    { href: "/properties", label: "For Sale", query: "sale", listingType: "sale" },
+    { href: "/properties", label: "For Rent", query: "rent", listingType: "rent" },
+    { href: "/properties", label: "Apartments", query: "apartment" },
+    { href: "/properties", label: "Houses", query: "house" },
+    { href: "/properties", label: "Lands", query: "land" },
+    { href: "/properties", label: "Commercial", query: "commercial" },
+    { href: "/properties", label: "New Projects", query: "new-projects" },
+  ];
+
+  // Resources dropdown items (no icons)
+  const resourceItems = [
+    { href: "/blog", label: "Blog & Guides" },
+    { href: "/calculator", label: "EMI Calculator" },
+    { href: "/market-trends", label: "Market Trends" },
+    { href: "/legal", label: "Legal Support" },
+  ];
+
+
   return (
-    <header className="fixed left-0 top-0 z-50 w-full bg-white shadow-md transition-all duration-300">
-      <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between rounded-3xl py-4">
-          <Link
-            href="/"
-            className={`${pacifico.className} text-3xl lg:text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent drop-shadow-lg hover:drop-shadow-xl inline-flex items-center space-x-3 hover:scale-105 transition-transform duration-300`}
-          >
-            <div className="relative">
-              <div className="w-12 h-12 lg:w-14 lg:h-14 bg-blue-200/20 rounded-2xl flex items-center justify-center backdrop-blur-sm border border-white/30">
-                <span className="text-3xl text-blue-600 lg:text-4xl"><TbHomeSearch /></span>
-              </div>
-              <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-400 rounded-full border-2 border-white"></div>
+    <>
+      {/* Simple Top Bar with Branding Gradient - Clear UX */}
+      <div className="w-full bg-gradient-to-r from-blue-600 via-purple-600 to-blue-600 text-white text-sm py-2">
+        <div className="container mx-auto px-4">
+          <div className="flex items-center justify-between">
+            {/* Left Side: Location with Meaningful Text (Not Clickable) */}
+            <div className="flex items-center space-x-2">
+              <MapPin className="w-4 h-4 flex-shrink-0" />
+              <span className="font-medium">
+                <span className="hidden sm:inline">Your Trusted Real Estate Partner in </span>
+                <span className="font-semibold">Dhaka, Bangladesh</span>
+              </span>
             </div>
-            <span className="">HomeConnect</span>
-          </Link>
 
-          <nav className="hidden md:block">
-            <ul className="flex items-center gap-6 text-gray-700">
-              <li>
-                <Link
-                  href="/properties"
-                  className={`text-sm hover:text-primary flex items-center gap-1 ${isActive('/properties') ? 'font-medium text-primary' : ''
-                    }`}
-                >
-                  <Home className="h-4 w-4" />
-                  Browse
-                </Link>
-              </li>
-
-              {isAuthenticated && (
-                <>
-                  <li>
-                    <Link
-                      href="/dashboard"
-                      className={`text-sm hover:text-primary flex items-center gap-1 ${isActive('/dashboard') ? 'font-medium text-primary' : ''
-                        }`}
-                    >
-                      <LayoutDashboard className="h-4 w-4" />
-                      Dashboard
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      href="/dashboard/favorites"
-                      className={`text-sm hover:text-primary flex items-center gap-1 ${isActive('/dashboard/favorites') ? 'font-medium text-primary' : ''
-                        }`}
-                    >
-                      <Heart className="h-4 w-4" />
-                      Favorites
-                    </Link>
-                  </li>
-                </>
-              )}
-
-              <li>
-                <Link
-                  href="/about"
-                  className={`text-sm hover:text-primary ${isActive('/about') ? 'font-medium text-primary' : ''
-                    }`}
-                >
-                  About Us
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/contact"
-                  className={`text-sm hover:text-primary ${isActive('/contact') ? 'font-medium text-primary' : ''
-                    }`}
-                >
-                  Contact
-                </Link>
-              </li>
-            </ul>
-          </nav>
-
-          <div className="flex items-center gap-2">
-            {isAuthenticated ? (
-              <DropdownMenu>
-                <DropdownMenuTrigger className="outline-none flex items-center gap-2 cursor-pointer">
-                  <div className="hidden lg:flex flex-col items-end">
-                    <span className="text-sm font-semibold text-gray-800">{user?.name}</span>
-                    <span className="text-xs text-gray-500 capitalize text-right">{user?.role}</span>
-                  </div>
-                  <Avatar className="h-10 w-10 border-2 border-primary/20">
-                    <AvatarImage src={user?.avatar} alt={user?.name ?? "User"} />
-                    <AvatarFallback className="bg-primary/10 text-primary font-semibold">
-                      {initials}
-                    </AvatarFallback>
-                  </Avatar>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-64">
-                  <DropdownMenuLabel>
-                    <div className="flex flex-col">
-                      <span className="text-sm font-medium">{user?.name ?? "User"}</span>
-                      <span className="text-xs text-muted-foreground font-normal truncate">
-                        {user?.email}
-                      </span>
-                    </div>
-                  </DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-
-                  <DropdownMenuItem asChild>
-                    <Link href="/dashboard" className="cursor-pointer">
-                      <LayoutDashboard className="mr-2 h-4 w-4" />
-                      Dashboard
-                    </Link>
-                  </DropdownMenuItem>
-
-                  {user?.role === 'landlord' && (
-                    <>
-                      <DropdownMenuItem asChild>
-                        <Link href="/dashboard/my-properties" className="cursor-pointer">
-                          <Home className="mr-2 h-4 w-4" />
-                          My Properties
-                        </Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem asChild>
-                        <Link href="/dashboard/add-property" className="cursor-pointer">
-                          <PlusCircle className="mr-2 h-4 w-4" />
-                          Add New Property
-                        </Link>
-                      </DropdownMenuItem>
-                    </>
-                  )}
-
-                  <DropdownMenuItem asChild>
-                    <Link href="/dashboard/favorites" className="cursor-pointer">
-                      <Heart className="mr-2 h-4 w-4" />
-                      My Favorites
-                    </Link>
-                  </DropdownMenuItem>
-
-                  <DropdownMenuItem asChild>
-                    <Link href="/dashboard/messages" className="cursor-pointer">
-                      <MessageCircle className="mr-2 h-4 w-4" />
-                      Messages
-                    </Link>
-                  </DropdownMenuItem>
-
-                  <DropdownMenuItem asChild>
-                    <Link href="/dashboard/settings" className="cursor-pointer">
-                      <Settings className="mr-2 h-4 w-4" />
-                      Settings
-                    </Link>
-                  </DropdownMenuItem>
-
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem
-                    onClick={handleSignOut}
-                    disabled={isLoggingOut}
-                    className="text-destructive focus:text-destructive cursor-pointer"
-                  >
-                    <LogOut className="mr-2 h-4 w-4" />
-                    {isLoggingOut ? "Logging out..." : "Logout"}
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            ) : (
-              <>
-                <Link href="/login">
-                  <Button variant="outline" className="mr-2 rounded-lg px-6 py-2 transition text-black">
-                    Login
-                  </Button>
-                </Link>
-                <Link href="/register">
-                  <Button className="rounded-lg px-6 py-2">
-                    Sign Up
-                  </Button>
-                </Link>
-              </>
-            )}
+            {/* Right Side: Links (Clearly Clickable with Visual Distinction) */}
+            <div className="flex items-center space-x-4 md:space-x-6">
+              <Link
+                href="/calculator"
+                className="flex items-center space-x-2 px-2 py-1 rounded hover:bg-white/10 hover:underline transition-all duration-200 cursor-pointer border-b border-transparent hover:border-white/50"
+              >
+                <Calculator className="w-4 h-4" />
+                <span className="font-medium hidden sm:inline">EMI Calculator</span>
+                <span className="font-medium sm:hidden">EMI</span>
+              </Link>
+              <Link
+                href="/market-trends"
+                className="flex items-center space-x-2 px-2 py-1 rounded hover:bg-white/10 hover:underline transition-all duration-200 cursor-pointer border-b border-transparent hover:border-white/50"
+              >
+                <TrendingUp className="w-4 h-4" />
+                <span className="font-medium hidden sm:inline">Market Trends</span>
+                <span className="font-medium sm:hidden">Trends</span>
+              </Link>
+            </div>
           </div>
         </div>
       </div>
-    </header>
+
+      {/* Main Header - Compact */}
+      <header
+        className={`sticky top-0 z-50 w-full bg-white border-b transition-shadow duration-200 ${isScrolled ? "shadow-md" : "shadow-sm"
+          }`}
+      >
+        <div className="container mx-auto px-3 md:px-4">
+          <div className="flex items-center justify-between h-14 md:h-[75px]">
+            {/* Logo - Compact */}
+            <Link
+              href="/"
+              className={`${pacifico.className} text-2xl lg:text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent drop-shadow-lg hover:drop-shadow-xl inline-flex items-center space-x-3 hover:scale-105 transition-transform duration-300`}
+            >
+              <div className="relative">
+                <div className="w-8 h-8 lg:w-10 lg:h-10 bg-blue-200/20 rounded-xl flex items-center justify-center backdrop-blur-sm border border-white/30">
+                  <span className="text-2xl text-blue-600 lg:text-3xl"><TbHomeSearch /></span>
+                </div>
+                <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-400 rounded-full border-2 border-white"></div>
+              </div>
+              <span className="">HomeConnect</span>
+            </Link>
+
+            {/* Desktop Navigation with Icons and Dropdowns - Compact */}
+            <nav className="hidden md:flex items-center space-x-0.5">
+              {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+              {mainNavItems.map((item: any) => {
+                const Icon = item.icon;
+                return (
+                  <div key={item.label} className="relative group">
+                    {item.hasDropdown ? (
+                      <>
+                        <div
+                          className={`flex items-center space-x-1.5 px-2.5 md:px-3 py-1.5 md:py-2 text-xs md:text-sm font-medium rounded-lg transition-all duration-200 cursor-pointer ${isActive(item.href)
+                            ? "text-blue-600 bg-blue-50"
+                            : "text-gray-700 hover:text-blue-600 hover:bg-gray-50"
+                            }`}
+                        >
+                          <Icon className="h-3.5 w-3.5 md:h-4 md:w-4" />
+                          <span className="whitespace-nowrap">{item.label}</span>
+                          <ChevronDown className="h-3 w-3 md:h-3.5 md:w-3.5" />
+                        </div>
+
+                        {/* Dropdown Content - Original Style */}
+                        <div className="absolute left-0 top-full pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                          <div className="bg-white rounded-lg shadow-xl border border-gray-200 min-w-[220px] py-2">
+                            {item.dropdownType === "properties"
+                              ? propertyTypes.map((type) => (
+                                <Link
+                                  key={type.query + (type.listingType || '')}
+                                  href={type.listingType
+                                    ? `${type.href}?lt=${type.listingType}`
+                                    : `${type.href}?pt=${type.query}`}
+                                  className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors duration-150"
+                                >
+                                  {type.label}
+                                </Link>
+                              ))
+                              : null}
+                          </div>
+                        </div>
+                      </>
+                    ) : (
+                      <Link
+                        href={item.href}
+                        className={`flex items-center space-x-1.5 px-2.5 md:px-3 py-1.5 md:py-2 text-xs md:text-sm font-medium rounded-lg transition-all duration-200 ${isActive(item.href)
+                          ? "text-blue-600 bg-blue-50"
+                          : "text-gray-700 hover:text-blue-600 hover:bg-gray-50"
+                          }`}
+                      >
+                        <Icon className="h-3.5 w-3.5 md:h-4 md:w-4" />
+                        <span className="whitespace-nowrap">{item.label}</span>
+                      </Link>
+                    )}
+                  </div>
+                );
+              })}
+            </nav>
+
+            {/* Desktop Actions - Compact */}
+            <div className="hidden md:flex items-center space-x-2">
+              {isAuthenticated ? (
+                <>
+                  {/* Example: List Property button - শুধু Landlord এর জন্য */}
+                  <LandlordOnly user={user}>
+                    <Link href="/dashboard/add-property">
+                      <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm font-medium shadow-lg">
+                        <PlusCircle className="mr-1.5 md:mr-2 h-3.5 w-3.5 md:h-4 md:w-4" />
+                        <span className="hidden lg:inline">List Property</span>
+                        <span className="lg:hidden">List</span>
+                      </Button>
+                    </Link>
+                  </LandlordOnly>
+
+                  <button className="relative p-1.5 md:p-2 hover:bg-gray-100 rounded-lg">
+                    <Bell className="h-4 w-4 md:h-5 md:w-5 text-gray-600" />
+                    <span className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 md:w-4 md:h-4 bg-red-500 text-white text-[10px] md:text-xs rounded-full flex items-center justify-center">
+                      2
+                    </span>
+                  </button>
+
+                  <DropdownMenu>
+                    <DropdownMenuTrigger className="outline-none">
+                      <Avatar className="h-8 w-8 md:h-9 md:w-9 border-2 border-gray-200 cursor-pointer hover:border-blue-300 transition-colors">
+                        <AvatarImage
+                          src={user?.avatar}
+                          alt={user?.name ?? "User"}
+                        />
+                        <AvatarFallback className="bg-gradient-to-r from-cyan-100 to-blue-100 text-blue-600 font-medium text-xs md:text-sm">
+                          {initials}
+                        </AvatarFallback>
+                      </Avatar>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-56">
+                      <DropdownMenuLabel>
+                        <div className="flex flex-col">
+                          <span className="font-semibold">{user?.name}</span>
+                          <span className="text-xs text-gray-500">
+                            {user?.email}
+                          </span>
+                        </div>
+                      </DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+
+                      <DropdownMenuItem asChild>
+                        <Link href="/dashboard" className="cursor-pointer">
+                          <LayoutDashboard className="mr-2 h-4 w-4" />
+                          Dashboard
+                        </Link>
+                      </DropdownMenuItem>
+
+                      {/* Example: My Properties - শুধু Landlord এর জন্য */}
+                      <LandlordOnly user={user}>
+                        <DropdownMenuItem asChild>
+                          <Link
+                            href="/dashboard/properties"
+                            className="cursor-pointer"
+                          >
+                            <Home className="mr-2 h-4 w-4" />
+                            My Properties
+                          </Link>
+                        </DropdownMenuItem>
+                      </LandlordOnly>
+
+                      <DropdownMenuItem asChild>
+                        <Link
+                          href="/dashboard/favorites"
+                          className="cursor-pointer"
+                        >
+                          <Heart className="mr-2 h-4 w-4" />
+                          Favorites
+                        </Link>
+                      </DropdownMenuItem>
+
+                      <DropdownMenuItem asChild>
+                        <Link
+                          href="/dashboard/settings"
+                          className="cursor-pointer"
+                        >
+                          <Settings className="mr-2 h-4 w-4" />
+                          Settings
+                        </Link>
+                      </DropdownMenuItem>
+
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        onClick={handleSignOut}
+                        disabled={isLoggingOut}
+                        className="text-red-600 cursor-pointer"
+                      >
+                        <LogOut className="mr-2 h-4 w-4" />
+                        {isLoggingOut ? "Logging out..." : "Logout"}
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </>
+              ) : (
+                <div className="flex items-center space-x-2">
+                  <Link href="/login">
+                    <Button
+                      variant="outline"
+                      className="border-gray-300 text-gray-700 hover:border-blue-400 hover:text-blue-700 px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm font-medium"
+                    >
+                      Sign In
+                    </Button>
+                  </Link>
+                  <Link href="/register">
+                    <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm font-medium shadow-lg">
+                      <span className="hidden lg:inline">Get Started</span>
+                      <span className="lg:hidden">Sign Up</span>
+                    </Button>
+                  </Link>
+                </div>
+              )}
+            </div>
+
+            {/* Mobile Menu Toggle */}
+            <button
+              onClick={() => {
+                setIsMobileMenuOpen(!isMobileMenuOpen);
+                if (isMobileMenuOpen) setOpenDropdown(null);
+              }}
+              className="md:hidden p-1.5 hover:bg-gray-100 rounded-lg"
+            >
+              {isMobileMenuOpen ? (
+                <FiX className="h-5 w-5 text-gray-700" />
+              ) : (
+                <FiMenu className="h-5 w-5 text-gray-700" />
+              )}
+            </button>
+          </div>
+        </div>
+
+        {/* Mobile Menu */}
+        {isMobileMenuOpen && (
+          <div className="md:hidden absolute top-full left-0 right-0 bg-white shadow-lg border-t animate-slideDown">
+            <div className="container mx-auto px-3 py-4">
+              {/* Mobile Navigation with Icons and Dropdowns */}
+              <div className="space-y-1 mb-6">
+                {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                {mainNavItems.map((item: any) => {
+                  const Icon = item.icon;
+                  const isDropdownOpen = openDropdown === item.label;
+
+                  return (
+                    <div key={item.label}>
+                      {item.hasDropdown ? (
+                        <>
+                          <button
+                            onClick={() => setOpenDropdown(isDropdownOpen ? null : item.label)}
+                            className={`w-full flex items-center justify-between p-3 rounded-lg ${isActive(item.href)
+                              ? "bg-blue-50 text-blue-600 font-medium"
+                              : "text-gray-700 hover:bg-gray-50"
+                              }`}
+                          >
+                            <div className="flex items-center space-x-3">
+                              <Icon className="h-5 w-5" />
+                              <span>{item.label}</span>
+                            </div>
+                            <ChevronDown className={`h-4 w-4 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} />
+                          </button>
+
+                          {/* Mobile Dropdown Content */}
+                          {isDropdownOpen && (
+                            <div className="ml-4 pl-4 border-l-2 border-blue-200 space-y-1 mt-1">
+                              {item.dropdownType === "properties"
+                                ? propertyTypes.map((type) => (
+                                  <Link
+                                    key={type.query + (type.listingType || '')}
+                                    href={type.listingType
+                                      ? `${type.href}?lt=${type.listingType}`
+                                      : `${type.href}?pt=${type.query}`}
+                                    onClick={() => {
+                                      setIsMobileMenuOpen(false);
+                                      setOpenDropdown(null);
+                                    }}
+                                    className="block p-2.5 text-sm text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors duration-150"
+                                  >
+                                    {type.label}
+                                  </Link>
+                                ))
+                                : null}
+                            </div>
+                          )}
+                        </>
+                      ) : (
+                        <Link
+                          href={item.href}
+                          onClick={() => setIsMobileMenuOpen(false)}
+                          className={`flex items-center space-x-3 p-3 rounded-lg ${isActive(item.href)
+                            ? "bg-blue-50 text-blue-600 font-medium"
+                            : "text-gray-700 hover:bg-gray-50"
+                            }`}
+                        >
+                          <Icon className="h-5 w-5" />
+                          <span>{item.label}</span>
+                        </Link>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Mobile Auth Section */}
+              {isAuthenticated ? (
+                <div className="space-y-4">
+                  <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+                    <Avatar className="h-10 w-10">
+                      <AvatarImage src={user?.avatar} />
+                      <AvatarFallback className="bg-blue-100 text-blue-600">
+                        {initials}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <p className="font-semibold">{user?.name}</p>
+                      <p className="text-sm text-gray-500">
+                        {user?.role === "landlord"
+                          ? "Property Owner"
+                          : "Member"}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2">
+                    <Link
+                      href="/dashboard"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="flex items-center justify-center space-x-2 p-3 border rounded-lg hover:bg-gray-50"
+                    >
+                      <LayoutDashboard className="h-4 w-4" />
+                      <span className="text-sm">Dashboard</span>
+                    </Link>
+                    {/* Example: Mobile List Property - শুধু Landlord এর জন্য */}
+                    <LandlordOnly user={user}>
+                      <Link
+                        href="/dashboard/add-property"
+                        onClick={() => setIsMobileMenuOpen(false)}
+                        className="flex items-center justify-center space-x-2 p-3 border rounded-lg hover:bg-gray-50"
+                      >
+                        <PlusCircle className="h-4 w-4" />
+                        <span className="text-sm">List Property</span>
+                      </Link>
+                    </LandlordOnly>
+                  </div>
+
+                  <button
+                    onClick={handleSignOut}
+                    className="w-full flex items-center justify-center space-x-2 p-3 text-red-600 hover:bg-red-50 rounded-lg border"
+                  >
+                    <LogOut className="h-4 w-4" />
+                    <span className="font-medium">Logout</span>
+                  </button>
+                </div>
+              ) : (
+                <div className="flex space-x-3">
+                  <Link
+                    href="/login"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="flex-1 text-center py-3 border border-gray-300 rounded-lg font-medium hover:bg-gray-50"
+                  >
+                    Sign In
+                  </Link>
+                  <Link
+                    href="/register"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="flex-1 text-center py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg font-medium hover:from-blue-700 hover:to-purple-700 shadow-lg"
+                  >
+                    Register
+                  </Link>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+      </header>
+
+      {/* Add CSS for animation */}
+      <style jsx>{`
+        @keyframes slideDown {
+          from {
+            opacity: 0;
+            transform: translateY(-10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        .animate-slideDown {
+          animation: slideDown 0.2s ease-out;
+        }
+      `}</style>
+    </>
   );
 }

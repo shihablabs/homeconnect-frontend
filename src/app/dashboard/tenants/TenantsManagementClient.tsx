@@ -1,9 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import {
   Table,
@@ -14,10 +13,10 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { bookingsApi, type Booking } from '@/lib/api/bookings-api';
-import { Users, Search, Mail, Phone, Home, Eye } from 'lucide-react';
-import { toast } from 'sonner';
+import { Eye, Home, Mail, Phone, Search, Users } from 'lucide-react';
 import Link from 'next/link';
-import Image from 'next/image';
+import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
 
 export function TenantsManagementClient() {
   const [bookings, setBookings] = useState<Booking[]>([]);
@@ -106,128 +105,128 @@ export function TenantsManagementClient() {
   return (
     <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
       <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">Manage Tenants</h1>
-        <p className="text-muted-foreground mt-1">
-          View and manage all your tenants
-        </p>
-      </div>
+        <div>
+          <h1 className="text-3xl font-bold">Manage Tenants</h1>
+          <p className="text-muted-foreground mt-1">
+            View and manage all your tenants
+          </p>
+        </div>
 
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle>All Tenants</CardTitle>
-              <CardDescription>
-                {filteredTenants.length} tenant{filteredTenants.length !== 1 ? 's' : ''} found
-              </CardDescription>
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle>All Tenants</CardTitle>
+                <CardDescription>
+                  {filteredTenants.length} tenant{filteredTenants.length !== 1 ? 's' : ''} found
+                </CardDescription>
+              </div>
+              <div className="relative w-64">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search tenants..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
             </div>
-            <div className="relative w-64">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search tenants..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          {filteredTenants.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-12 text-center">
-              <Users className="h-12 w-12 text-muted-foreground mb-4" />
-              <h3 className="text-lg font-semibold mb-2">No tenants found</h3>
-              <p className="text-muted-foreground">
-                {searchQuery
-                  ? 'Try adjusting your search query'
-                  : 'You don\'t have any tenants yet'}
-              </p>
-            </div>
-          ) : (
-            <div className="rounded-lg border overflow-hidden">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Tenant</TableHead>
-                    <TableHead>Contact</TableHead>
-                    <TableHead>Properties</TableHead>
-                    <TableHead>Active Bookings</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredTenants.map((entry) => (
-                    <TableRow key={entry.tenant.id}>
-                      <TableCell>
-                        <div className="flex items-center gap-3">
-                          <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                            <Users className="h-5 w-5 text-primary" />
+          </CardHeader>
+          <CardContent>
+            {filteredTenants.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-12 text-center">
+                <Users className="h-12 w-12 text-muted-foreground mb-4" />
+                <h3 className="text-lg font-semibold mb-2">No tenants found</h3>
+                <p className="text-muted-foreground">
+                  {searchQuery
+                    ? 'Try adjusting your search query'
+                    : 'You don\'t have any tenants yet'}
+                </p>
+              </div>
+            ) : (
+              <div className="rounded-lg border overflow-hidden">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Tenant</TableHead>
+                      <TableHead>Contact</TableHead>
+                      <TableHead>Properties</TableHead>
+                      <TableHead>Active Bookings</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredTenants.map((entry) => (
+                      <TableRow key={entry.tenant.id}>
+                        <TableCell>
+                          <div className="flex items-center gap-3">
+                            <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                              <Users className="h-5 w-5 text-primary" />
+                            </div>
+                            <div>
+                              <div className="font-medium">{entry.tenant.name}</div>
+                              <div className="text-sm text-muted-foreground">
+                                {entry.tenant.email}
+                              </div>
+                            </div>
                           </div>
-                          <div>
-                            <div className="font-medium">{entry.tenant.name}</div>
-                            <div className="text-sm text-muted-foreground">
+                        </TableCell>
+                        <TableCell>
+                          <div className="space-y-1">
+                            <div className="flex items-center gap-2 text-sm">
+                              <Mail className="h-3 w-3 text-muted-foreground" />
                               {entry.tenant.email}
                             </div>
+                            {entry.tenant.phone && (
+                              <div className="flex items-center gap-2 text-sm">
+                                <Phone className="h-3 w-3 text-muted-foreground" />
+                                {entry.tenant.phone}
+                              </div>
+                            )}
                           </div>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="space-y-1">
-                          <div className="flex items-center gap-2 text-sm">
-                            <Mail className="h-3 w-3 text-muted-foreground" />
-                            {entry.tenant.email}
+                        </TableCell>
+                        <TableCell>
+                          <div className="space-y-1">
+                            {entry.properties.slice(0, 2).map((property: { id: string; title: string; address: string; city: string; images: string[] }) => (
+                              <div key={property.id} className="flex items-center gap-2 text-sm">
+                                <Home className="h-3 w-3 text-muted-foreground" />
+                                <Link
+                                  href={`/properties/${property.id}`}
+                                  className="hover:text-primary transition-colors"
+                                >
+                                  {property.title}
+                                </Link>
+                              </div>
+                            ))}
+                            {entry.properties.length > 2 && (
+                              <div className="text-xs text-muted-foreground">
+                                +{entry.properties.length - 2} more
+                              </div>
+                            )}
                           </div>
-                          {entry.tenant.phone && (
-                            <div className="flex items-center gap-2 text-sm">
-                              <Phone className="h-3 w-3 text-muted-foreground" />
-                              {entry.tenant.phone}
-                            </div>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="space-y-1">
-                          {entry.properties.slice(0, 2).map((property: { id: string; title: string; address: string; city: string; images: string[] }) => (
-                            <div key={property.id} className="flex items-center gap-2 text-sm">
-                              <Home className="h-3 w-3 text-muted-foreground" />
-                              <Link
-                                href={`/properties/${property.id}`}
-                                className="hover:text-primary transition-colors"
-                              >
-                                {property.title}
-                              </Link>
-                            </div>
-                          ))}
-                          {entry.properties.length > 2 && (
-                            <div className="text-xs text-muted-foreground">
-                              +{entry.properties.length - 2} more
-                            </div>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="outline">
-                          {entry.bookings.filter((b: Booking) => b.status === 'confirmed').length}{' '}
-                          active
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <Link href={`/dashboard/bookings?tenant=${entry.tenant.id}`}>
-                          <Button variant="outline" size="sm">
-                            <Eye className="mr-2 h-4 w-4" />
-                            View Details
-                          </Button>
-                        </Link>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="outline">
+                            {entry.bookings.filter((b: Booking) => b.status === 'confirmed').length}{' '}
+                            active
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <Link href={`/dashboard/bookings?tenant=${entry.tenant.id}`}>
+                            <Button variant="outline" size="sm">
+                              <Eye className="mr-2 h-4 w-4" />
+                              View Details
+                            </Button>
+                          </Link>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

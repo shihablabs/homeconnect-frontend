@@ -1,9 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import {
   Select,
@@ -20,7 +19,8 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Heart, Search, Star, Eye, CheckCircle2 } from 'lucide-react';
+import { CheckCircle2, Eye, Heart, Search, Star } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
 interface Feedback {
@@ -55,7 +55,7 @@ export function UserFeedbackClient() {
       // const response = await supportApi.getFeedback({ status: statusFilter, rating: ratingFilter });
       // setFeedbacks(response.feedback);
       setFeedbacks([]);
-    } catch (error) {
+    } catch {
       toast.error('Failed to fetch feedback');
     } finally {
       setLoading(false);
@@ -66,9 +66,8 @@ export function UserFeedbackClient() {
     return Array.from({ length: 5 }, (_, i) => (
       <Star
         key={i}
-        className={`h-4 w-4 ${
-          i < rating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'
-        }`}
+        className={`h-4 w-4 ${i < rating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'
+          }`}
       />
     ));
   };

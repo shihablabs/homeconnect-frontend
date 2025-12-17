@@ -125,7 +125,7 @@ export default function PropertiesPageClient() {
   }, [filters]);
 
   return (
-    <div className="grid gap-6 md:grid-cols-12 container mx-auto px-4 pt-28 pb-10 min-h-screen">
+    <div className="grid gap-6 md:grid-cols-12 container mx-auto px-4 pb-10 min-h-screen">
       <aside className="hidden md:block md:col-span-4 lg:col-span-3">
         <div className="rounded-xl border bg-background p-6 sticky top-24">
           <div className="mb-6 text-xl font-semibold">Filters</div>

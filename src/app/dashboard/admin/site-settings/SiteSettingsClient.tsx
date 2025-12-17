@@ -1,54 +1,72 @@
 'use client';
 
-import { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Settings, Save, Globe, Mail, Shield, Bell } from 'lucide-react';
+import { Textarea } from '@/components/ui/textarea';
+import { settingsApi, SiteSettings } from '@/lib/api/settings-api';
+import { Bell, Globe, Save, Settings, Shield } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
 export function SiteSettingsClient() {
   const [saving, setSaving] = useState(false);
-  const [settings, setSettings] = useState({
+  const [loading, setLoading] = useState(true);
+  const [settings, setSettings] = useState<SiteSettings>({
     // General Settings
-    siteName: 'HomeConnect',
-    siteDescription: 'Your trusted property rental platform',
-    siteUrl: 'https://homeconnect.com',
-    contactEmail: 'support@homeconnect.com',
-    contactPhone: '+880-1234-567890',
-    
+    siteName: '',
+    siteDescription: '',
+    siteUrl: '',
+    contactEmail: '',
+    contactPhone: '',
+
     // Feature Toggles
     enableRegistration: true,
     enableEmailVerification: true,
     enableTwoFactorAuth: false,
     enableMaintenanceMode: false,
-    
+
     // Payment Settings
     currency: 'BDT',
     paymentGateway: 'stripe',
     escrowEnabled: true,
-    escrowDuration: 48, // hours
-    
+    escrowDuration: 48,
+
     // Notification Settings
     emailNotifications: true,
     smsNotifications: false,
     pushNotifications: true,
-    
+
     // Security Settings
     minPasswordLength: 8,
     requireStrongPassword: true,
-    sessionTimeout: 30, // minutes
+    sessionTimeout: 30,
   });
+
+  useEffect(() => {
+    fetchSettings();
+  }, []);
+
+  const fetchSettings = async () => {
+    try {
+      setLoading(true);
+      const data = await settingsApi.getSettings();
+      setSettings(data);
+    } catch (error) {
+      console.error("Failed to fetch settings:", error);
+      toast.error("Failed to load settings. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleSave = async () => {
     try {
       setSaving(true);
-      // TODO: Implement API call to save settings
-      await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate API call
+      await settingsApi.updateSettings(settings);
       toast.success('Settings saved successfully');
     } catch (error: unknown) {
       const errorMessage = error && typeof error === 'object' && 'response' in error
@@ -59,6 +77,10 @@ export function SiteSettingsClient() {
       setSaving(false);
     }
   };
+
+  if (loading) {
+    return <div>Loading...</div>
+  }
 
   return (
     <div className="space-y-6">

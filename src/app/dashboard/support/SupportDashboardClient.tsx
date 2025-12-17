@@ -1,17 +1,13 @@
 'use client';
 
-import { useDashboard } from '@/hooks/useDashboard';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Wrench, Users, MessageSquare, AlertCircle, Loader2, RefreshCw, Eye } from 'lucide-react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useDashboard } from '@/hooks/useDashboard';
+import { AlertCircle, Eye, Loader2, MessageSquare, RefreshCw, Users, Wrench } from 'lucide-react';
 import Link from 'next/link';
-import { toast } from 'sonner';
-import { useQueryClient } from '@tanstack/react-query';
-
 export function SupportDashboardClient() {
   const { stats, properties, isLoading, error, refetch } = useDashboard();
-  const queryClient = useQueryClient();
 
   if (isLoading) {
     return (
@@ -165,8 +161,8 @@ export function SupportDashboardClient() {
                               request.priority === 'high'
                                 ? 'destructive'
                                 : request.priority === 'medium'
-                                ? 'default'
-                                : 'secondary'
+                                  ? 'default'
+                                  : 'secondary'
                             }
                             className="capitalize"
                           >

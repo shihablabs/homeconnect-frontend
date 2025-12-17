@@ -1,6 +1,8 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
+import { ShareButton } from "@/components/property/ShareButton";
+import { VoteButtons } from "@/components/property/VoteButtons";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import {
@@ -16,8 +18,6 @@ import {
   ShieldCheck,
   ShieldOff,
 } from "lucide-react";
-import { VoteButtons } from "@/components/property/VoteButtons";
-import { ShareButton } from "@/components/property/ShareButton";
 
 interface PropertyHeaderProps {
   property: PropertyResponse;
@@ -113,8 +113,9 @@ export function PropertyHeader({ property }: PropertyHeaderProps) {
           )}
           <VoteButtons propertyId={property.id} />
         </div>
-        <ShareButton 
+        <ShareButton
           propertyId={property.id}
+          propertySlug={property.slug}
           propertyTitle={title}
         />
       </div>

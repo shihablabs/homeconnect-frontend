@@ -1,7 +1,7 @@
 "use client";
 
 import { adminApi } from "@/lib/api/admin-api";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 interface UseAdminUsersOptions {
   role?: 'tenant' | 'landlord' | 'admin' | 'support';
@@ -88,6 +88,15 @@ export const useAdminUsers = (options: UseAdminUsersOptions = {}) => {
     },
   });
 
+  const createStaffMutation = useMutation({
+    mutationFn: async (data: { name: string; email: string; password: string; role: 'admin' | 'support'; phone?: string }) => {
+      return await adminApi.createStaffAccount(data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
+    },
+  });
+
   return {
     users: usersQuery.data?.users || [],
     pagination: usersQuery.data?.pagination || { total: 0, page: 1, totalPages: 1 },
@@ -104,6 +113,9 @@ export const useAdminUsers = (options: UseAdminUsersOptions = {}) => {
     restoreUser: restoreUserMutation.mutate,
     restoreUserAsync: restoreUserMutation.mutateAsync,
     isRestoring: restoreUserMutation.isPending,
+    createStaff: createStaffMutation.mutate,
+    createStaffAsync: createStaffMutation.mutateAsync,
+    isCreatingStaff: createStaffMutation.isPending,
   };
 };
 

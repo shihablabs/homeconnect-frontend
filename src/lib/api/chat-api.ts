@@ -27,6 +27,8 @@ export interface Conversation {
     name: string;
     avatar?: string;
     email?: string;
+    isOnline?: boolean;
+    lastActive?: string;
   };
   lastMessage?: {
     id?: string;

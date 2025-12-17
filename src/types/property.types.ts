@@ -57,6 +57,7 @@ export interface OwnerAgentResponse {
 
 export interface PropertyResponseBase {
   id: string;
+  slug: string;
   title: string;
   description: string;
   listingType: ListingType;
@@ -79,7 +80,6 @@ export interface PropertyResponseBase {
   amenities: string[];
   images: string[];
   videos?: string[];
-  virtualTour?: string;
   floorPlans?: string[];
   status: PropertyStatus;
   featured: boolean;
@@ -208,7 +208,6 @@ export interface CreatePropertyBaseRequest {
   amenities: string[];
   images: string[];
   videos?: string[];
-  virtualTour?: string;
   floorPlans?: string[];
   tags?: string[];
   agent?: string;
@@ -308,7 +307,6 @@ export interface PropertyFormData {
   images: string[];
   imageFiles?: File[];
   videos?: string[];
-  virtualTour?: string;
   floorPlans?: string[];
   agent?: string;
   managementCompany?: string;

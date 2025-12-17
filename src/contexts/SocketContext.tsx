@@ -1,8 +1,8 @@
 'use client';
 
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { io, Socket } from 'socket.io-client';
 import { API_BASE_URL } from '@/config/config';
+import { createContext, ReactNode, useContext, useEffect, useState } from 'react';
+import { io, Socket } from 'socket.io-client';
 
 export interface Notification {
   id: string;
@@ -79,15 +79,15 @@ export function SocketProvider({ children }: { children: ReactNode }) {
       setIsConnected(false);
     });
 
-    // User online/offline events
-    newSocket.on('user_online', (data: { userId: string }) => {
-      setOnlineUsers((prev) => new Set(prev).add(data.userId));
-    });
-
-    newSocket.on('user_offline', (data: { userId: string }) => {
+    // User status events
+    newSocket.on('user_status_change', (data: { userId: string; isOnline: boolean }) => {
       setOnlineUsers((prev) => {
         const next = new Set(prev);
-        next.delete(data.userId);
+        if (data.isOnline) {
+          next.add(data.userId);
+        } else {
+          next.delete(data.userId);
+        }
         return next;
       });
     });
@@ -134,10 +134,10 @@ export function SocketProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <SocketContext.Provider value={{ 
-      socket, 
-      isConnected, 
-      onlineUsers, 
+    <SocketContext.Provider value={{
+      socket,
+      isConnected,
+      onlineUsers,
       typingUsers,
       notificationCount,
       notifications,

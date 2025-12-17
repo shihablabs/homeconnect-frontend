@@ -1,28 +1,29 @@
 'use client';
 
-import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuTrigger,
   DropdownMenuSeparator,
+  DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { 
-  Share2, 
-  Copy, 
-  Check, 
-  Facebook, 
-  Twitter, 
-  Mail, 
-  MessageSquare
-} from 'lucide-react';
-import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import {
+  Check,
+  Copy,
+  Facebook,
+  Mail,
+  MessageSquare,
+  Share2,
+  Twitter
+} from 'lucide-react';
+import { useState } from 'react';
+import { toast } from 'sonner';
 
 interface ShareButtonProps {
   propertyId: string;
+  propertySlug?: string;
   propertyTitle: string;
   propertyUrl?: string;
   variant?: 'default' | 'outline' | 'ghost';
@@ -33,6 +34,7 @@ interface ShareButtonProps {
 
 export function ShareButton({
   propertyId,
+  propertySlug,
   propertyTitle,
   propertyUrl,
   variant = 'outline',
@@ -46,7 +48,8 @@ export function ShareButton({
   const getPropertyUrl = () => {
     if (propertyUrl) return propertyUrl;
     if (typeof window !== 'undefined') {
-      return `${window.location.origin}/properties/${propertyId}`;
+      const identifier = propertySlug || propertyId;
+      return `${window.location.origin}/properties/${identifier}`;
     }
     return '';
   };
@@ -60,7 +63,7 @@ export function ShareButton({
       setCopied(true);
       toast.success('Link copied to clipboard!');
       setTimeout(() => setCopied(false), 2000);
-    } catch (error) {
+    } catch {
       toast.error('Failed to copy link');
     }
   };

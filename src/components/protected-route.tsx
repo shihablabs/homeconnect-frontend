@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useCallback, useEffect } from 'react';
 import { Spinner } from './ui/spinner';
 
 import {
@@ -23,13 +23,13 @@ export function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) 
   const router = useRouter();
 
   // Check if user role matches required role(s)
-  const hasAccess = () => {
+  const hasAccess = useCallback(() => {
     if (!requiredRole) return true; // No role requirement
     if (!user) return false;
-    
+
     const allowedRoles = Array.isArray(requiredRole) ? requiredRole : [requiredRole];
     return allowedRoles.includes(user.role as UserRole);
-  };
+  }, [requiredRole, user]);
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -41,7 +41,7 @@ export function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) 
     if (user && requiredRole && !hasAccess()) {
       router.push('/dashboard');
     }
-  }, [isAuthenticated, user, requiredRole, router]);
+  }, [isAuthenticated, user, requiredRole, router, hasAccess]);
 
   // Show loading while checking authentication
   if (!isAuthenticated) {
@@ -66,10 +66,10 @@ export function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) 
   // Check role only after user is loaded
   if (requiredRole && !hasAccess()) {
     const allowedRoles = Array.isArray(requiredRole) ? requiredRole : [requiredRole];
-    const rolesText = allowedRoles.length === 1 
+    const rolesText = allowedRoles.length === 1
       ? allowedRoles[0] + 's'
       : allowedRoles.join('s, ') + 's';
-    
+
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">

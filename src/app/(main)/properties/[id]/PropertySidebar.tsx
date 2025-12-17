@@ -1,12 +1,12 @@
 "use client";
 
+import { ShareButton } from "@/components/property/ShareButton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { OwnerAgentResponse } from "@/types/property.types";
 import { Separator } from "@radix-ui/react-dropdown-menu";
 import { MessageSquare, Phone } from "lucide-react";
-import { ShareButton } from "@/components/property/ShareButton";
 
 interface PropertySidebarProps {
   owner: OwnerAgentResponse;
@@ -15,6 +15,7 @@ interface PropertySidebarProps {
   currency: string;
   listingType: "rent" | "sale";
   propertyId?: string;
+  propertySlug?: string;
   propertyTitle?: string;
 }
 
@@ -25,6 +26,7 @@ export function PropertySidebar({
   currency,
   listingType,
   propertyId,
+  propertySlug,
   propertyTitle,
 }: PropertySidebarProps) {
   const contactPerson = agent || owner;
@@ -84,6 +86,7 @@ export function PropertySidebar({
         {propertyId && propertyTitle && (
           <ShareButton
             propertyId={propertyId}
+            propertySlug={propertySlug}
             propertyTitle={propertyTitle}
             variant="outline"
             size="lg"

@@ -1,29 +1,5 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { adminApi, type User } from '@/lib/api/admin-api';
-import { Search, User as UserIcon, Mail, Phone, Shield, Ban, CheckCircle2, Loader2, Eye, Trash2 } from 'lucide-react';
-import Link from 'next/link';
-import { toast } from 'sonner';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -35,8 +11,38 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { adminApi, type User } from '@/lib/api/admin-api';
+import { selectCurrentUser } from '@/redux/features/auth/authSlice';
+import { useAppSelector } from '@/redux/hooks';
+import { Ban, CheckCircle2, Eye, Loader2, Mail, Phone, Search, Trash2, User as UserIcon } from 'lucide-react';
+import Image from 'next/image';
+import Link from 'next/link';
+import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
 
 export function UsersDashboardClient() {
+  const currentUser = useAppSelector(selectCurrentUser);
+  const currentUserRole = currentUser?.role || 'tenant';
+
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
@@ -84,6 +90,7 @@ export function UsersDashboardClient() {
 
   useEffect(() => {
     fetchUsers();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, roleFilter, statusFilter]);
 
   // Debounce search - only fetch if search changed and is not empty
@@ -276,10 +283,12 @@ export function UsersDashboardClient() {
                         <TableCell>
                           <div className="flex items-center gap-3">
                             {user.avatar ? (
-                              <img
+                              <Image
                                 src={user.avatar}
                                 alt={user.name}
-                                className="h-10 w-10 rounded-full"
+                                width={40}
+                                height={40}
+                                className="rounded-full object-cover"
                               />
                             ) : (
                               <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
@@ -346,27 +355,33 @@ export function UsersDashboardClient() {
                                 View
                               </Button>
                             </Link>
-                            <Button
-                              variant={user.isActive ? "destructive" : "default"}
-                              size="sm"
-                              onClick={() => handleStatusToggle(user.id, user.isActive)}
-                              disabled={updatingUsers.has(user.id)}
-                            >
-                              {updatingUsers.has(user.id) ? (
-                                <Loader2 className="h-4 w-4 animate-spin" />
-                              ) : user.isActive ? (
-                                <>
-                                  <Ban className="h-4 w-4 mr-1" />
-                                  Block
-                                </>
-                              ) : (
-                                <>
-                                  <CheckCircle2 className="h-4 w-4 mr-1" />
-                                  Activate
-                                </>
-                              )}
-                            </Button>
-                            {!user.deletedAt && (
+
+                            {/* Block/Unblock - Admin Only */}
+                            {currentUserRole === 'admin' && (
+                              <Button
+                                variant={user.isActive ? "destructive" : "default"}
+                                size="sm"
+                                onClick={() => handleStatusToggle(user.id, user.isActive)}
+                                disabled={updatingUsers.has(user.id)}
+                              >
+                                {updatingUsers.has(user.id) ? (
+                                  <Loader2 className="h-4 w-4 animate-spin" />
+                                ) : user.isActive ? (
+                                  <>
+                                    <Ban className="h-4 w-4 mr-1" />
+                                    Block
+                                  </>
+                                ) : (
+                                  <>
+                                    <CheckCircle2 className="h-4 w-4 mr-1" />
+                                    Activate
+                                  </>
+                                )}
+                              </Button>
+                            )}
+
+                            {/* Delete - Admin Only */}
+                            {currentUserRole === 'admin' && !user.deletedAt && (
                               <AlertDialog>
                                 <AlertDialogTrigger asChild>
                                   <Button

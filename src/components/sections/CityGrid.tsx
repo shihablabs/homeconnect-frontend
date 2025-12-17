@@ -1,9 +1,12 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
+"use client";
+
+import { useGetContentQuery } from "@/redux/features/content/contentApi";
 import { ArrowRight, MapPin } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
-const cities = [
+const fallbackCities = [
   { name: "Downtown", image: "/cities/1.jpg", properties: 124, q: "downtown" },
   { name: "University District", image: "/cities/2.jpg", properties: 89, q: "university-district" },
   { name: "Waterfront", image: "/cities/3.jpg", properties: 67, q: "waterfront" },
@@ -14,7 +17,40 @@ const cities = [
   { name: "Riverside", image: "/cities/8.jpg", properties: 115, q: "riverside" },
 ];
 
+interface City {
+  name: string;
+  image: string;
+  properties: string | number;
+  q: string;
+}
+
 export default function CityGrid() {
+  const { data: contentData, isLoading } = useGetContentQuery("home-prime-locations");
+  const sectionData = contentData?.data;
+
+  // Use dynamic items if available, otherwise fallback, or merge to ensure 8 items
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const dynamicCities = sectionData?.items?.map((item: any) => ({
+    name: item.label,
+    image: item.image,
+    properties: item.description?.replace(/[^0-9]/g, "") || Math.floor(Math.random() * 100 + 50).toString(),
+    q: item.value,
+  })) || [];
+
+  // Ensure we have at least 8 items by filling with fallbacks
+  const cities: City[] = [...dynamicCities];
+  if (cities.length < 8) {
+    const needed = 8 - cities.length;
+    // Filter out cities that are already present by loose name match
+    const existingNames = new Set(cities.map(c => c.name.toLowerCase()));
+    const availableFallbacks = fallbackCities.filter(c => !existingNames.has(c.name.toLowerCase()));
+
+    cities.push(...availableFallbacks.slice(0, needed));
+  }
+
+  const title = sectionData?.title || "Discover Prime Locations";
+  const subtitle = sectionData?.subtitle || "Explore our carefully curated selection of premium neighborhoods and find your perfect community.";
+
   return (
     <section className="py-20 bg-gradient-to-b from-white to-gray-50/80">
       <div className="container mx-auto px-4">
@@ -25,10 +61,13 @@ export default function CityGrid() {
             Why Choose HomeConnect
           </div>
           <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-            Discover <span className="bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">Prime Locations</span>
+            {title.split("Prime Locations")[0]}
+            <span className="bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">
+              {title.includes("Prime Locations") ? "Prime Locations" : title.split(" ").slice(-2).join(" ")}
+            </span>
           </h2>
           <p className="text-xl text-gray-600 leading-relaxed">
-            Explore our carefully curated selection of premium neighborhoods and find your perfect community.
+            {subtitle}
           </p>
         </div>
 
@@ -37,13 +76,13 @@ export default function CityGrid() {
           {cities.map((city, index) => (
             <Link
               key={city.q}
-              href={`/search?city=${encodeURIComponent(city.q)}`}
+              href={`/properties?q=${encodeURIComponent(city.q)}`}
               className="group relative block overflow-hidden rounded-2xl bg-white shadow-lg hover:shadow-2xl transition-all duration-500 hover:scale-[1.02]"
             >
               {/* Image Container */}
               <div className="relative h-64 w-full overflow-hidden">
                 <Image
-                  src={city.image}
+                  src={city.image || "/cities/1.jpg"} // Fallback image if CMS missing
                   alt={city.name}
                   fill
                   className="object-cover transition-transform duration-700 group-hover:scale-110"
@@ -85,7 +124,7 @@ export default function CityGrid() {
         {/* Bottom CTA */}
         <div className="text-center mt-12">
           <Link
-            href="/search"
+            href="/properties"
             className="flex items-center justify-center gap-2 max-w-80 mx-auto w-full h-14 rounded-2xl bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] group"
           >
             <span>View All Locations</span>

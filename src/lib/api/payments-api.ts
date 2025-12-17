@@ -104,6 +104,17 @@ export interface PaymentSummary {
   lateCount: number;
 }
 
+export interface MonthlyPaymentSummary {
+  month: string; // Format: "YYYY-MM"
+  monthLabel: string; // Format: "January 2024"
+  totalPaid: number;
+  totalDue: number;
+  totalLateFees: number;
+  paidCount: number;
+  pendingCount: number;
+  overdueCount: number;
+}
+
 export interface EscrowStatus {
   escrowStatus: 'not_applicable' | 'held' | 'released' | 'disputed' | 'refunded';
   holdStartedAt?: string;
@@ -220,6 +231,18 @@ export const paymentsApi = {
    */
   getStripeConfig: async (): Promise<{ publishableKey: string }> => {
     const response = await api.get('/payments/config');
+    return response.data.data;
+  },
+
+  /**
+   * Get monthly payment summary for charts
+   */
+  getMonthlySummary: async (
+    months: number = 12
+  ): Promise<MonthlyPaymentSummary[]> => {
+    const response = await api.get('/payments/monthly-summary', {
+      params: { months },
+    });
     return response.data.data;
   },
 };

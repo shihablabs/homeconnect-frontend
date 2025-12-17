@@ -184,7 +184,6 @@ export const usePropertyForm = () => {
       tags: formData.tags || [],
       images: [], // We'll handle images separately via file upload
       videos: [],
-      virtualTour: undefined,
       floorPlans: [],
       managementCompany: undefined,
     };

@@ -4,6 +4,7 @@ import { api } from './api';
 
 export interface User {
   id: string;
+  slug: string;
   name: string;
   email: string;
   role: 'tenant' | 'landlord' | 'admin' | 'support';

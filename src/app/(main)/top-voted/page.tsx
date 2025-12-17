@@ -1,3 +1,5 @@
+/* eslint-disable react-hooks/exhaustive-deps */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -36,14 +38,14 @@ export default function TopVotedPage() {
 
   if (loading && properties.length === 0) {
     return (
-      <div className="container mx-auto px-4 pt-28 pb-16">
+      <div className="container mx-auto px-4 pb-16">
         <div className="text-center text-muted-foreground">Loading top voted properties...</div>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto px-4 pt-28 pb-16">
+    <div className="container mx-auto px-4 pb-16">
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>

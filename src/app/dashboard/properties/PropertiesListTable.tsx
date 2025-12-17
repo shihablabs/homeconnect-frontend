@@ -18,7 +18,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { selectCurrentUser } from "@/redux/features/auth/authSlice";
 import { useDeletePropertyMutation } from "@/redux/features/property/propertyApiSlice";
+import { useAppSelector } from "@/redux/hooks";
 import {
   PropertyResponse,
   isRentalResponse,
@@ -34,8 +36,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { useAppSelector } from "@/redux/hooks";
-import { selectCurrentUser } from "@/redux/features/auth/authSlice";
 
 interface PropertiesListTableProps {
   properties: PropertyResponse[];
@@ -90,8 +90,8 @@ export function PropertiesListTable({ properties }: PropertiesListTableProps) {
     );
   };
 
-  const copyLink = (id: string) => {
-    const url = `${window.location.origin}/properties/${id}`;
+  const copyLink = (identifier: string) => {
+    const url = `${window.location.origin}/properties/${identifier}`;
     navigator.clipboard.writeText(url);
     toast.success("Property link copied to clipboard!");
   };
@@ -175,7 +175,7 @@ export function PropertiesListTable({ properties }: PropertiesListTableProps) {
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem
-                      onClick={() => copyLink(property.id)}
+                      onClick={() => copyLink(property.slug || property.id)}
                       className="cursor-pointer"
                     >
                       <Copy className="mr-2 h-4 w-4" /> Copy Link

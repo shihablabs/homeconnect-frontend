@@ -30,6 +30,13 @@ export interface Booking {
   paymentStatus: 'pending' | 'paid' | 'failed' | 'refunded';
   stripeSessionId?: string;
   specialRequests?: string;
+  leaseDurationInMonths?: number;
+  leaseDocumentURL?: string;
+  // Recurring Payment Fields
+  isRecurringPayment?: boolean;
+  stripeSubscriptionId?: string;
+  stripeCustomerId?: string;
+  nextBillingDate?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -39,6 +46,9 @@ export interface CreateBookingRequest {
   checkIn: string;
   checkOut: string;
   specialRequests?: string;
+  leaseDurationInMonths?: number;
+  leaseDocumentURL?: string;
+  setupRecurringPayment?: boolean; // Frontend option to setup recurring payment
 }
 
 export interface CreatePaymentSessionRequest {
