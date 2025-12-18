@@ -1,21 +1,20 @@
 "use client";
 
+import { AuthLoginBrand } from "@/components/auth/AuthLayoutBrand";
 import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
-  CardTitle,
+  CardTitle
 } from "@/components/ui/card";
 import { authApi } from "@/lib/api/auth-api";
-import { AuthLoginBrand } from "@/components/auth/AuthLayoutBrand";
 import { pacifico } from "@/lib/fonts";
+import { CheckCircle2, Loader2, Mail, XCircle } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { CheckCircle2, Mail, XCircle, Loader2 } from "lucide-react";
 
 function VerifyEmailContent() {
   const searchParams = useSearchParams();
@@ -108,7 +107,7 @@ function VerifyEmailContent() {
                 <div className="flex lg:hidden items-center justify-center pb-6">
                   <Link
                     href="/"
-                    className={`${pacifico.className} text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent`}
+                    className={`${pacifico.className} text-3xl font-bold bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent`}
                   >
                     HomeConnect
                   </Link>

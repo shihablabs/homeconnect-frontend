@@ -37,7 +37,7 @@ export default function NotFound() {
         `}
       </style>
 
-      <main className="flex min-h-screen w-full flex-col items-center justify-center bg-gradient-to-r from-blue-600 to-purple-600 p-4 pt-36 pb-16 font-inter relative overflow-hidden">
+      <main className="flex min-h-screen w-full flex-col items-center justify-center bg-gradient-to-r from-cyan-600 to-blue-600 p-4 pt-36 pb-16 font-inter relative overflow-hidden">
         {/* Background Elements */}
         <div className="absolute inset-0 overflow-hidden">
           <div className="absolute -top-40 -right-40 w-80 h-80 bg-white/10 rounded-full blur-3xl"></div>

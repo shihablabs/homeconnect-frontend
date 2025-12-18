@@ -149,7 +149,7 @@ export default function RegisterPage() {
                   <div className='flex lg:hidden items-center justify-center pb-6'>
                     <Link
                       href="/"
-                      className={`${pacifico.className} text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent`}
+                      className={`${pacifico.className} text-3xl font-bold bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent`}
                     >
                       HomeConnect
                     </Link>
@@ -393,7 +393,7 @@ export default function RegisterPage() {
 
                     <Button
                       type="submit"
-                      className="w-full h-12 text-base font-semibold bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="w-full h-12 text-base font-semibold bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
                       disabled={isLoading}
                     >
                       {isLoading ? (

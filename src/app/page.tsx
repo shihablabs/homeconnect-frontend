@@ -19,8 +19,8 @@ export default function Home() {
         <TrustBadges />
         <FeaturedProperties />
         <NewArrivals />
-        <RentProperties />
         <PropertyTypeGrid />
+        <RentProperties />
         <CityGrid />
         <HowItWorks />
         <LandlordCTA />

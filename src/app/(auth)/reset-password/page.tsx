@@ -3,7 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowLeft, CheckCircle2, Eye, EyeOff, Lock } from "lucide-react";
 import Link from "next/link";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -27,8 +27,8 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { pacifico } from "@/lib/fonts";
 import { authApi } from "@/lib/api/auth-api";
+import { pacifico } from "@/lib/fonts";
 
 // Validation schema
 const resetPasswordSchema = z
@@ -183,7 +183,7 @@ function ResetPasswordContent() {
                 <div className="flex lg:hidden items-center justify-center pb-6">
                   <Link
                     href="/"
-                    className={`${pacifico.className} text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent`}
+                    className={`${pacifico.className} text-3xl font-bold bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent`}
                   >
                     HomeConnect
                   </Link>

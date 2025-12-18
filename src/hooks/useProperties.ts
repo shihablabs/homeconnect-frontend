@@ -111,11 +111,10 @@ export const useDeleteProperty = () => {
   });
 };
 
-export const useLikeProperty = () => {
+export const useToggleFavorite = () => {
   const queryClient = useQueryClient();
-
   return useMutation({
-    mutationFn: (id: string) => propertiesApi.likeProperty(id),
+    mutationFn: (id: string) => propertiesApi.toggleFavorite(id),
     onSuccess: (data, propertyId) => {
       // Update the specific property cache
       queryClient.invalidateQueries({ queryKey: ['properties', propertyId] });
@@ -133,13 +132,13 @@ export const usePropertyActions = () => {
   const createMutation = useCreateProperty();
   const updateMutation = useUpdateProperty();
   const deleteMutation = useDeleteProperty();
-  const likeMutation = useLikeProperty();
+  const likeMutation = useToggleFavorite();
 
   return {
     createProperty: createMutation.mutateAsync,
     updateProperty: updateMutation.mutateAsync,
     deleteProperty: deleteMutation.mutateAsync,
-    likeProperty: likeMutation.mutateAsync,
+    toggleFavorite: likeMutation.mutateAsync,
     isLoading: createMutation.isPending || updateMutation.isPending || deleteMutation.isPending || likeMutation.isPending,
     error: createMutation.error || updateMutation.error || deleteMutation.error || likeMutation.error,
   };

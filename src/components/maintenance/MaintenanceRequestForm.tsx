@@ -371,7 +371,7 @@ export function MaintenanceRequestForm({
           <Button
             type="submit"
             disabled={isSubmitting || isUploadingImages}
-            className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+            className="bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700"
           >
             {isSubmitting || isUploadingImages ? (
               <>

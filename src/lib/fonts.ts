@@ -1,8 +1,15 @@
-import { Nunito_Sans, Pacifico } from 'next/font/google';
+import { Lato, Merriweather, Pacifico } from 'next/font/google';
 
-export const nunitoSans = Nunito_Sans({
+export const lato = Lato({
   subsets: ['latin'],
-  variable: '--font-nunito-sans',
+  weight: ['100', '300', '400', '700', '900'],
+  variable: '--font-body',
+});
+
+export const merriweather = Merriweather({
+  subsets: ['latin'],
+  weight: ['300', '400', '700', '900'],
+  variable: '--font-heading',
 });
 
 export const pacifico = Pacifico({

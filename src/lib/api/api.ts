@@ -25,23 +25,22 @@ api.interceptors.request.use(
         '/properties/featured',
         '/properties/filters',
       ];
-      
-      // Optional auth endpoints - work with or without token
-      // We send token if available so users can see their own data
-      const optionalAuthEndpoints = [
-        /^\/properties\/[^\/]+\/votes$/, // Vote stats: /properties/:id/votes
-      ];
-      
-      const isPublicEndpoint = 
+
+      const optionalAuthEndpoints: RegExp[] = [];
+
+      const isPublicEndpoint =
         requestUrl.match(/^\/properties\/[^\/]+$/) || // Single property by ID: /properties/:id
-        publicEndpoints.some(endpoint => 
-          requestUrl.includes(endpoint) && 
-          !requestUrl.includes('/user/') && 
+        publicEndpoints.some(endpoint =>
+          requestUrl.includes(endpoint) &&
+          !requestUrl.includes('/user/') &&
           !requestUrl.includes('/dashboard') &&
-          !requestUrl.includes('/my-properties')
+          !requestUrl.includes('/my-properties') &&
+          !requestUrl.includes('/favorite') &&
+          !requestUrl.includes('/tour') &&
+          !requestUrl.includes('/inquiry')
         );
-      
-      const isOptionalAuthEndpoint = optionalAuthEndpoints.some(pattern => 
+
+      const isOptionalAuthEndpoint = optionalAuthEndpoints.some(pattern =>
         pattern.test(requestUrl)
       );
 
@@ -55,19 +54,19 @@ api.interceptors.request.use(
         const isDashboardEndpoint = requestUrl.includes('/dashboard') || requestUrl.includes('/my-');
         // User-specific endpoints always require authentication
         const isUserEndpoint = requestUrl.includes('/user/') || requestUrl.includes('/me');
-        
+
         // Send token for:
         // 1. Admin endpoints (always required)
         // 2. Dashboard/user endpoints (always required)
         // 3. All other protected endpoints (not public endpoints)
         // 4. Optional auth endpoints (so users can see their own data)
-        const shouldSendToken = 
-          isAdminEndpoint || 
-          isDashboardEndpoint || 
+        const shouldSendToken =
+          isAdminEndpoint ||
+          isDashboardEndpoint ||
           isUserEndpoint ||
-          !isPublicEndpoint || 
+          !isPublicEndpoint ||
           isOptionalAuthEndpoint;
-        
+
         if (shouldSendToken) {
           config.headers.Authorization = `Bearer ${token}`;
         }
@@ -95,31 +94,32 @@ api.interceptors.response.use(
           '/properties/featured',
           '/properties/filters',
         ];
-        
+
         // Optional auth endpoints - work with or without token
         // If token is invalid, just retry without token (don't redirect)
-        const optionalAuthEndpoints = [
-          /^\/properties\/[^\/]+\/votes$/, // Vote stats: /properties/:id/votes
-        ];
-        
+        const optionalAuthEndpoints: RegExp[] = [];
+
         const requestUrl = error.config?.url || '';
-        
+
         // Check if it's an optional auth endpoint
-        const isOptionalAuthEndpoint = optionalAuthEndpoints.some(pattern => 
+        const isOptionalAuthEndpoint = optionalAuthEndpoints.some(pattern =>
           pattern.test(requestUrl)
         );
-        
+
         // Check if it's a public property endpoint (list, featured, filters, or single property by ID)
         // Exclude user-specific or dashboard endpoints
-        const isPublicEndpoint = 
+        const isPublicEndpoint =
           requestUrl.match(/^\/properties\/[^\/]+$/) || // Single property by ID: /properties/:id
-          publicEndpoints.some(endpoint => 
-            requestUrl.includes(endpoint) && 
-            !requestUrl.includes('/user/') && 
+          publicEndpoints.some(endpoint =>
+            requestUrl.includes(endpoint) &&
+            !requestUrl.includes('/user/') &&
             !requestUrl.includes('/dashboard') &&
-            !requestUrl.includes('/my-properties')
+            !requestUrl.includes('/my-properties') &&
+            !requestUrl.includes('/favorite') &&
+            !requestUrl.includes('/tour') &&
+            !requestUrl.includes('/inquiry')
           );
-        
+
         // Handle optional auth endpoints - retry without token if 401
         if (isOptionalAuthEndpoint && error.config && !error.config._retry) {
           // Remove token and retry the request
@@ -127,7 +127,7 @@ api.interceptors.response.use(
           delete error.config.headers.Authorization;
           return api.request(error.config);
         }
-        
+
         // Only redirect to login if it's NOT a public or optional auth endpoint
         // Public and optional auth endpoints should work without authentication
         if (!isPublicEndpoint && !isOptionalAuthEndpoint) {

@@ -88,7 +88,6 @@ export interface PropertyResponseBase {
   owner: OwnerAgentResponse;
   agent?: OwnerAgentResponse;
   views: number;
-  likes: string[];
   savedBy: string[];
   createdAt: string;
   updatedAt: string;
@@ -406,4 +405,13 @@ export function isSaleRequest(
   request: CreatePropertyData
 ): request is CreateSalePropertyRequest {
   return request.listingType === 'sale';
+}
+
+export interface AvailableFilters {
+  cities: string[];
+  neighborhoods: string[];
+  propertyTypes: string[];
+  listingTypes: string[];
+  bedOptions: number[];
+  amenities: string[];
 }

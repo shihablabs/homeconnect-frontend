@@ -27,7 +27,7 @@ export function PageHeader({ title, description, badge, className }: PageHeaderP
           </Badge>
         )}
         <h1 className={cn(
-          "mb-6 text-4xl font-extrabold tracking-tight md:text-5xl lg:text-6xl bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent pb-2"
+          "mb-6 text-4xl font-extrabold tracking-tight md:text-5xl lg:text-6xl bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent pb-2"
         )}>
           {title}
         </h1>

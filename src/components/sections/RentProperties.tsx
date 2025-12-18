@@ -87,7 +87,7 @@ export function RentProperties() {
         <div className="text-center">
           <Link
             href="/properties?listingType=rent"
-            className="flex items-center justify-center gap-2 max-w-80 mx-auto w-full h-14 rounded-2xl bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] group"
+            className="flex items-center justify-center gap-2 max-w-80 mx-auto w-full h-14 rounded-2xl bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white font-semibold shadow-lg shadow-cyan-500/25 hover:shadow-cyan-500/40 transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] group"
           >
             <span>Browse Rental Listings</span>
             <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform duration-200" />

@@ -44,167 +44,11 @@ export interface PropertyFilters {
   sort?: string;
 }
 
-export interface PropertyResponse {
-  id: string;
-  slug: string;
-  title: string;
-  description: string;
-  listingType: 'rent' | 'sale';
-  propertyType: string;
-  address: string;
-  rentPrice?: number;
-  salePrice?: number;
-  currency?: string;
-  securityDeposit?: number;
-  isAvailable?: boolean;
-  city: string;
-  neighborhood: string;
-  state: string;
-  country: string;
-  latitude: number;
-  longitude: number;
-  zipCode?: string;
-  bedrooms: number;
-  bathrooms: number;
-  areaSize: number;
-  areaUnit: string;
-  yearBuilt?: number;
-  lotSize?: number;
-  lotUnit?: string;
-  amenities: string[];
-  images: string[];
-  videos?: string[];
-  floorPlans?: string[];
-  status: string;
-  featured: boolean;
-  isVerified: boolean;
-  tags: string[];
-  owner: {
-    id: string;
-    name: string;
-    email: string;
-    phone?: string;
-    avatar?: string;
-  };
-  agent?: {
-    id: string;
-    name: string;
-    email: string;
-    phone?: string;
-    avatar?: string;
-    company?: string;
-  };
-  views: number;
-  likes: string[];
-  createdAt: string;
-  updatedAt: string;
-  isNew?: boolean;
-}
+import { AvailableFilters, CreatePropertyData, PropertyResponse, PropertySearchResult, UpdatePropertyData } from '@/types/property.types';
+export type { PropertyResponse };
 
-export interface PropertySearchResult {
-  properties: PropertyResponse[];
-  total: number;
-  page: number;
-  totalPages: number;
-  hasNext: boolean;
-  hasPrev: boolean;
-}
-
-export interface CreatePropertyData {
-  title: string;
-  description: string;
-  listingType: 'rent' | 'sale';
-  propertyType: 'apartment' | 'house' | 'condo' | 'villa' | 'townhouse' | 'studio' | 'land' | 'commercial';
-  address: string;
-  city: string;
-  neighborhood: string;
-  state: string;
-  country: string;
-  latitude: number;
-  longitude: number;
-  zipCode?: string;
-  bedrooms: number;
-  bathrooms: number;
-  areaSize: number;
-  areaUnit: 'sqft' | 'sqm' | 'acres' | 'hectares';
-  yearBuilt?: number;
-  lotSize?: number;
-  lotUnit?: 'sqft' | 'sqm' | 'acres' | 'hectares';
-  amenities: string[];
-  images: string[];
-  videos?: string[];
-  floorPlans?: string[];
-  tags?: string[];
-  agent?: string;
-  managementCompany?: string;
-
-  // Rental specific
-  rentPrice?: number;
-  currency?: string;
-  securityDeposit?: number;
-  utilityDeposit?: number;
-  maintenanceFee?: number;
-  minimumStay?: number;
-  maximumStay?: number;
-  availableFrom: string;
-  leaseDuration?: number;
-  isFurnished?: boolean;
-  utilitiesIncluded?: string[];
-  petPolicy?: 'allowed' | 'not-allowed' | 'case-by-case';
-  smokingPolicy?: 'allowed' | 'not-allowed';
-
-  // Sale specific
-  salePrice?: number;
-  originalPrice?: number;
-  priceNegotiable?: boolean;
-  mortgageAvailable?: boolean;
-  propertyCondition?: 'excellent' | 'good' | 'needs-renovation' | 'new-construction';
-  ownershipType?: 'freehold' | 'leasehold' | 'condominium';
-  hoaFee?: number;
-  hoaFrequency?: 'monthly' | 'quarterly' | 'yearly';
-  taxAmount?: number;
-  taxYear?: number;
-  openHouseDates?: string[];
-  offerDeadline?: string;
-}
-
-export interface UpdatePropertyData {
-  title?: string;
-  description?: string;
-  status?: 'available' | 'pending' | 'sold' | 'rented' | 'maintenance' | 'unavailable';
-  images?: string[];
-  amenities?: string[];
-  tags?: string[];
-  featured?: boolean;
-
-  // Rental specific
-  rentPrice?: number;
-  securityDeposit?: number;
-  isAvailable?: boolean;
-  availableFrom?: string;
-  minimumStay?: number;
-  isFurnished?: boolean;
-  utilitiesIncluded?: string[];
-
-  // Sale specific
-  salePrice?: number;
-  originalPrice?: number;
-  priceNegotiable?: boolean;
-  propertyCondition?: 'excellent' | 'good' | 'needs-renovation' | 'new-construction';
-  hoaFee?: number;
-}
-
-export interface AvailableFilters {
-  cities: string[];
-  neighborhoods: string[];
-  propertyTypes: string[];
-  listingTypes: string[];
-  bedOptions: number[];
-  amenities: string[];
-}
-
-export interface LikeResponse {
-  liked: boolean;
+export interface FavoriteResponse {
+  favorited: boolean;
 }
 
 // --- API Implementation ---
@@ -244,7 +88,7 @@ export const propertiesApi = {
 
     // Append all data fields except images
     Object.keys(dataWithoutImages).forEach(key => {
-      const value = dataWithoutImages[key as keyof typeof dataWithoutImages];
+      const value = (dataWithoutImages as Record<string, any>)[key];
       if (value !== undefined && value !== null) {
         if (Array.isArray(value)) {
           formData.append(key, JSON.stringify(value));
@@ -253,7 +97,7 @@ export const propertiesApi = {
         } else if (typeof value === 'boolean') {
           formData.append(key, value.toString());
         } else {
-          formData.append(key, value.toString());
+          formData.append(key, String(value));
         }
       }
     });
@@ -287,9 +131,26 @@ export const propertiesApi = {
     return response.data;
   },
 
-  // Like/Unlike property
-  likeProperty: async (id: string): Promise<LikeResponse> => {
-    const response = await api.post(`/properties/${id}/like`);
+  // Favorite/Unfavorite property
+  toggleFavorite: async (id: string): Promise<FavoriteResponse> => {
+    const response = await api.post(`/properties/${id}/favorite`);
+    return response.data.data;
+  },
+
+  // Inquiries & Tours
+  createInquiry: async (propertyId: string, message: string) => {
+    const response = await api.post(`/properties/${propertyId}/inquiry`, { message });
+    return response.data.data;
+  },
+
+  scheduleTour: async (propertyId: string, preferredDate: string, notes?: string) => {
+    const response = await api.post(`/properties/${propertyId}/tour`, { preferredDate, notes });
+    return response.data.data;
+  },
+
+  // Comparison
+  compareProperties: async (ids: string[]): Promise<PropertyResponse[]> => {
+    const response = await api.get('/properties/compare', { params: { ids } });
     return response.data.data;
   },
 
@@ -338,6 +199,13 @@ export const propertiesApi = {
   // Get available filters
   getAvailableFilters: async (): Promise<AvailableFilters> => {
     const response = await api.get('/properties/filters');
+    return response.data.data;
+  },
+
+  // Get city stats
+  getCityStats: async (cities?: string[]): Promise<{ city: string; count: number }[]> => {
+    const params = cities && cities.length > 0 ? { cities: cities.join(',') } : undefined;
+    const response = await api.get('/properties/city-stats', { params });
     return response.data.data;
   },
 };

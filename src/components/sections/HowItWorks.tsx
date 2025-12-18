@@ -1,17 +1,23 @@
-import { ArrowRight, CheckCircle, FileSignature, Search, Sparkles } from "lucide-react";
+import { ArrowRight, CheckCircle, Key, Search, Sparkles, Video } from "lucide-react";
 
 const steps = [
   {
-    title: "Smart Search",
-    desc: "Use AI-powered filters to find your perfect match with personalized recommendations.",
+    title: "Search Smart",
+    desc: "Find your perfect space instantly with AI-powered matching and real-time market data.",
     Icon: Search,
-    features: ["AI Recommendations", "Smart Filters", "Price Alerts"]
+    features: ["AI Matches", "Smart Filters", "Real-time Alerts"]
   },
   {
-    title: "Digital Signing",
-    desc: "Complete applications and sign documents securely with e-signature technology.",
-    Icon: FileSignature,
-    features: ["E-Signature", "Secure Documents", "Instant Submission"]
+    title: "See It Real",
+    desc: "Experience properties your way—schedule in-person visits or take immersive virtual tours.",
+    Icon: Video,
+    features: ["Virtual Tours", "Instant Booking", "Verified Hosts"]
+  },
+  {
+    title: "Make It Yours",
+    desc: "Seal the deal securely with digital contracts, instant payments, and automated handovers.",
+    Icon: Key,
+    features: ["E-Signature", "Secure Pay", "Fast Closing"]
   },
 ];
 
@@ -28,33 +34,33 @@ export default function HowItWorks() {
         <div className="text-center max-w-3xl mx-auto mb-16">
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full text-white text-sm font-medium mb-6 shadow-lg shadow-cyan-500/25">
             <Sparkles className="w-4 h-4" />
-            Simple 2-Step Process
+            Simple 3-Step Process
           </div>
 
           <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
-            Find Your Dream Home in{" "}
+            Your Dream Home in{" "}
             <span className="relative inline-block">
               <span className="relative z-10 bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent">
-                2 Easy Steps
+                3 Easy Steps
               </span>
               <div className="absolute bottom-2 left-0 w-full h-3 bg-cyan-200/40 -z-10 rounded-full" />
             </span>
           </h2>
 
           <p className="text-xl text-gray-600 leading-relaxed">
-            Our streamlined process makes finding and securing your perfect property
-            faster and easier than ever before.
+            We've stripped away the complexity. From discovery to keys in hand,
+            experience the future of real estate.
           </p>
         </div>
 
         {/* Steps Grid */}
-        <div className="grid gap-8 lg:grid-cols-2 max-w-5xl mx-auto">
+        <div className="grid gap-8 lg:grid-cols-3 max-w-7xl mx-auto">
           {steps.map(({ title, desc, Icon, features }, index) => (
             <div
               key={title}
               className="relative group"
             >
-              {/* Connection Line */}
+              {/* Connection Line (Desktop) */}
               {index < steps.length - 1 && (
                 <div className="hidden lg:block absolute top-12 -right-4 w-8 h-0.5 bg-gradient-to-r from-cyan-300 to-blue-300 group-hover:from-cyan-400 group-hover:to-blue-400 transition-all duration-300 z-20" />
               )}
@@ -74,11 +80,11 @@ export default function HowItWorks() {
                 </div>
 
                 {/* Content */}
-                <h3 className="text-2xl font-bold text-gray-900 mb-4 group-hover:text-cyan-700 transition-colors duration-300">
+                <h3 className="text-2xl font-bold text-gray-900 mb-3 group-hover:text-cyan-700 transition-colors duration-300">
                   {title}
                 </h3>
 
-                <p className="text-gray-600 mb-6 leading-relaxed">
+                <p className="text-gray-600 mb-6 leading-relaxed min-h-[48px]">
                   {desc}
                 </p>
 
@@ -106,15 +112,18 @@ export default function HowItWorks() {
         </div>
 
         {/* Bottom CTA */}
-        <div className="text-center mt-12">
-          <div className="inline-flex items-center gap-4 bg-white/60 backdrop-blur-sm rounded-2xl px-6 py-4 border border-cyan-100 shadow-lg shadow-cyan-500/10">
-            <div className="w-2 h-2 bg-cyan-500 rounded-full animate-ping" />
-            <span className="text-gray-700 font-medium">
-              Ready to start your journey?{" "}
-              <button className="text-cyan-600 font-semibold hover:text-cyan-700 underline decoration-2 decoration-cyan-300 underline-offset-4 transition-colors duration-300">
-                Get started today
-              </button>
-            </span>
+        <div className="text-center mt-16">
+          <div className="inline-flex flex-col md:flex-row items-center gap-4 bg-white/60 backdrop-blur-sm rounded-2xl px-8 py-5 border border-cyan-100 shadow-xl shadow-cyan-500/10">
+            <div className="flex items-center gap-3">
+              <span className="relative flex h-3 w-3">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-3 w-3 bg-cyan-500"></span>
+              </span>
+              <span className="text-gray-700 font-medium">Ready to start your journey?</span>
+            </div>
+            <button className="px-6 py-2 bg-gradient-to-r from-cyan-600 to-blue-600 text-white rounded-xl font-semibold shadow-lg shadow-cyan-500/20 hover:shadow-cyan-500/30 transition-all duration-300 hover:scale-105">
+              Get Started Now
+            </button>
           </div>
         </div>
       </div>

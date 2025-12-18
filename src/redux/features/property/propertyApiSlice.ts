@@ -246,15 +246,38 @@ export const propertyApiSlice = apiSlice.injectEndpoints({
       ],
     }),
 
-    likeProperty: builder.mutation<ApiSingleResponse<{ liked: boolean }>, string>(
-      {
-        query: (id) => ({
-          url: `/properties/${id}/like`,
-          method: 'POST',
-        }),
-        invalidatesTags: (result, error, id) => [{ type: 'Property', id }],
-      }
-    ),
+    getUserFavoriteProperties: builder.query<
+      PropertySearchResult,
+      { page?: number; limit?: number; type?: 'rent' | 'sale' } | void
+    >({
+      query: (params) => ({
+        url: '/properties/user/favorites',
+        params: params || {},
+      }),
+      transformResponse: transformListResponse,
+      providesTags: (result) =>
+        result && result.properties
+          ? [
+            ...result.properties.map(({ id }) => ({
+              type: 'Property' as const,
+              id,
+            })),
+            { type: 'Property', id: 'USER_FAVORITES' },
+          ]
+          : [{ type: 'Property', id: 'USER_FAVORITES' }],
+    }),
+
+    toggleFavorite: builder.mutation<ApiSingleResponse<{ favorited: boolean }>, string>({
+      query: (id) => ({
+        url: `/properties/${id}/favorite`,
+        method: 'POST',
+      }),
+      invalidatesTags: (result, error, id) => [
+        { type: 'Property', id },
+        { type: 'Property', id: 'LIST' },
+        { type: 'Property', id: 'USER_FAVORITES' },
+      ],
+    }),
   }),
 });
 
@@ -265,8 +288,9 @@ export const {
   useGetPropertiesByCityQuery,
   useGetPropertyByIdQuery,
   useGetMyPropertiesQuery,
+  useGetUserFavoritePropertiesQuery,
   useCreatePropertyMutation,
   useUpdatePropertyMutation,
   useDeletePropertyMutation,
-  useLikePropertyMutation,
+  useToggleFavoriteMutation,
 } = propertyApiSlice;

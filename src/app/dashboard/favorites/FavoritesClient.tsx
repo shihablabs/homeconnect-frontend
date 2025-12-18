@@ -11,7 +11,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { propertiesApi, type PropertyResponse } from '@/lib/api/properties-api';
+import {
+  useGetUserFavoritePropertiesQuery,
+  useToggleFavoriteMutation
+} from '@/redux/features/property/propertyApiSlice';
+import { PropertyResponse } from '@/types/property.types';
 import { Eye, Heart, Home, MapPin, Search } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -19,54 +23,58 @@ import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
 export function FavoritesClient() {
-  const [favorites, setFavorites] = useState<PropertyResponse[]>([]);
-  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [typeFilter, setTypeFilter] = useState<string>('all');
 
-  const fetchFavorites = async () => {
-    try {
-      setLoading(true);
-      const response = await propertiesApi.getUserFavoriteProperties(
-        1,
-        100,
-        typeFilter !== 'all' ? (typeFilter as 'rent' | 'sale') : undefined
-      );
-      setFavorites(response.properties || []);
-    } catch (error: unknown) {
-      const errorMessage = error && typeof error === 'object' && 'response' in error
-        ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
-        : undefined;
-      toast.error(errorMessage || 'Failed to fetch favorites');
-      setFavorites([]);
-    } finally {
-      setLoading(false);
+  const { data, isLoading, isFetching, error } = useGetUserFavoritePropertiesQuery(
+    {
+      page: 1,
+      limit: 100,
+      type: typeFilter !== 'all' ? (typeFilter as 'rent' | 'sale') : undefined,
+    },
+    {
+      refetchOnMountOrArgChange: true,
     }
-  };
+  );
+
+  const [toggleFavorite] = useToggleFavoriteMutation();
+
+  const favorites = data?.properties || [];
+  const loading = isLoading || isFetching;
 
   useEffect(() => {
-    fetchFavorites();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [typeFilter]);
+    if (error) {
+      const errorMessage = error && typeof error === 'object' && 'data' in error && error.data && typeof error.data === 'object' && 'message' in error.data
+        ? (error.data as { message?: string }).message
+        : undefined;
+      toast.error(errorMessage || 'Failed to fetch favorites');
+    }
+  }, [error]);
 
   const handleUnlike = async (propertyId: string) => {
     try {
-      const result = await propertiesApi.likeProperty(propertyId);
-      if (result.liked) {
+      const result = await toggleFavorite(propertyId).unwrap();
+      if (result.data.favorited) {
         toast.success('Added to favorites');
       } else {
         toast.success('Removed from favorites');
       }
-      fetchFavorites();
+      // RTK Query automatically refetches if tags are invalidated correctly
     } catch (error: unknown) {
-      const errorMessage = error && typeof error === 'object' && 'response' in error
-        ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
-        : undefined;
+      const errorMessage =
+        error &&
+          typeof error === 'object' &&
+          'data' in error &&
+          error.data &&
+          typeof error.data === 'object' &&
+          'message' in error.data
+          ? (error.data as { message?: string }).message
+          : undefined;
       toast.error(errorMessage || 'Failed to update favorites');
     }
   };
 
-  const filteredFavorites = favorites.filter((property) => {
+  const filteredFavorites = favorites.filter((property: PropertyResponse) => {
     const matchesSearch =
       !searchQuery ||
       property.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -144,7 +152,7 @@ export function FavoritesClient() {
           </Card>
         ) : (
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {filteredFavorites.map((property) => (
+            {filteredFavorites.map((property: PropertyResponse) => (
               <Card key={property.id} className="overflow-hidden hover:shadow-lg transition-shadow">
                 <div className="relative h-48 w-full">
                   {property.images && property.images.length > 0 ? (

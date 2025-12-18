@@ -1,63 +1,65 @@
+"use client";
 
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { BlogResponse } from '@/lib/api/blog-api';
-import { CalendarDays, User } from 'lucide-react';
+import { CalendarDays } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useState } from 'react';
 
 interface BlogCardProps {
   blog: BlogResponse;
 }
 
 export default function BlogCard({ blog }: BlogCardProps) {
+  // Initialize with the first image, or fallback if none exist
+  const [imgSrc, setImgSrc] = useState<string>(
+    (blog.images && blog.images.length > 0 && blog.images[0]) ? blog.images[0] : "/placeholder.jpg"
+  );
+
   return (
-    <Link href={`/blogs/${blog.slug}`} className="group h-full">
-      <Card className="h-full overflow-hidden transition-all duration-300 hover:shadow-lg border-muted/60 dark:bg-card/40 dark:backdrop-blur-sm">
-        <div className="relative aspect-[16/9] overflow-hidden bg-muted">
-          {blog.images && blog.images.length > 0 ? (
-            <Image
-              src={blog.images[0]}
-              alt={blog.title}
-              fill
-              className="object-cover transition-transform duration-500 group-hover:scale-105"
-            />
-          ) : (
-            <div className="flex items-center justify-center h-full bg-secondary/30 text-muted-foreground">
-              No Image
-            </div>
-          )}
-          <div className="absolute top-2 right-2">
-            <Badge variant="secondary" className="backdrop-blur-md bg-background/60">
-              {blog.tags[0] || 'Article'}
-            </Badge>
-          </div>
+    <Link href={`/blogs/${blog.slug}`} className="group h-full block">
+      <Card className="h-full shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden flex flex-col border-border/50 group-hover:border-primary/20 bg-card">
+        <div className="relative h-56 w-full bg-muted overflow-hidden">
+          <Image
+            src={imgSrc}
+            alt={blog.title}
+            fill
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            className="object-cover transition-transform duration-700 group-hover:scale-105"
+            onError={() => setImgSrc("/placeholder.jpg")}
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-60" />
+          <Badge variant="secondary" className="absolute top-4 left-4 bg-white/95 text-black backdrop-blur-sm shadow-sm font-bold pointer-events-none">
+            {blog.tags?.[0] || 'Article'}
+          </Badge>
         </div>
 
-        <CardHeader className="p-5 pb-0">
-          <h3 className="line-clamp-2 text-xl font-bold tracking-tight transition-colors group-hover:text-primary">
+        <CardHeader className="pb-3 pt-5 px-5">
+          <div className="flex items-center gap-2 text-xs text-muted-foreground mb-3 font-medium">
+            <CalendarDays className="w-3.5 h-3.5 text-primary" />
+            <span>
+              {new Date(blog.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+            </span>
+          </div>
+          <h3 className="text-xl font-bold group-hover:text-primary transition-colors line-clamp-2 leading-tight">
             {blog.title}
           </h3>
         </CardHeader>
 
-        <CardContent className="p-5">
-          <p className="line-clamp-3 text-sm text-muted-foreground">
-            {blog.content.replace(/<[^>]*>?/gm, '').substring(0, 150)}...
-          </p>
+        <CardContent className="flex-grow px-5 pb-2">
+          <div
+            className="text-muted-foreground text-sm line-clamp-3 leading-relaxed"
+            dangerouslySetInnerHTML={{
+              __html: blog.content.replace(/<[^>]*>?/gm, '').substring(0, 150) + "..."
+            }}
+          />
         </CardContent>
 
-        <CardFooter className="p-5 pt-0 mt-auto flex items-center justify-between text-xs text-muted-foreground border-t bg-muted/20 p-4">
-          <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1">
-              <User className="h-3.5 w-3.5" />
-              <span className="truncate max-w-[100px]">{blog.author.name}</span>
-            </div>
-          </div>
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-1">
-              <CalendarDays className="h-3.5 w-3.5" />
-              <span>{new Date(blog.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</span>
-            </div>
+        <CardFooter className="pt-2 px-5 pb-6">
+          <div className="text-sm font-bold text-primary flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+            Read Article <span aria-hidden="true">&rarr;</span>
           </div>
         </CardFooter>
       </Card>

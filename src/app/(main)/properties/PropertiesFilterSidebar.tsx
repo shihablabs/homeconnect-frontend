@@ -52,8 +52,8 @@ export function PropertiesFilterSidebar({
     <aside className={`sticky top-28 h-fit ${className}`}>
       <div className="flex justify-between items-center mb-4">
         <h3 className="text-xl font-semibold">Filters</h3>
-        <Button variant="ghost" size="sm" onClick={onResetFilters} className="text-blue-600">
-          <X className="w-4 h-4 mr-1" />
+        <Button variant="ghost" size="sm" onClick={onResetFilters} className="bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent hover:text-blue-700">
+          <X className="w-4 h-4 mr-1 text-blue-600" />
           Reset
         </Button>
       </div>

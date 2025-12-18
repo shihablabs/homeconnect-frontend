@@ -1,13 +1,13 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Badge } from "@/components/ui/badge";
-import { Calculator, HelpCircle, TrendingUp, DollarSign, Calendar, Percent, Info } from "lucide-react";
+import { Calculator, Calendar, DollarSign, HelpCircle, Info, Percent, TrendingUp } from "lucide-react";
+import { useMemo, useState } from "react";
 
 interface AmortizationEntry {
   month: number;
@@ -86,7 +86,7 @@ export default function EMICalculatorPage() {
       <div className="mb-8 text-center">
         <div className="flex items-center justify-center gap-2 mb-4">
           <Calculator className="h-8 w-8 text-blue-600" />
-          <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+          <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent">
             EMI Calculator
           </h1>
         </div>
@@ -287,7 +287,7 @@ export default function EMICalculatorPage() {
             </CardHeader>
             <CardContent>
               <div className="text-center py-4">
-                <div className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">
+                <div className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent mb-2">
                   ৳ {calculateEMI.toLocaleString("en-BD", { maximumFractionDigits: 0 })}
                 </div>
                 <p className="text-muted-foreground">per month for {loanTenure} years</p>
@@ -369,7 +369,7 @@ export default function EMICalculatorPage() {
                     {principalPercentage > 15 && `${principalPercentage.toFixed(1)}%`}
                   </div>
                   <div
-                    className="absolute right-0 top-0 h-full bg-gradient-to-r from-purple-500 to-purple-600 flex items-center justify-center text-white font-semibold text-sm"
+                    className="absolute right-0 top-0 h-full bg-gradient-to-r from-cyan-500 to-blue-600 flex items-center justify-center text-white font-semibold text-sm"
                     style={{ width: `${interestPercentage}%` }}
                   >
                     {interestPercentage > 15 && `${interestPercentage.toFixed(1)}%`}
@@ -388,7 +388,7 @@ export default function EMICalculatorPage() {
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
-                    <div className="w-4 h-4 rounded bg-gradient-to-r from-purple-500 to-purple-600"></div>
+                    <div className="w-4 h-4 rounded bg-gradient-to-r from-cyan-500 to-blue-600"></div>
                     <div>
                       <p className="text-sm font-medium">Total Interest</p>
                       <p className="text-xs text-muted-foreground">
@@ -440,9 +440,8 @@ export default function EMICalculatorPage() {
                         {amortizationSchedule.map((entry, index) => (
                           <tr
                             key={entry.month}
-                            className={`border-b hover:bg-gray-50 ${
-                              index % 12 === 0 ? "bg-blue-50/50" : ""
-                            }`}
+                            className={`border-b hover:bg-gray-50 ${index % 12 === 0 ? "bg-blue-50/50" : ""
+                              }`}
                           >
                             <td className="p-2">{entry.month}</td>
                             <td className="p-2 text-right font-mono">

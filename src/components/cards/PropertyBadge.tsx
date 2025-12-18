@@ -9,27 +9,27 @@ interface PropertyBadgeProps {
 
 export function PropertyBadge({ listingType, isNew, featured }: PropertyBadgeProps) {
   return (
-    <div className="flex gap-2">
+    <div className="flex gap-1.5">
       {listingType && (
         <Badge
           variant="secondary"
           className={cn(
-            "border border-white/30 text-black shadow hover:bg-white/90 font-medium",
-            listingType === "rent" ? "bg-white/85" : "bg-white/85"
+            "border border-white/40 text-black shadow-sm font-semibold tracking-tight backdrop-blur-md px-2 py-0.5 text-[10px] uppercase",
+            listingType === "rent" ? "bg-white/90" : "bg-white/90"
           )}
         >
-          {listingType === "rent" ? "For Rent" : "For Sale"}
+          {listingType === "rent" ? "Rent" : "Sale"}
         </Badge>
       )}
 
       {isNew && (
-        <Badge className="border border-emerald-400/30 bg-emerald-500 text-white shadow font-medium">
+        <Badge className="border border-white/20 bg-emerald-500/90 text-white shadow-sm font-semibold tracking-tight backdrop-blur-md px-2 py-0.5 text-[10px] uppercase hover:bg-emerald-600">
           New
         </Badge>
       )}
 
       {featured && (
-        <Badge className="border border-amber-400/30 bg-amber-500 text-white shadow font-medium">
+        <Badge className="border border-white/20 bg-amber-500/90 text-white shadow-sm font-semibold tracking-tight backdrop-blur-md px-2 py-0.5 text-[10px] uppercase hover:bg-amber-600">
           Featured
         </Badge>
       )}

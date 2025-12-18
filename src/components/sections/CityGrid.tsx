@@ -6,47 +6,56 @@ import { ArrowRight, MapPin } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
-const fallbackCities = [
-  { name: "Downtown", image: "/cities/1.jpg", properties: 124, q: "downtown" },
-  { name: "University District", image: "/cities/2.jpg", properties: 89, q: "university-district" },
-  { name: "Waterfront", image: "/cities/3.jpg", properties: 67, q: "waterfront" },
-  { name: "Historic Quarter", image: "/cities/4.jpg", properties: 156, q: "historic-quarter" },
-  { name: "Business Center", image: "/cities/5.jpg", properties: 203, q: "business-center" },
-  { name: "Parkside", image: "/cities/6.jpg", properties: 78, q: "parkside" },
-  { name: "Hillside", image: "/cities/7.jpg", properties: 92, q: "hillside" },
-  { name: "Riverside", image: "/cities/8.jpg", properties: 115, q: "riverside" },
+const staticCities = [
+  { name: "Gulshan", image: "/cities/gulshan.jpg", q: "gulshan" },
+  { name: "Dhanmondi", image: "/cities/dhanmondi.jpg", q: "dhanmondi" },
+  { name: "Uttara", image: "/cities/uttara.webp", q: "uttara" },
+  { name: "Sylhet", image: "/cities/sylhet.jpg", q: "sylhet" },
+  { name: "Chittagong", image: "/cities/chittagong.jpg", q: "chittagong" },
+  { name: "Rajshahi", image: "/cities/rajshahi.webp", q: "rajshahi" },
+  { name: "Rangpur", image: "/cities/rangpur.jpg", q: "rangpur" },
+  { name: "Nikunja", image: "/cities/nikunja.jpg", q: "nikunja" },
 ];
 
 interface City {
   name: string;
   image: string;
-  properties: string | number;
+  properties: number;
   q: string;
 }
 
+// Add propertiesApi import
+import { propertiesApi } from "@/lib/api/properties-api";
+import { useEffect, useState } from "react";
+
 export default function CityGrid() {
   const { data: contentData, isLoading } = useGetContentQuery("home-prime-locations");
+  const [cityStats, setCityStats] = useState<{ city: string; count: number }[]>([]);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const cityNames = staticCities.map(c => c.name);
+        const stats = await propertiesApi.getCityStats(cityNames);
+        setCityStats(stats);
+      } catch (error) {
+        console.error("Failed to fetch city stats:", error);
+      }
+    };
+    fetchStats();
+  }, []);
+
   const sectionData = contentData?.data;
 
-  // Use dynamic items if available, otherwise fallback, or merge to ensure 8 items
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const dynamicCities = sectionData?.items?.map((item: any) => ({
-    name: item.label,
-    image: item.image,
-    properties: item.description?.replace(/[^0-9]/g, "") || Math.floor(Math.random() * 100 + 50).toString(),
-    q: item.value,
-  })) || [];
-
-  // Ensure we have at least 8 items by filling with fallbacks
-  const cities: City[] = [...dynamicCities];
-  if (cities.length < 8) {
-    const needed = 8 - cities.length;
-    // Filter out cities that are already present by loose name match
-    const existingNames = new Set(cities.map(c => c.name.toLowerCase()));
-    const availableFallbacks = fallbackCities.filter(c => !existingNames.has(c.name.toLowerCase()));
-
-    cities.push(...availableFallbacks.slice(0, needed));
-  }
+  // Merge static cities with dynamic stats
+  const cities: City[] = staticCities.map(city => {
+    // Find matching stat (case-insensitive)
+    const stat = cityStats.find(s => s.city.toLowerCase() === city.name.toLowerCase());
+    return {
+      ...city,
+      properties: stat ? stat.count : 0
+    };
+  });
 
   const title = sectionData?.title || "Discover Prime Locations";
   const subtitle = sectionData?.subtitle || "Explore our carefully curated selection of premium neighborhoods and find your perfect community.";
@@ -82,11 +91,12 @@ export default function CityGrid() {
               {/* Image Container */}
               <div className="relative h-64 w-full overflow-hidden">
                 <Image
-                  src={city.image || "/cities/1.jpg"} // Fallback image if CMS missing
+                  src={city.image}
                   alt={city.name}
                   fill
                   className="object-cover transition-transform duration-700 group-hover:scale-110"
                   sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                  quality={90}
                 />
 
                 {/* Gradient Overlay */}
@@ -94,7 +104,7 @@ export default function CityGrid() {
 
                 {/* Property Count Badge */}
                 <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm rounded-full px-3 py-1">
-                  <span className="text-sm font-semibold text-gray-900">{city.properties}+</span>
+                  <span className="text-sm font-semibold text-gray-900">{city.properties}</span>
                   <span className="text-xs text-gray-600 ml-1">properties</span>
                 </div>
 
@@ -125,7 +135,7 @@ export default function CityGrid() {
         <div className="text-center mt-12">
           <Link
             href="/properties"
-            className="flex items-center justify-center gap-2 max-w-80 mx-auto w-full h-14 rounded-2xl bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] group"
+            className="flex items-center justify-center gap-2 max-w-80 mx-auto w-full h-14 rounded-2xl bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white font-semibold shadow-lg shadow-cyan-500/25 hover:shadow-cyan-500/40 transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] group"
           >
             <span>View All Locations</span>
             <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform duration-200" />

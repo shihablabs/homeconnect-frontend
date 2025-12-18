@@ -288,6 +288,13 @@ const menuConfig = {
     },
     {
       type: 'link',
+      href: '/dashboard/newsletter-subscribers',
+      label: 'Newsletter List',
+      icon: TbMessage,
+      badge: null
+    },
+    {
+      type: 'link',
       href: '/dashboard/admin/support',
       label: 'Support Center',
       icon: TbHelp,
@@ -371,6 +378,13 @@ const menuConfig = {
       href: '/dashboard/blogs',
       label: 'Blog Management',
       icon: TbBook,
+      badge: null
+    },
+    {
+      type: 'link',
+      href: '/dashboard/newsletter-subscribers',
+      label: 'Newsletter List',
+      icon: TbMessage,
       badge: null
     }
   ]
@@ -495,9 +509,9 @@ export default function DashboardSidebar({ isOpen, onClose, role }: DashboardSid
         <div className="flex items-center justify-between h-24 p-6 border-b border-gray-200/40 bg-white/50 backdrop-blur-sm flex-shrink-0">
           <Link
             href="/"
-            className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent drop-shadow-lg hover:drop-shadow-xl inline-flex items-center space-x-4 hover:scale-105 transition-all duration-300">
+            className="text-2xl font-bold bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent drop-shadow-lg hover:drop-shadow-xl inline-flex items-center space-x-4 hover:scale-105 transition-all duration-300">
             <div className="relative">
-              <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center backdrop-blur-sm border border-white/30 shadow-lg">
+              <div className="w-12 h-12 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-2xl flex items-center justify-center backdrop-blur-sm border border-white/30 shadow-lg">
                 <TbHomeSearch className="text-xl text-white" />
               </div>
               <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-400 rounded-full border-2 border-white shadow-sm"></div>

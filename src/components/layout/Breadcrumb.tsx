@@ -14,7 +14,7 @@ export default function Breadcrumb() {
 
   // Generate breadcrumb items from pathname
   const pathSegments = pathname.split("/").filter(Boolean);
-  
+
   // Route label mappings for better readability
   const routeLabels: Record<string, string> = {
     "dashboard": "Dashboard",
@@ -29,23 +29,23 @@ export default function Breadcrumb() {
     "calculator": "EMI Calculator",
     "market-trends": "Market Trends",
   };
-  
+
   const breadcrumbItems = [
     { label: "Home", href: "/" },
     ...pathSegments.map((segment, index) => {
       const href = "/" + pathSegments.slice(0, index + 1).join("/");
-      
+
       // Check if it's a UUID or long ID (typically 36+ chars), show "Details"
       if (segment.length > 30 || /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(segment)) {
         return { label: "Details", href };
       }
-      
+
       // Use mapped label or format from segment
       const label = routeLabels[segment] || segment
         .split("-")
         .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
         .join(" ");
-      
+
       return { label, href };
     }),
   ];
@@ -58,13 +58,13 @@ export default function Breadcrumb() {
       <ol className="flex items-center space-x-2">
         {breadcrumbItems.map((item, index) => {
           const isLast = index === breadcrumbItems.length - 1;
-          
+
           return (
             <li key={item.href} className="flex items-center">
               {index === 0 ? (
                 <Link
                   href={item.href}
-                  className="flex items-center bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent hover:opacity-80 transition-opacity"
+                  className="flex items-center bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent hover:opacity-80 transition-opacity"
                 >
                   <Home className="h-4 w-4 text-blue-600" />
                 </Link>
@@ -78,7 +78,7 @@ export default function Breadcrumb() {
                   ) : (
                     <Link
                       href={item.href}
-                      className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent hover:opacity-80 transition-opacity"
+                      className="bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent hover:opacity-80 transition-opacity"
                     >
                       {item.label}
                     </Link>

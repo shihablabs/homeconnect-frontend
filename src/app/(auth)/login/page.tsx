@@ -106,7 +106,7 @@ export default function LoginPage() {
                   <div className='flex lg:hidden items-center justify-center pb-6'>
                     <Link
                       href="/"
-                      className={`${pacifico.className} text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent`}
+                      className={`${pacifico.className} text-3xl font-bold bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent`}
                     >
                       HomeConnect
                     </Link>

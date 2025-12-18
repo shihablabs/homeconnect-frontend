@@ -1,5 +1,6 @@
 import LayoutWrapper from "@/components/layout/LayoutWrapper";
-import { nunitoSans, pacifico } from "@/lib/fonts";
+import { CompareTray } from "@/components/property/CompareTray";
+import { lato, merriweather, pacifico } from "@/lib/fonts";
 import { ReduxProvider } from "@/redux/ReduxProvider";
 import "leaflet/dist/leaflet.css";
 import { Metadata } from "next";
@@ -22,12 +23,13 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${nunitoSans.variable} ${pacifico.variable} antialiased relative z-10`}
+        className={`${lato.variable} ${merriweather.variable} ${pacifico.variable} antialiased relative z-10`}
         suppressHydrationWarning={true}
       >
         <ReactQueryProvider>
           <ReduxProvider>
             <LayoutWrapper>{children}</LayoutWrapper>
+            <CompareTray />
             <Toaster richColors position="top-right" closeButton />
           </ReduxProvider>
         </ReactQueryProvider>
