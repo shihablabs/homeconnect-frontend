@@ -19,7 +19,8 @@ import {
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { pollsApi, type CreatePollData } from '@/lib/api/polls-api';
-import { propertiesApi, type PropertyResponse } from '@/lib/api/properties-api';
+import { propertiesApi } from '@/lib/api/properties-api';
+import type { PropertyResponse } from '@/types/property.types';
 import { Calendar, Loader2, Plus, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';

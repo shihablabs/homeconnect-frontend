@@ -16,8 +16,9 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { bookingsApi } from '@/lib/api/bookings-api';
 import { paymentMethodsApi, type PaymentMethod } from '@/lib/api/payment-methods-api';
-import { propertiesApi, type PropertyResponse } from '@/lib/api/properties-api';
+import { propertiesApi } from '@/lib/api/properties-api';
 import { subscriptionsApi } from '@/lib/api/subscriptions-api';
+import type { PropertyResponse } from '@/types/property.types';
 import { ArrowLeft, CreditCard, Home, Loader2, Search } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';

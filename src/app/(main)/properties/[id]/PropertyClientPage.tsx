@@ -1,12 +1,20 @@
 "use client";
 
+import { SimilarProperties } from "@/components/property/SimilarProperties";
 import { Separator } from "@/components/ui/separator";
 import { PropertyResponse } from "@/types/property.types";
+import dynamic from "next/dynamic";
 import { PropertyDetailsSection } from "./PropertyDetailsSection";
 import { PropertyHeader } from "./PropertyHeader";
 import { PropertyImageGallery } from "./PropertyImageGallery";
-import { PropertyMap } from "./PropertyMap";
 import { PropertySidebar } from "./PropertySidebar";
+const PropertyMap = dynamic(
+  () => import("./PropertyMap").then((mod) => mod.PropertyMap),
+  {
+    ssr: false,
+    loading: () => <div className="h-96 w-full rounded-lg bg-gray-100 animate-pulse" />,
+  }
+);
 
 export function PropertyClientPage({
   property,
@@ -57,6 +65,12 @@ export function PropertyClientPage({
           address={property.address}
         />
       </section>
+
+      <SimilarProperties
+        currentPropertyId={property.id}
+        listingType={property.listingType}
+        propertyType={property.propertyType}
+      />
     </div>
   );
 }

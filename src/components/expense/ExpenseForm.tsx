@@ -21,7 +21,8 @@ import {
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { expensesApi, type Expense } from '@/lib/api/expenses-api';
-import { propertiesApi, type PropertyResponse } from '@/lib/api/properties-api';
+import { propertiesApi } from '@/lib/api/properties-api';
+import type { PropertyResponse } from '@/types/property.types';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { FileText, Loader2, UploadCloud } from 'lucide-react';
 import { useRouter } from 'next/navigation';

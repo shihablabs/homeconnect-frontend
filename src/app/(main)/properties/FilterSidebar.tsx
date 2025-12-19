@@ -65,8 +65,8 @@ export function FilterSidebar({
               type="button"
               onClick={() => onFilterChange({ lt: type === "all" ? undefined : type })}
               className={`flex-1 rounded-md px-3 py-2 text-sm font-medium transition-colors ${(filters.listingType || "all") === type
-                ? "bg-primary text-primary-foreground shadow"
-                : "text-muted-foreground hover:text-foreground"
+                ? "bg-gradient-to-r from-cyan-500 to-blue-500 text-white shadow"
+                : "text-muted-foreground hover:text-cyan-600 hover:bg-cyan-50"
                 }`}
             >
               {type === "all" ? "All" : type === "rent" ? "Rent" : "Sale"}
@@ -103,8 +103,8 @@ export function FilterSidebar({
               type="button"
               onClick={() => onFilterChange({ beds: beds === 0 ? undefined : beds })}
               className={`flex-1 rounded-md px-3 py-2 text-sm font-medium transition-colors ${(filters.bedrooms || 0) === beds
-                ? "bg-primary text-primary-foreground shadow"
-                : "text-muted-foreground hover:text-foreground"
+                ? "bg-gradient-to-r from-cyan-500 to-blue-500 text-white shadow"
+                : "text-muted-foreground hover:text-cyan-600 hover:bg-cyan-50"
                 }`}
             >
               {beds === 0 ? "Any" : `${beds}+`}
@@ -141,7 +141,7 @@ export function FilterSidebar({
                 <Checkbox
                   checked={filters.propertyType === pt}
                   onCheckedChange={(checked) => onFilterChange({ pt: checked ? pt : undefined })}
-                  className="data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+                  className="data-[state=checked]:bg-gradient-to-r data-[state=checked]:from-cyan-500 data-[state=checked]:to-blue-500 data-[state=checked]:border-transparent"
                 />
                 <span className="capitalize">{pt}</span>
               </label>
@@ -155,7 +155,7 @@ export function FilterSidebar({
           variant="outline"
           size="sm"
           onClick={onClearAll}
-          className="w-full"
+          className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 bg-clip-text text-transparent hover:text-blue-700 hover:bg-cyan-50 transition-all"
         >
           Reset All Filters
         </Button>

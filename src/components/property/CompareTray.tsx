@@ -53,7 +53,7 @@ export function CompareTray() {
           {/* Actions */}
           <div className="flex items-center gap-3 shrink-0 ml-auto">
             <button
-              onClick={() => dispatch(clearCompare())}
+              onClick={() => { dispatch(clearCompare()) }}
               className="text-xs font-bold text-gray-400 hover:text-red-500 transition-colors px-2 uppercase tracking-wide"
             >
               Clear
@@ -71,6 +71,8 @@ export function CompareTray() {
   );
 }
 
+// ... imports
+
 function CompareThumbnail({ item, dispatch }: { item: any, dispatch: any }) {
   const [src, setSrc] = useState(item.images?.[0] || "/placeholder-property.jpg");
 
@@ -86,7 +88,11 @@ function CompareThumbnail({ item, dispatch }: { item: any, dispatch: any }) {
         onError={() => setSrc("/placeholder-property.jpg")}
       />
       <button
-        onClick={() => dispatch(removeFromCompare(item.id))}
+        type="button"
+        onClick={(e: React.MouseEvent) => {
+          e.stopPropagation();
+          dispatch(removeFromCompare(item.id));
+        }}
         className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600 shadow-sm z-10"
       >
         <X className="h-3 w-3" />

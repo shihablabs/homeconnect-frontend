@@ -5,7 +5,6 @@ import {
   isRentalResponse,
   PropertyResponse,
 } from "@/types/property.types";
-import { Check } from "lucide-react";
 
 interface PropertyDetailsSectionProps {
   property: PropertyResponse;
@@ -89,18 +88,25 @@ export function PropertyDetailsSection({
         ))}
       </div>
 
-      <h3 className="text-xl font-semibold mt-8 mb-4">Amenities</h3>
+      <h3 className="text-xl font-bold text-gray-900 mt-10 mb-6 font-heading border-b border-gray-100 pb-2">Amenities</h3>
       {amenities.length > 0 ? (
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-x-4 gap-y-3">
+        <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-x-8 gap-y-4">
           {amenities.map((amenity) => (
-            <div key={amenity} className="flex items-center gap-2">
-              <Check className="h-4 w-4 text-green-600" />
-              <span className="text-gray-700">{amenity}</span>
-            </div>
+            <li
+              key={amenity}
+              className="flex items-center gap-3 text-gray-700 hover:text-gray-900 transition-colors group"
+            >
+              <div className="h-2 w-2 rounded-full bg-cyan-500 group-hover:scale-125 transition-transform shrink-0" />
+              <span className="text-base font-medium font-sans border-b border-transparent group-hover:border-gray-200 leading-relaxed">
+                {amenity}
+              </span>
+            </li>
           ))}
-        </div>
+        </ul>
       ) : (
-        <p className="text-gray-500">No amenities listed.</p>
+        <div className="py-6 text-gray-500 italic font-medium">
+          No specific amenities listed.
+        </div>
       )}
     </Card>
   );

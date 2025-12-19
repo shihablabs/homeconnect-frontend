@@ -130,15 +130,47 @@ export function PropertySidebar({
           {contactPerson.phone || "Call Now"}
         </Button>
 
-        <Button
-          variant="ghost"
-          size="lg"
-          className="w-full h-12 text-gray-500 font-semibold hover:text-primary transition-colors flex items-center justify-center gap-2"
-          onClick={handleShare}
-        >
-          <Share2 className="h-4 w-4" />
-          Share Property
-        </Button>
+        {/* Secondary Actions */}
+        <div className="space-y-3 pt-4 border-t border-gray-100">
+          {listingType === "rent" ? (
+            <Button
+              variant="outline"
+              className="w-full h-11 bg-gradient-to-r from-cyan-50 to-blue-50 text-cyan-700 border-cyan-200 hover:text-white hover:from-cyan-600 hover:to-blue-600 hover:border-transparent transition-all font-semibold shadow-sm"
+              onClick={() => toast.info("Schedule Visit form coming soon")}
+            >
+              Schedule a Visit
+            </Button>
+          ) : (
+            <Button
+              variant="outline"
+              className="w-full h-11 bg-gradient-to-r from-cyan-50 to-blue-50 text-cyan-700 border-cyan-200 hover:text-white hover:from-cyan-600 hover:to-blue-600 hover:border-transparent transition-all font-semibold shadow-sm"
+              onClick={() => toast.info("Information Request sent")}
+            >
+              Request More Details
+            </Button>
+          )}
+
+          <Button
+            variant="ghost"
+            className="w-full h-11 border border-dashed border-gray-200 text-gray-500 hover:text-cyan-600 hover:border-cyan-200 hover:bg-cyan-50 transition-all font-medium text-xs uppercase tracking-wider"
+            onClick={() => toast.info("Inquiry Sent")}
+          >
+            {listingType === "rent" ? "Ask a Question" : "Make an Offer"}
+          </Button>
+        </div>
+
+        <div className="space-y-3.5 mt-4">
+          {/* Share Button (moved down) */}
+          <Button
+            variant="ghost"
+            size="lg"
+            className="w-full h-12 text-gray-500 font-semibold hover:text-primary transition-colors flex items-center justify-center gap-2"
+            onClick={handleShare}
+          >
+            <Share2 className="h-4 w-4" />
+            Share Property
+          </Button>
+        </div>
       </div>
     </Card>
   );

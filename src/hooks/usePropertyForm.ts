@@ -2,8 +2,10 @@
 'use client';
 
 import { useCreateProperty } from '@/hooks/useProperties';
-import { CreatePropertyData } from '@/lib/api/properties-api';
-import { FormErrors, initialFormData, PropertyFormData } from '@/types/property.types';
+import { CreatePropertyData, FormErrors, initialFormData, PropertyFormData } from '@/types/property.types';
+// Remove the properties-api import if it's no longer used, or keep other named imports
+// Checking line 5: import { CreatePropertyData } from '@/lib/api/properties-api';
+// It only imports CreatePropertyData. So I can remove it.
 import { useState } from 'react';
 import { toast } from 'sonner';
 import Swal from 'sweetalert2';

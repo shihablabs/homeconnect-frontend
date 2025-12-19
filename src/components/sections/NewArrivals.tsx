@@ -1,6 +1,13 @@
 "use client";
 
 import { Card } from "@/components/ui/card";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
 import { useGetPropertiesQuery } from "@/redux/features/property/propertyApiSlice";
 import { ArrowRight, Clock } from "lucide-react";
 import Link from "next/link";
@@ -29,7 +36,7 @@ export function NewArrivals() {
     isLoading,
     isError,
   } = useGetPropertiesQuery({
-    limit: 6,
+    limit: 10,
     sortBy: 'createdAt',
     sortOrder: 'desc',
     listingType: 'sale'
@@ -79,11 +86,33 @@ export function NewArrivals() {
           </p>
         </div>
 
-        <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 mb-12">
-          {properties.map((property) => (
-            <PropertyCard key={property.id} property={property} />
-          ))}
-        </div>
+        <Carousel
+          opts={{
+            align: "start",
+            loop: true,
+          }}
+          className="w-full relative group mb-12"
+        >
+          <div className="absolute -top-[100px] right-0 flex gap-2 invisible md:visible">
+            <CarouselPrevious className="static translate-y-0 h-10 w-10 border-gray-200 hover:bg-cyan-50 hover:text-cyan-600 hover:border-cyan-200 transition-all font-bold shadow-sm" />
+            <CarouselNext className="static translate-y-0 h-10 w-10 border-gray-200 hover:bg-cyan-50 hover:text-cyan-600 hover:border-cyan-200 transition-all font-bold shadow-sm" />
+          </div>
+          <CarouselContent className="-ml-4 pb-4">
+            {properties.map((property) => (
+              <CarouselItem
+                key={property.id}
+                className="pl-4 md:basis-1/2 lg:basis-1/3 xl:basis-1/4"
+              >
+                <PropertyCard property={property} />
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+          {/* Mobile Navigation controls below */}
+          <div className="flex justify-center gap-4 mt-4 md:hidden">
+            <CarouselPrevious className="static translate-y-0" />
+            <CarouselNext className="static translate-y-0" />
+          </div>
+        </Carousel>
 
         <div className="text-center">
           <Link

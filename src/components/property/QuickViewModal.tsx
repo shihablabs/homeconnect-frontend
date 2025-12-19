@@ -41,7 +41,7 @@ export function QuickViewModal({ property, isOpen, onClose }: QuickViewModalProp
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-7xl w-full p-0 border-none rounded-3xl overflow-hidden shadow-2xl">
+      <DialogContent className="max-w-[95vw] w-full sm:max-w-[80rem] p-0 border-none rounded-3xl overflow-hidden shadow-2xl">
         <div className="w-full grid grid-cols-1 md:grid-cols-2">
           {/* Image Section */}
           <div className="relative aspect-[4/3] md:aspect-auto h-full min-h-[300px] bg-gray-100">

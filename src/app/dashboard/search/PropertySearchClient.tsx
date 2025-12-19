@@ -13,8 +13,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { propertiesApi, type PropertyResponse as ApiPropertyResponse, type AvailableFilters, type PropertyFilters, type PropertySearchResult } from '@/lib/api/properties-api';
-import type { AreaUnit, OwnershipType, PetPolicy, PropertyCondition, PropertyResponse, PropertyStatus, PropertyType, SmokingPolicy } from '@/types/property.types';
+import { propertiesApi, type PropertyFilters } from '@/lib/api/properties-api';
+import type { PropertyResponse as ApiPropertyResponse, AreaUnit, AvailableFilters, OwnershipType, PetPolicy, PropertyCondition, PropertyResponse, PropertySearchResult, PropertyStatus, PropertyType, SmokingPolicy } from '@/types/property.types';
 import { Search, SlidersHorizontal, X } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
@@ -267,7 +267,7 @@ export function PropertySearchClient() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="">All Cities</SelectItem>
-                      {(availableFilters?.cities || []).map((city) => (
+                      {(availableFilters?.cities || []).map((city: string) => (
                         <SelectItem key={city} value={city}>
                           {city}
                         </SelectItem>
@@ -287,7 +287,7 @@ export function PropertySearchClient() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="">All Types</SelectItem>
-                      {(availableFilters?.propertyTypes || []).map((type) => (
+                      {(availableFilters?.propertyTypes || []).map((type: string) => (
                         <SelectItem key={type} value={type}>
                           {type}
                         </SelectItem>

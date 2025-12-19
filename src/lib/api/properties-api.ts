@@ -88,7 +88,7 @@ export const propertiesApi = {
 
     // Append all data fields except images
     Object.keys(dataWithoutImages).forEach(key => {
-      const value = (dataWithoutImages as Record<string, any>)[key];
+      const value = (dataWithoutImages as Record<string, unknown>)[key];
       if (value !== undefined && value !== null) {
         if (Array.isArray(value)) {
           formData.append(key, JSON.stringify(value));

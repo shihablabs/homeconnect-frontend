@@ -45,11 +45,10 @@ export default function LandlordCTA() {
                 id="join-homeconnect-title"
                 className="mt-4 text-3xl font-bold leading-tight sm:text-4xl"
               >
-                Find your place. Make it home.
+                Manage your properties with ease. We&apos;ll handle the marketing,
+                screenings, and payments so you don&apos;t have to.
               </h3>
-              <p className="mt-2 max-w-prose text-white/90">
-                Whether you're buying, selling, renting, or letting - HomeConnect makes real estate simple, transparent, and secure for everyone.
-              </p>
+              Whether you&apos;re buying, selling, renting, or letting - HomeConnect makes real estate simple, transparent, and secure for everyone.
 
               {/* Feature bullets */}
               <ul className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -178,7 +177,7 @@ function Feature({
 }
 
 // Simple icons for local usage if needed
-function BadgeCheck(props: any) {
+function BadgeCheck(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg
       {...props}
@@ -198,7 +197,7 @@ function BadgeCheck(props: any) {
   )
 }
 
-function LogoIcon(props: any) {
+function LogoIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg
       {...props}

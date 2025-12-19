@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // src/hooks/useProperties.ts
-import { CreatePropertyData, propertiesApi, PropertyFilters, UpdatePropertyData } from '@/lib/api/properties-api';
+import { propertiesApi, PropertyFilters } from '@/lib/api/properties-api';
+import { CreatePropertyData, UpdatePropertyData } from '@/types/property.types';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 // Query Hooks
