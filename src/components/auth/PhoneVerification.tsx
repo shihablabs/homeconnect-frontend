@@ -45,7 +45,7 @@ export const PhoneVerification: React.FC<PhoneVerificationProps> = ({
   const recaptchaRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (isOpen && !window.recaptchaVerifier) {
+    if (isOpen && auth && !window.recaptchaVerifier) {
       window.recaptchaVerifier = new RecaptchaVerifier(auth, "recaptcha-container", {
         size: "invisible",
         callback: () => {
@@ -56,6 +56,10 @@ export const PhoneVerification: React.FC<PhoneVerificationProps> = ({
   }, [isOpen]);
 
   const handleSendOtp = async () => {
+    if (!auth) {
+      toast.error("Authentication service unavailable (Missing Configuration)");
+      return;
+    }
     if (!phoneNumber) {
       toast.error("Please enter a valid phone number");
       return;

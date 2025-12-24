@@ -4,7 +4,7 @@
 
 export const listingTypes = ['rent', 'sale'] as const;
 export const propertyTypes = [
-  'apartment', 'house', 'condo', 'villa', 'townhouse', 'studio', 'land', 'commercial'
+  'apartment', 'house', 'condo', 'villa', 'townhouse', 'studio', 'land', 'commercial', 'penthouse', 'room', 'office', 'shop', 'warehouse'
 ] as const;
 export const areaUnits = ['sqft', 'sqm', 'acres', 'hectares'] as const;
 export const petPolicies = ['allowed', 'not-allowed', 'case-by-case'] as const;
@@ -96,7 +96,7 @@ export interface PropertyResponseBase {
 
 export interface RentalPropertyResponse extends PropertyResponseBase {
   listingType: 'rent';
-  rentPrice: number;
+  pricePerMonth: number;
   currency: string;
   securityDeposit?: number;
   utilityDeposit?: number;
@@ -115,7 +115,7 @@ export interface RentalPropertyResponse extends PropertyResponseBase {
 
 export interface SalePropertyResponse extends PropertyResponseBase {
   listingType: 'sale';
-  salePrice: number;
+  totalPrice: number;
   currency: string;
   originalPrice?: number;
   priceNegotiable: boolean;
@@ -215,7 +215,7 @@ export interface CreatePropertyBaseRequest {
 
 export interface CreateRentalPropertyRequest extends CreatePropertyBaseRequest {
   listingType: 'rent';
-  rentPrice: number;
+  pricePerMonth: number;
   currency?: string;
   securityDeposit?: number;
   utilityDeposit?: number;
@@ -232,7 +232,7 @@ export interface CreateRentalPropertyRequest extends CreatePropertyBaseRequest {
 
 export interface CreateSalePropertyRequest extends CreatePropertyBaseRequest {
   listingType: 'sale';
-  salePrice: number;
+  totalPrice: number;
   currency?: string;
   originalPrice?: number;
   priceNegotiable?: boolean;
@@ -260,7 +260,7 @@ export interface UpdatePropertyBaseRequest {
 }
 
 export interface UpdateRentalPropertyRequest extends UpdatePropertyBaseRequest {
-  rentPrice?: number;
+  pricePerMonth?: number;
   securityDeposit?: number;
   isAvailable?: boolean;
   availableFrom?: string;
@@ -270,7 +270,7 @@ export interface UpdateRentalPropertyRequest extends UpdatePropertyBaseRequest {
 }
 
 export interface UpdateSalePropertyRequest extends UpdatePropertyBaseRequest {
-  salePrice?: number;
+  totalPrice?: number;
   originalPrice?: number;
   priceNegotiable?: boolean;
   propertyCondition?: PropertyCondition;
@@ -309,7 +309,7 @@ export interface PropertyFormData {
   floorPlans?: string[];
   agent?: string;
   managementCompany?: string;
-  rentPrice?: number;
+  pricePerMonth?: number;
   currency?: string;
   securityDeposit?: number;
   utilityDeposit?: number;
@@ -322,7 +322,7 @@ export interface PropertyFormData {
   utilitiesIncluded: string[];
   petPolicy: PetPolicy;
   smokingPolicy: SmokingPolicy;
-  salePrice?: number;
+  totalPrice?: number;
   originalPrice?: number;
   priceNegotiable: boolean;
   mortgageAvailable: boolean;
@@ -375,12 +375,12 @@ export const initialFormData: PropertyFormData = {
   smokingPolicy: 'not-allowed',
   minimumStay: 12,
   currency: 'BDT',
-  rentPrice: 0,
+  pricePerMonth: 0,
   priceNegotiable: true,
   mortgageAvailable: false,
   propertyCondition: 'good',
   ownershipType: 'freehold',
-  salePrice: 0,
+  totalPrice: 0,
 };
 
 export function isRentalResponse(

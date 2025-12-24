@@ -11,8 +11,23 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
-const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
-const auth = getAuth(app);
+const initFirebase = () => {
+  if (getApps().length > 0) return { app: getApp(), auth: getAuth(getApp()) };
+
+  if (!firebaseConfig.apiKey) {
+    if (typeof window !== 'undefined') {
+      console.warn("Firebase API Key is missing. Phone verification will be disabled. Check .env to enable.");
+    }
+    // Return nulls to prevent crash, consumers must handle it
+    return { app: null, auth: null };
+  }
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  return { app, auth };
+}
+
+const { app, auth } = initFirebase();
 
 export { app, auth };
 

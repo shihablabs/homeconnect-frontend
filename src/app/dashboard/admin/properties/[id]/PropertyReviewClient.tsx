@@ -2,8 +2,11 @@
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { ConfirmDialogWithInput } from '@/components/ui/confirm-dialog-with-input';
 import { adminApi, type PropertyWithVerification } from '@/lib/api/admin-api';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft, CheckCircle2, Clock, FileText, Loader2, XCircle } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -19,6 +22,29 @@ export function PropertyReviewClient({ propertyId }: PropertyReviewClientProps) 
   const router = useRouter();
   const [property, setProperty] = useState<PropertyWithVerification | null>(null);
   const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
+  const [confirmDialog, setConfirmDialog] = useState<{
+    open: boolean;
+    type: 'status';
+    newStatus?: string;
+  }>({ open: false, type: 'status' });
+
+  // Re-fetch function to be called after mutation
+  const fetchProperty = async () => {
+    try {
+      setLoading(true);
+      const data = await adminApi.getPropertyForReview(propertyId);
+      setProperty(data);
+    } catch (error: unknown) {
+      // Error handling matches original useEffect
+      const errorMessage = error && typeof error === 'object' && 'response' in error
+        ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
+        : undefined;
+      toast.error(errorMessage || 'Failed to fetch property details');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     const fetchProperty = async () => {
@@ -39,6 +65,44 @@ export function PropertyReviewClient({ propertyId }: PropertyReviewClientProps) 
 
     fetchProperty();
   }, [propertyId, router]);
+
+  const statusChangeMutation = useMutation({
+    mutationFn: async ({ id, status, notes }: { id: string; status: string; notes?: string }) => {
+      return await adminApi.verifyProperty(id, {
+        verificationStatus: status as 'pending' | 'under_review' | 'approved' | 'rejected',
+        verificationNotes: notes || `Status changed to ${status}`,
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'properties'] }); // Invalidate list
+      toast.success('Status updated successfully');
+      setConfirmDialog({ ...confirmDialog, open: false });
+      fetchProperty(); // Refresh current page data
+    },
+    onError: (error: unknown) => {
+      const errorMessage = error && typeof error === 'object' && 'response' in error
+        ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
+        : undefined;
+      toast.error(errorMessage || 'Failed to update status');
+    },
+  });
+
+  const handleStatusChangeClick = (newStatus: string) => {
+    setConfirmDialog({
+      open: true,
+      type: 'status',
+      newStatus,
+    });
+  };
+
+  const handleStatusChangeConfirm = async (message?: string) => {
+    if (!confirmDialog.newStatus || !property) return;
+    statusChangeMutation.mutate({
+      id: property.id,
+      status: confirmDialog.newStatus,
+      notes: message,
+    });
+  };
 
 
   if (loading) {
@@ -306,12 +370,34 @@ export function PropertyReviewClient({ propertyId }: PropertyReviewClientProps) 
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <Link href="/dashboard/admin/properties">
-                    <Button variant="outline" className="w-full">
-                      <FileText className="mr-2 h-4 w-4" />
-                      Go to Property Verification
-                    </Button>
-                  </Link>
+                  <div className="flex flex-col gap-3">
+                    <p className="text-sm text-blue-800 mb-2">
+                      Review the property details and documents above.
+                    </p>
+                    <div className="grid grid-cols-2 gap-3">
+                      <Button
+                        className="w-full bg-green-600 hover:bg-green-700 text-white"
+                        onClick={() => handleStatusChangeClick('approved')}
+                      >
+                        <CheckCircle2 className="mr-2 h-4 w-4" />
+                        Approve
+                      </Button>
+                      <Button
+                        variant="destructive"
+                        className="w-full"
+                        onClick={() => handleStatusChangeClick('rejected')}
+                      >
+                        <XCircle className="mr-2 h-4 w-4" />
+                        Reject
+                      </Button>
+                    </div>
+                    <Link href="/dashboard/admin/properties">
+                      <Button variant="outline" className="w-full mt-2">
+                        <ArrowLeft className="mr-2 h-4 w-4" />
+                        Back to List
+                      </Button>
+                    </Link>
+                  </div>
                 </CardContent>
               </Card>
             )}
@@ -346,6 +432,27 @@ export function PropertyReviewClient({ propertyId }: PropertyReviewClientProps) 
           </div>
         </div>
       </div>
+
+      {/* Status Change Confirmation Dialog */}
+      <ConfirmDialogWithInput
+        open={confirmDialog.open}
+        onOpenChange={(open) => setConfirmDialog({ ...confirmDialog, open })}
+        title="Change Verification Status"
+        description={
+          confirmDialog.newStatus === 'approved'
+            ? "Are you sure you want to APPROVE this property? It will become visible to all users."
+            : "Are you sure you want to REJECT this property? It will be hidden from users."
+        }
+        confirmText={confirmDialog.newStatus === 'approved' ? "Approve Property" : "Reject Property"}
+        cancelText="Cancel"
+        variant={confirmDialog.newStatus === 'rejected' ? 'destructive' : 'default'}
+        inputLabel="Verification Notes (Optional)"
+        inputPlaceholder={confirmDialog.newStatus === 'rejected' ? "Reason for rejection..." : "Any additional notes..."}
+        inputRequired={confirmDialog.newStatus === 'rejected'}
+        inputMaxLength={500}
+        onConfirm={handleStatusChangeConfirm}
+        isLoading={statusChangeMutation.isPending}
+      />
     </div>
   );
 }

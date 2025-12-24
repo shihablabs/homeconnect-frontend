@@ -1,5 +1,6 @@
 'use client';
 
+import Breadcrumb from '@/components/layout/Breadcrumb';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -26,7 +27,6 @@ import { useRouter } from 'next/navigation';
 import { useMemo, useState } from 'react';
 import { toast } from "sonner";
 import DashboardSidebar from './DashboardSidebar';
-import Breadcrumb from '@/components/layout/Breadcrumb';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -60,7 +60,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <DashboardSidebar
           isOpen={sidebarOpen}
           onClose={() => setSidebarOpen(false)}
-          role={user?.role as 'tenant' | 'landlord' | 'admin' | 'support' ?? 'tenant'}
+          role={user?.role as 'tenant' | 'landlord' | 'admin' | 'support'}
         />
       </div>
 

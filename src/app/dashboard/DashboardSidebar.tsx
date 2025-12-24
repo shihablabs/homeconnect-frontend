@@ -270,15 +270,7 @@ const menuConfig = {
       type: 'section',
       label: 'Content & Support'
     },
-    {
-      type: 'dropdown',
-      label: 'CMS',
-      icon: TbBook,
-      items: [
-        { href: '/dashboard/admin/cms/navigation', label: 'Navigation' },
-        { href: '/dashboard/admin/cms/sections', label: 'Sections' },
-      ]
-    },
+
     {
       type: 'link',
       href: '/dashboard/blogs',
@@ -454,7 +446,11 @@ export default function DashboardSidebar({ isOpen, onClose, role }: DashboardSid
 
   // Get menu items with dynamic badge counts
   const getMenuItemsWithBadges = () => {
-    const items = menuConfig[role];
+    // Fallback to 'tenant' if role is undefined or not in menuConfig
+    const items = menuConfig[role] || menuConfig['tenant'];
+
+    if (!items) return []; // Safety check
+
     return items.map(item => {
       if (item.type === 'link') {
         // Update badges based on href

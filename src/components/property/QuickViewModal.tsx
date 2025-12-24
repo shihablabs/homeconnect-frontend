@@ -33,10 +33,14 @@ export function QuickViewModal({ property, isOpen, onClose }: QuickViewModalProp
   if (!property) return null;
 
   const getPriceLabel = () => {
-    if (isRentalResponse(property)) {
-      return `৳ ${property.rentPrice.toLocaleString()} /mo`;
+    if (isRentalResponse(property) && property.pricePerMonth) {
+      return `৳ ${property.pricePerMonth.toLocaleString()} /mo`;
     }
-    return `৳ ${property.salePrice.toLocaleString()} (Total)`;
+    // Check if it's a sale response or fallback if sale logic applies
+    if ('totalPrice' in property && property.totalPrice) {
+      return `৳ ${property.totalPrice.toLocaleString()} (Total)`;
+    }
+    return 'Price on Request';
   };
 
   return (

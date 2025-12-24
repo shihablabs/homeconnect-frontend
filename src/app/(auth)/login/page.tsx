@@ -37,10 +37,17 @@ export default function LoginPage() {
   useEffect(() => {
     if (isAuthenticated) {
       console.log('🔐 User already logged in, redirecting...');
-      if (user?.role === 'landlord') {
-        router.push('/dashboard');
-      } else {
-        router.push('/properties');
+      // Redirect based on role
+      switch (user?.role) {
+        case 'landlord':
+        case 'admin':
+        case 'support':
+          router.push('/dashboard');
+          break;
+        case 'tenant':
+        default:
+          router.push('/properties'); // Tenants usually want to browse first
+          break;
       }
     }
   }, [isAuthenticated, user, router]);
@@ -138,14 +145,14 @@ export default function LoginPage() {
                       Demo Accounts
                     </p>
                     <div className="grid grid-cols-2 gap-3 text-xs">
-                      <div className="text-center p-3 bg-blue-50 rounded-lg border border-blue-100">
-                        <p className="font-semibold text-blue-900">Tenant</p>
-                        <p className="text-blue-700 mt-1 font-medium">tenant@homeconnect.com</p>
-                        <p className="text-blue-600">StrongPassword123!</p>
+                      <div className="text-center p-3 bg-red-50 rounded-lg border border-red-100">
+                        <p className="font-semibold text-red-900">Admin</p>
+                        <p className="text-red-700 mt-1 font-medium">admin@homeconnect.com</p>
+                        <p className="text-red-600">StrongPassword123!</p>
                       </div>
                       <div className="text-center p-3 bg-purple-50 rounded-lg border border-purple-100">
                         <p className="font-semibold text-purple-900">Landlord</p>
-                        <p className="text-purple-700 mt-1 font-medium">landlord@homeconnect.com</p>
+                        <p className="text-purple-700 mt-1 font-medium">landlord1@homeconnect.com</p>
                         <p className="text-purple-600">StrongPassword123!</p>
                       </div>
                     </div>

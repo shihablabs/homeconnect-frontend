@@ -4,7 +4,7 @@ export interface AuthUser {
   id: string;
   name: string;
   email: string;
-  role: string;
+  role: 'tenant' | 'landlord' | 'admin' | 'support';
   avatar?: string;
   phone?: string;
   isPhoneVerified?: boolean;

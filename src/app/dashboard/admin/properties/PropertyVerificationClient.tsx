@@ -291,7 +291,8 @@ export function PropertyVerificationClient() {
               </div>
             ) : (
               <>
-                <div className="rounded-lg border overflow-hidden">
+                {/* Desktop View: Table */}
+                <div className="hidden md:block rounded-lg border overflow-hidden">
                   <Table>
                     <TableHeader>
                       <TableRow>
@@ -382,6 +383,78 @@ export function PropertyVerificationClient() {
                       ))}
                     </TableBody>
                   </Table>
+                </div>
+
+                {/* Mobile View: Cards */}
+                <div className="md:hidden space-y-4">
+                  {properties.map((property) => (
+                    <div key={property.id} className="p-4 rounded-lg border bg-card text-card-foreground shadow-sm">
+                      <div className="flex justify-between items-start mb-3">
+                        <div>
+                          <h4 className="font-semibold text-sm line-clamp-1">{property.title}</h4>
+                          <p className="text-xs text-muted-foreground">ID: {property.id.slice(0, 8)}...</p>
+                        </div>
+                        {getStatusBadge(property.verificationStatus)}
+                      </div>
+
+                      <div className="space-y-2 text-sm mb-4">
+                        <div className="grid grid-cols-2 gap-2">
+                          <div>
+                            <p className="text-xs text-muted-foreground">Owner</p>
+                            <p className="font-medium truncate">{property.owner?.name}</p>
+                          </div>
+                          <div>
+                            <p className="text-xs text-muted-foreground">Location</p>
+                            <p className="font-medium truncate">{property.city}</p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-between gap-3 pt-3 border-t">
+                        <div className="flex-1">
+                          {changingStatus === property.id ? (
+                            <Loader2 className="h-4 w-4 animate-spin text-muted-foreground mx-auto" />
+                          ) : (
+                            <Select
+                              value={property.verificationStatus}
+                              onValueChange={(value) => {
+                                if (value !== property.verificationStatus) {
+                                  handleStatusChangeClick(property.id, property.title, value);
+                                }
+                              }}
+                              disabled={changingStatus === property.id}
+                            >
+                              <SelectTrigger className="w-full h-8 text-xs">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="pending">Pending</SelectItem>
+                                <SelectItem value="under_review">Under Review</SelectItem>
+                                <SelectItem value="approved">Approved</SelectItem>
+                                <SelectItem value="rejected">Rejected</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          )}
+                        </div>
+                        <div className="flex gap-2">
+                          <Link href={`/dashboard/admin/properties/${property.slug || property.id}`}>
+                            <Button variant="outline" size="sm" className="h-8 w-8 p-0">
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                          </Link>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleDeleteClick(property.id, property.title)}
+                            disabled={deleteMutation.isPending}
+                            className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
                 {/* Pagination */}
                 {totalPages > 1 && (

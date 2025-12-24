@@ -179,7 +179,7 @@ export const propertyApiSlice = apiSlice.injectEndpoints({
 
     createProperty: builder.mutation<PropertyResponse, CreatePropertyArgs>({
       query: (args) => {
-        const { data, images, documents } = args;
+        const { data, images } = args;
         const formData = new FormData();
         (Object.entries(data) as [string, any][]).forEach(([key, value]) => {
           if (value !== undefined && value !== null) {

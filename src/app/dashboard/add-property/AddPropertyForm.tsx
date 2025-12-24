@@ -195,7 +195,7 @@ const baseSchema = z.object({
 // Updated Rental Schema
 const rentalSchema = baseSchema.extend({
   listingType: z.literal("rent"),
-  rentPrice: requiredNumber.max(1000000, "Rent price seems too high"),
+  pricePerMonth: requiredNumber.max(1000000, "Rent price seems too high"),
   currency: CurrencySchema.default("BDT"),
   securityDeposit: z
     .number()
@@ -243,12 +243,16 @@ const rentalSchema = baseSchema.extend({
     .default([]),
   petPolicy: PetPolicySchema.default("not-allowed"),
   smokingPolicy: SmokingPolicySchema.default("not-allowed"),
+  agreementPolicy: z.object({
+    terms: z.string().min(10, "Agreement terms are required for rental properties"),
+    documentUrl: z.string().url().optional(),
+  }),
 });
 
 // Updated Sale Schema
 const saleSchema = baseSchema.extend({
   listingType: z.literal("sale"),
-  salePrice: requiredNumber.max(100000000, "Sale price seems too high"),
+  totalPrice: requiredNumber.max(100000000, "Sale price seems too high"),
   currency: CurrencySchema.default("BDT"),
   originalPrice: z
     .number()
@@ -318,7 +322,7 @@ const initialFormData: Partial<PropertyFormData> & Record<string, any> = {
   documentFiles: [],
 
   // Rental specific
-  rentPrice: undefined, // undefined to show placeholder
+  pricePerMonth: undefined, // undefined to show placeholder
   currency: "BDT",
   securityDeposit: undefined,
   utilityDeposit: undefined,
@@ -335,7 +339,7 @@ const initialFormData: Partial<PropertyFormData> & Record<string, any> = {
   smokingPolicy: "not-allowed",
 
   // Sale specific
-  salePrice: undefined,
+  totalPrice: undefined,
   originalPrice: undefined,
   priceNegotiable: true,
   mortgageAvailable: false,
@@ -415,16 +419,16 @@ export function AddPropertyForm() {
       case 6:
         isValid = await trigger(
           listingType === "rent"
-            ? ["rentPrice", "currency", "availableFrom"]
-            : ["salePrice", "currency", "propertyCondition"]
+            ? ["pricePerMonth", "currency", "availableFrom"]
+            : ["totalPrice", "currency", "propertyCondition"]
         );
         // Additional check: valid if price > 0
-        if (listingType === "rent" && form.getValues("rentPrice") <= 0) {
-          form.setError("rentPrice", { type: "manual", message: "Rent price must be greater than 0" });
+        if (listingType === "rent" && form.getValues("pricePerMonth") <= 0) {
+          form.setError("pricePerMonth", { type: "manual", message: "Rent price must be greater than 0" });
           isValid = false;
         }
-        if (listingType === "sale" && form.getValues("salePrice") <= 0) {
-          form.setError("salePrice", { type: "manual", message: "Sale price must be greater than 0" });
+        if (listingType === "sale" && form.getValues("totalPrice") <= 0) {
+          form.setError("totalPrice", { type: "manual", message: "Sale price must be greater than 0" });
           isValid = false;
         }
         break;
@@ -1304,7 +1308,7 @@ function Step6({ listingType }: { listingType: "rent" | "sale" }) {
             />
             <FormField
               control={control}
-              name="rentPrice"
+              name="pricePerMonth"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Monthly Rent</FormLabel>
@@ -1479,6 +1483,23 @@ function Step6({ listingType }: { listingType: "rent" | "sale" }) {
               </FormItem>
             )}
           />
+          <FormField
+            control={control}
+            name="agreementPolicy.terms"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Rental Agreement Terms (Optional)</FormLabel>
+                <FormControl>
+                  <Textarea
+                    placeholder="Enter key terms or paste the agreement text..."
+                    className="h-32"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
         </>
       ) : (
         <>
@@ -1514,10 +1535,10 @@ function Step6({ listingType }: { listingType: "rent" | "sale" }) {
             />
             <FormField
               control={control}
-              name="salePrice"
+              name="totalPrice"
               render={({ field }) => (
                 <FormItem className="flex flex-col">
-                  <FormLabel>Sale Price</FormLabel>
+                  <FormLabel>Total Price</FormLabel>
                   <FormControl>
                     <Input
                       type="number"

@@ -144,19 +144,28 @@ export function PropertyCard({ property }: PropertyCardProps) {
     });
   };
 
-  const placeholderImage = "/placeholder-property.jpg";
-  const imageUrl = images && images.length > 0 ? images[0] : placeholderImage;
+  const [imgSrc, setImgSrc] = useState(() => {
+    return images && images.length > 0 ? images[0] : "/placeholder-property.jpg";
+  });
+
+  useEffect(() => {
+    setImgSrc(images && images.length > 0 ? images[0] : "/placeholder-property.jpg");
+  }, [images]);
 
   const getPriceLabel = () => {
     const currency = property.currency || "BDT";
     if (isRentalResponse(property)) {
-      const price = property.rentPrice;
+      const price = property.pricePerMonth;
       if (!price || price === 0) return `${currency} 00 /mo`;
       return `${currency} ${price.toLocaleString()} /mo`;
     }
-    const price = property.salePrice;
-    if (!price || price === 0) return `${currency} 00`;
-    return `${currency} ${price.toLocaleString()}`;
+    // Handle sale property
+    if ('totalPrice' in property) {
+      const price = property.totalPrice;
+      if (!price || price === 0) return `${currency} 00`;
+      return `${currency} ${price.toLocaleString()}`;
+    }
+    return "Price on Request";
   };
 
   const priceLabel = getPriceLabel();
@@ -191,11 +200,12 @@ export function PropertyCard({ property }: PropertyCardProps) {
           {/* Image Section */}
           <div className="relative aspect-[4/3] w-full overflow-hidden rounded-t-xl bg-gray-50">
             <Image
-              src={imageUrl}
+              src={imgSrc}
               alt={title}
               fill
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
               className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+              onError={() => setImgSrc("/placeholder-property.jpg")}
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60" />
 

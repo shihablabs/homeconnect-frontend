@@ -15,6 +15,11 @@ import {
 import { pacifico } from "@/lib/fonts";
 import { useLogoutMutation } from "@/redux/features/auth/authApiSlice";
 // import { useGetContentQuery } from "@/redux/features/content/contentApi";
+import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { useNotificationsSocket } from "@/hooks/useNotificationsSocket";
+import { type Notification } from "@/lib/api/notifications-api";
 import {
   selectCurrentUser,
   selectIsAuthenticated,
@@ -26,15 +31,19 @@ import {
   BookOpen,
   Building,
   Calculator,
+  CheckCheck,
   ChevronDown,
+  CreditCard,
   Heart,
   Home,
   LayoutDashboard,
   LogOut,
+  MessageSquare,
   Phone,
   PlusCircle,
   Settings,
-  TrendingUp
+  TrendingUp,
+  Wrench
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -153,6 +162,51 @@ export default function Header() {
   const isAuthenticated = useSelector(selectIsAuthenticated);
 
   const [logoutUser, { isLoading: isLoggingOut }] = useLogoutMutation();
+
+  // Notification State
+  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+  const [selectedNotification, setSelectedNotification] = useState<Notification | null>(null);
+  const [isDetailOpen, setIsDetailOpen] = useState(false);
+
+  const {
+    notifications,
+    stats,
+    markAsRead,
+    markAllAsRead,
+    deleteNotification,
+  } = useNotificationsSocket({
+    autoFetch: isAuthenticated, // Only fetch if authenticated
+  });
+
+  const unreadCount = stats?.unread || 0;
+
+  const handleNotificationClick = async (notification: Notification) => {
+    setSelectedNotification(notification);
+    setIsDetailOpen(true);
+    if (!notification.isRead) {
+      await markAsRead(notification.id);
+    }
+  };
+
+  const getNotificationIcon = (type: string) => {
+    switch (type) {
+      case 'message': return <MessageSquare className="h-4 w-4" />;
+      case 'payment': return <CreditCard className="h-4 w-4" />;
+      case 'booking': return <Home className="h-4 w-4" />;
+      case 'maintenance': return <Wrench className="h-4 w-4" />;
+      default: return <Bell className="h-4 w-4" />;
+    }
+  };
+
+  const getNotificationColor = (type: string) => {
+    switch (type) {
+      case 'message': return 'bg-blue-100 text-blue-600';
+      case 'payment': return 'bg-green-100 text-green-600';
+      case 'booking': return 'bg-purple-100 text-purple-600';
+      case 'maintenance': return 'bg-yellow-100 text-yellow-600';
+      default: return 'bg-gray-100 text-gray-600';
+    }
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -458,12 +512,148 @@ export default function Header() {
                     </Link>
                   </LandlordOnly>
 
-                  <button className="relative p-1.5 md:p-2 hover:bg-gray-100 rounded-lg">
-                    <Bell className="h-4 w-4 md:h-5 md:w-5 text-gray-600" />
-                    <span className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 md:w-4 md:h-4 bg-red-500 text-white text-[10px] md:text-xs rounded-full flex items-center justify-center">
-                      2
-                    </span>
-                  </button>
+
+
+                  <DropdownMenu open={isNotificationOpen} onOpenChange={setIsNotificationOpen}>
+                    <DropdownMenuTrigger asChild>
+                      <button className="relative p-1.5 md:p-2 hover:bg-gray-100 rounded-lg outline-none">
+                        <Bell className="h-4 w-4 md:h-5 md:w-5 text-gray-600" />
+                        {unreadCount > 0 && (
+                          <span className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 md:w-4 md:h-4 bg-red-500 text-white text-[10px] md:text-xs rounded-full flex items-center justify-center animate-pulse">
+                            {unreadCount > 9 ? '9+' : unreadCount}
+                          </span>
+                        )}
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-80 md:w-96 p-0">
+                      <div className="flex items-center justify-between p-4 border-b">
+                        <h4 className="font-semibold text-sm">Notifications</h4>
+                        {unreadCount > 0 && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-auto px-2 py-1 text-xs text-blue-600 hover:text-blue-700"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              markAllAsRead();
+                            }}
+                          >
+                            <CheckCheck className="h-3 w-3 mr-1" /> Mark all read
+                          </Button>
+                        )}
+                      </div>
+                      <ScrollArea className="h-[400px]">
+                        {notifications && notifications.length > 0 ? (
+                          <div className="divide-y">
+                            {notifications.slice(0, 10).map((notification) => (
+                              <div
+                                key={notification.id}
+                                className={`p-4 hover:bg-gray-50 cursor-pointer transition-colors ${!notification.isRead ? 'bg-blue-50/50' : ''}`}
+                                onClick={() => handleNotificationClick(notification)}
+                              >
+                                <div className="flex items-start gap-3">
+                                  <div className={`p-2 rounded-full shrink-0 ${getNotificationColor(notification.type)}`}>
+                                    {getNotificationIcon(notification.type)}
+                                  </div>
+                                  <div className="flex-1 min-w-0">
+                                    <p className="text-sm font-medium text-gray-900 truncate">
+                                      {notification.title}
+                                    </p>
+                                    <p className="text-xs text-gray-500 line-clamp-2 mt-0.5">
+                                      {notification.message}
+                                    </p>
+                                    <p className="text-[10px] text-gray-400 mt-1.5">
+                                      {new Date(notification.createdAt).toLocaleDateString()} • {new Date(notification.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                    </p>
+                                  </div>
+                                  {!notification.isRead && (
+                                    <div className="w-2 h-2 bg-blue-500 rounded-full mt-1.5 shrink-0" />
+                                  )}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="flex flex-col items-center justify-center py-12 text-center text-gray-500">
+                            <Bell className="h-8 w-8 mb-2 opacity-20" />
+                            <p className="text-sm">No notifications</p>
+                          </div>
+                        )}
+                      </ScrollArea>
+                      <div className="p-2 border-t bg-gray-50 text-center">
+                        <Link
+                          href="/dashboard/notifications"
+                          className="text-xs text-blue-600 hover:underline font-medium block w-full py-1"
+                          onClick={() => setIsNotificationOpen(false)}
+                        >
+                          View All Notifications
+                        </Link>
+                      </div>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+
+                  {/* Detailed Notification Modal */}
+                  <Dialog open={isDetailOpen} onOpenChange={setIsDetailOpen}>
+                    <DialogContent className="sm:max-w-md">
+                      {selectedNotification && (
+                        <>
+                          <DialogHeader>
+                            <div className="flex items-center gap-2 mb-2">
+                              <Badge variant="outline" className="capitalize">
+                                {selectedNotification.type}
+                              </Badge>
+                              <span className="text-xs text-muted-foreground">
+                                {new Date(selectedNotification.createdAt).toLocaleString()}
+                              </span>
+                            </div>
+                            <DialogTitle>{selectedNotification.title}</DialogTitle>
+                          </DialogHeader>
+                          <div className="py-4 space-y-4">
+                            <div className={`p-3 rounded-lg ${getNotificationColor(selectedNotification.type)} bg-opacity-10 border border-opacity-20`}>
+                              <p className="text-sm leading-relaxed">
+                                {selectedNotification.message}
+                              </p>
+                            </div>
+
+                            {/* Contextual Properties display based on data */}
+                            {selectedNotification.data && (
+                              <div className="text-sm space-y-2">
+                                {selectedNotification.data.propertyName && (
+                                  <div className="flex justify-between border-b pb-2">
+                                    <span className="text-muted-foreground">Property:</span>
+                                    <span className="font-medium">{selectedNotification.data.propertyName}</span>
+                                  </div>
+                                )}
+                                {selectedNotification.data.amount && (
+                                  <div className="flex justify-between border-b pb-2">
+                                    <span className="text-muted-foreground">Amount:</span>
+                                    <span className="font-medium">${selectedNotification.data.amount}</span>
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                          <DialogFooter className="flex-col sm:flex-row gap-2">
+                            <Button variant="outline" onClick={() => deleteNotification(selectedNotification.id).then(() => setIsDetailOpen(false))}>
+                              Delete
+                            </Button>
+                            {selectedNotification.data?.entityId && (
+                              <Button asChild>
+                                <Link href={
+                                  selectedNotification.type === 'booking' ? `/dashboard/bookings/${selectedNotification.data.entityId}` :
+                                    selectedNotification.type === 'payment' ? `/dashboard/payments/${selectedNotification.data.entityId}` :
+                                      selectedNotification.type === 'property' ? `/properties/${selectedNotification.data.entityId}` :
+                                        '/dashboard/notifications'
+                                } onClick={() => setIsDetailOpen(false)}>
+                                  View Details
+                                </Link>
+                              </Button>
+                            )}
+                          </DialogFooter>
+                        </>
+                      )}
+                    </DialogContent>
+                  </Dialog>
 
                   <DropdownMenu>
                     <DropdownMenuTrigger className="outline-none">
@@ -718,10 +908,10 @@ export default function Header() {
             </div>
           </div>
         )}
-      </header>
+      </header >
 
       {/* Add CSS for animation */}
-      <style jsx>{`
+      < style jsx > {`
         @keyframes slideDown {
           from {
             opacity: 0;
@@ -735,7 +925,7 @@ export default function Header() {
         .animate-slideDown {
           animation: slideDown 0.2s ease-out;
         }
-      `}</style>
+      `}</style >
     </>
   );
 }

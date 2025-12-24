@@ -34,18 +34,28 @@ export async function generateMetadata({ params }: BlogPageProps): Promise<Metad
   }
 }
 
+import { RecentBlogsSidebar } from '@/components/blog/RecentBlogsSidebar';
+
+// ... existing imports
+
 export default async function BlogDetailPage({ params }: BlogPageProps) {
   const { slug } = await params;
 
   let blog;
   let recommendedProperties = [];
+  let recentBlogs = [];
 
   try {
     // Parallel fetching for performance
     const blogPromise = blogApi.getBlogBySlug(slug);
-    const propertiesPromise = propertiesApi.getFeaturedProperties(6); // Get more to filter if needed
+    const propertiesPromise = propertiesApi.getFeaturedProperties(6);
+    const recentPromise = blogApi.getAllBlogs({ limit: 6, sortBy: 'createdAt', sortOrder: 'desc' });
 
-    [blog, recommendedProperties] = await Promise.all([blogPromise, propertiesPromise]);
+    const [blogData, propertiesData, recentData] = await Promise.all([blogPromise, propertiesPromise, recentPromise]);
+
+    blog = blogData;
+    recommendedProperties = propertiesData;
+    recentBlogs = recentData.data.filter(b => b.id !== blog.id).slice(0, 5);
 
   } catch (error) {
     console.error("Error fetching blog data:", error);
@@ -116,7 +126,7 @@ export default async function BlogDetailPage({ params }: BlogPageProps) {
         </div>
 
         {/* Featured Image */}
-        <div className="relative aspect-[21/9] w-full overflow-hidden rounded-3xl border border-gray-100 shadow-xl bg-muted">
+        <div className="relative h-[350px] md:h-[450px] w-full overflow-hidden rounded-3xl border border-gray-100 shadow-xl bg-muted">
           <BlogImage
             src={blog.images?.[0] || ""}
             alt={blog.title}
@@ -170,17 +180,17 @@ export default async function BlogDetailPage({ params }: BlogPageProps) {
             </div>
           </div>
 
-          {/* Sidebar / Recommended (Mobile only shown below, Desktop on right?) 
-                Actually design requested "some rent and sales properties suggest koro".
-                Let's put the related properties BELOW the content as a major section 
-                to "drive platform forward" as requested, rather than a tiny sidebar.
-            */}
+
+
+          <aside className="hidden lg:block lg:col-span-4 pl-8 border-l border-gray-100">
+            <RecentBlogsSidebar blogs={recentBlogs} />
+          </aside>
         </div>
 
         {/* Related Properties - The "Conversion" Section */}
         <RelatedProperties properties={recommendedProperties} title="Find Your Dream Home" />
 
       </div>
-    </article>
+    </article >
   );
 }

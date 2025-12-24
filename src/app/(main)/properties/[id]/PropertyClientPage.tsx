@@ -43,8 +43,8 @@ export function PropertyClientPage({
               owner={property.owner}
               price={
                 property.listingType === "rent"
-                  ? property.rentPrice
-                  : property.salePrice
+                  ? property.pricePerMonth
+                  : (property as any).totalPrice
               }
               currency={property.currency}
               listingType={property.listingType}
