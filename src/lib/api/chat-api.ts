@@ -14,10 +14,27 @@ export interface ChatMessage {
     name: string;
     avatar?: string;
   };
+  property?: {
+    id: string;
+    title: string;
+    image?: string;
+    price: number;
+    location?: string;
+  };
   message: string;
+  messageType: "text" | "image" | "system" | "offer";
+  metadata?: Record<string, any>;
   isRead: boolean;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface SendMessageRequest {
+  receiver: string;
+  message: string;
+  property?: string;
+  messageType?: "text" | "image" | "system" | "offer";
+  metadata?: Record<string, any>;
 }
 
 export interface Conversation {
@@ -35,9 +52,6 @@ export interface Conversation {
     content: string;
     timestamp: string | Date;
     isFromMe?: boolean;
-    message?: string; // For backward compatibility
-    createdAt?: string; // For backward compatibility
-    isRead?: boolean; // For backward compatibility
   };
   unreadCount: number;
   updatedAt?: string;

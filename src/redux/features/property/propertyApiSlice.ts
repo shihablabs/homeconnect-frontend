@@ -55,6 +55,7 @@ interface ApiMessageResponse {
 interface CreatePropertyArgs {
   data: CreatePropertyData;
   images?: File[];
+  documents?: File[];
 }
 
 interface UpdatePropertyArgs {
@@ -177,7 +178,8 @@ export const propertyApiSlice = apiSlice.injectEndpoints({
     }),
 
     createProperty: builder.mutation<PropertyResponse, CreatePropertyArgs>({
-      query: ({ data, images }) => {
+      query: (args) => {
+        const { data, images, documents } = args;
         const formData = new FormData();
         (Object.entries(data) as [string, any][]).forEach(([key, value]) => {
           if (value !== undefined && value !== null) {
@@ -194,6 +196,12 @@ export const propertyApiSlice = apiSlice.injectEndpoints({
         if (images && images.length > 0) {
           images.forEach((image) => {
             formData.append('images', image);
+          });
+        }
+
+        if (args.documents && args.documents.length > 0) {
+          args.documents.forEach((doc) => {
+            formData.append('documents', doc);
           });
         }
 

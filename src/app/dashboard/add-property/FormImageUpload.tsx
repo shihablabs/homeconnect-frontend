@@ -9,20 +9,27 @@ interface FormImageUploadProps {
   value: File[];
   onChange: (files: File[]) => void;
   error?: string; // Add error prop
+  maxFiles?: number;
+  label?: string;
+  onRemove?: (index: number) => void;
 }
 
-export function FormImageUpload({ value, onChange, error }: FormImageUploadProps) {
+export function FormImageUpload({ value, onChange, error, maxFiles = 10, label, onRemove }: FormImageUploadProps) {
   const files = value || [];
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const newFiles = Array.from(e.target.files);
-      onChange([...files, ...newFiles].slice(0, 10)); // Max 10 images
+      onChange([...files, ...newFiles].slice(0, maxFiles)); // Max images
     }
   };
 
   const removeImage = (index: number) => {
-    onChange(files.filter((_, i) => i !== index));
+    if (onRemove) {
+      onRemove(index);
+    } else {
+      onChange(files.filter((_, i) => i !== index));
+    }
   };
 
   const previews = useMemo(() => {
@@ -63,11 +70,11 @@ export function FormImageUpload({ value, onChange, error }: FormImageUploadProps
           </div>
         ))}
 
-        {files.length < 10 && (
+        {files.length < maxFiles && (
           <label className="relative aspect-square rounded-lg border-2 border-dashed border-gray-300 flex flex-col items-center justify-center text-gray-500 hover:border-primary hover:text-primary cursor-pointer transition-colors bg-white">
             <UploadCloud className="w-8 h-8" />
-            <span className="text-xs text-center mt-2">
-              Upload ({files.length}/10)
+            <span className="text-xs text-center mt-2 px-2">
+              {label || `Upload (${files.length}/${maxFiles})`}
             </span>
             <Input
               type="file"
@@ -83,7 +90,7 @@ export function FormImageUpload({ value, onChange, error }: FormImageUploadProps
       {/* Empty State / Help Text */}
       {files.length === 0 && (
         <div className="mt-2 flex flex-col items-center justify-center text-gray-400">
-          <p className="text-xs">Upload up to 10 images.</p>
+          <p className="text-xs">Upload up to {maxFiles} images.</p>
         </div>
       )}
 

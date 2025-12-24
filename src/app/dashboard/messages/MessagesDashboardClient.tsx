@@ -1,15 +1,20 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
+
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { useChatSocket } from '@/hooks/useChatSocket';
-import { useAuthState } from '@/hooks/useAuthState';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
 import { useSocket } from '@/contexts/SocketContext';
-import { MessageSquare, Send, Search, Loader2 } from 'lucide-react';
+import { useAuthState } from '@/hooks/useAuthState';
+import { useChatSocket } from '@/hooks/useChatSocket';
+import { ChatMessage, Conversation } from '@/lib/api/chat-api';
+import { ArrowLeft, ExternalLink, Home, Loader2, MessageSquare, Search, Send } from 'lucide-react';
+import Image from 'next/image';
+import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
+import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
 // Date formatting utility
@@ -17,7 +22,7 @@ const formatTimeAgo = (date: string) => {
   const now = new Date();
   const past = new Date(date);
   const diffInSeconds = Math.floor((now.getTime() - past.getTime()) / 1000);
-  
+
   if (diffInSeconds < 60) return 'just now';
   if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} minutes ago`;
   if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} hours ago`;
@@ -27,11 +32,20 @@ const formatTimeAgo = (date: string) => {
 
 export function MessagesDashboardClient() {
   const { user } = useAuthState();
+
   const { onlineUsers } = useSocket();
+  const searchParams = useSearchParams();
   const [selectedPartnerId, setSelectedPartnerId] = useState<string | null>(null);
+  const [activePropertyId, setActivePropertyId] = useState<string | null>(null);
   const [newMessage, setNewMessage] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
+  const [showMobileChat, setShowMobileChat] = useState(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
 
   const {
     messages,
@@ -54,6 +68,38 @@ export function MessagesDashboardClient() {
     },
   });
 
+  // Initialize audio
+  useEffect(() => {
+    audioRef.current = new Audio('/sounds/message-tone.mp3');
+  }, []);
+
+  // Play sound on new message
+  useEffect(() => {
+    if (messages.length > 0) {
+      const lastMessage = messages[messages.length - 1];
+      // Only play if message is not from me and created recently (not history load)
+      const isRecent = new Date(lastMessage.createdAt).getTime() > Date.now() - 10000;
+      if (lastMessage.sender.id !== user?.id && isRecent) {
+        audioRef.current?.play().catch(e => console.log('Audio play failed:', e));
+      }
+    }
+  }, [messages, user?.id]);
+
+  // Initialize from URL params
+  useEffect(() => {
+    const partnerId = searchParams.get('partner');
+    const propertyId = searchParams.get('property');
+    if (partnerId) {
+      setSelectedPartnerId(partnerId);
+      setShowMobileChat(true);
+    }
+    if (propertyId) {
+      setActivePropertyId(propertyId);
+    }
+  }, [searchParams]);
+
+
+
   // Fetch conversations on mount
   useEffect(() => {
     fetchConversations();
@@ -73,15 +119,18 @@ export function MessagesDashboardClient() {
     scrollToBottom();
   }, [messages]);
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
+
 
   const handleSendMessage = async () => {
     if (!selectedPartnerId || !newMessage.trim()) return;
 
     try {
-      await sendMessage(newMessage);
+      // Send message with active property context if set
+      await sendMessage(newMessage, activePropertyId || undefined);
+
+      // Clear property context after first message sent in this session
+      if (activePropertyId) setActivePropertyId(null);
+
       setNewMessage('');
       // Mark as read after sending
       markAsRead(selectedPartnerId);
@@ -114,10 +163,10 @@ export function MessagesDashboardClient() {
   };
 
   const selectedConversation = selectedPartnerId
-    ? conversations.find((c) => c.partner.id === selectedPartnerId)
+    ? conversations.find((c: Conversation) => c.partner.id === selectedPartnerId)
     : null;
 
-  const filteredConversations = conversations.filter((conv) =>
+  const filteredConversations = conversations.filter((conv: Conversation) =>
     conv.partner.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     (conv.partner.email && conv.partner.email.toLowerCase().includes(searchQuery.toLowerCase()))
   );
@@ -151,9 +200,21 @@ export function MessagesDashboardClient() {
         </div>
       </div>
 
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold">Messages</h1>
+          <p className="text-muted-foreground mt-1">
+            Chat with landlords, tenants, and support
+            {!isConnected && (
+              <span className="ml-2 text-yellow-600 text-sm">(Connecting...)</span>
+            )}
+          </p>
+        </div>
+      </div>
+
       <div className="grid gap-4 md:grid-cols-3 h-[calc(100vh-200px)]">
         {/* Conversations List */}
-        <Card className="md:col-span-1 flex flex-col">
+        <Card className={`md:col-span-1 flex-col ${showMobileChat ? 'hidden md:flex' : 'flex'}`}>
           <CardHeader>
             <CardTitle>Conversations</CardTitle>
             <div className="relative mt-2">
@@ -177,17 +238,19 @@ export function MessagesDashboardClient() {
               </div>
             ) : (
               <div className="space-y-2">
-                {filteredConversations.map((conversation) => {
+                {filteredConversations.map((conversation: Conversation) => {
                   const isSelected = selectedPartnerId === conversation.partner.id;
                   return (
                     <div
                       key={conversation.partner.id}
-                      onClick={() => setSelectedPartnerId(conversation.partner.id)}
-                      className={`p-3 border rounded-lg cursor-pointer transition-colors ${
-                        isSelected
-                          ? 'bg-primary/10 border-primary'
-                          : 'hover:bg-muted'
-                      }`}
+                      onClick={() => {
+                        setSelectedPartnerId(conversation.partner.id);
+                        setShowMobileChat(true);
+                      }}
+                      className={`p-3 border rounded-lg cursor-pointer transition-colors ${isSelected
+                        ? 'bg-primary/10 border-primary'
+                        : 'hover:bg-muted'
+                        }`}
                     >
                       <div className="flex items-center gap-3">
                         <div className="relative">
@@ -232,11 +295,20 @@ export function MessagesDashboardClient() {
         </Card>
 
         {/* Chat Area */}
-        <Card className="md:col-span-2 flex flex-col">
+        <Card className={`md:col-span-2 flex-col ${showMobileChat ? 'flex' : 'hidden md:flex'}`}>
           {selectedConversation ? (
             <>
               <CardHeader className="border-b">
                 <div className="flex items-center gap-3">
+                  {/* Mobile Back Button */}
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="md:hidden mr-2"
+                    onClick={() => setShowMobileChat(false)}
+                  >
+                    <ArrowLeft className="h-5 w-5" />
+                  </Button>
                   <div className="relative">
                     <Avatar>
                       <AvatarImage src={selectedConversation.partner.avatar} />
@@ -272,7 +344,7 @@ export function MessagesDashboardClient() {
                     </div>
                   ) : (
                     <>
-                      {messages.map((message) => {
+                      {messages.map((message: ChatMessage) => {
                         const isOwn = message.sender.id === user?.id;
                         return (
                           <div
@@ -280,22 +352,46 @@ export function MessagesDashboardClient() {
                             className={`flex ${isOwn ? 'justify-end' : 'justify-start'}`}
                           >
                             <div
-                              className={`max-w-[70%] rounded-lg p-3 ${
-                                isOwn
-                                  ? 'bg-primary text-primary-foreground'
-                                  : 'bg-muted text-foreground'
-                              }`}
+                              className={`max-w-[70%] rounded-lg p-3 ${isOwn
+                                ? 'bg-primary text-primary-foreground'
+                                : 'bg-muted text-foreground'
+                                }`}
                             >
                               {!isOwn && (
                                 <div className="text-xs font-medium mb-1">
                                   {message.sender.name}
                                 </div>
                               )}
+
+                              {/* Property Context Card */}
+                              {message.property && (
+                                <div className={`mb-2 rounded overflow-hidden border ${isOwn ? 'border-primary-foreground/20' : 'border-border/50'} bg-black/10`}>
+                                  <div className="flex gap-2 p-2 items-center">
+                                    {message.property.image && (
+                                      <div className="relative w-12 h-12 flex-shrink-0 rounded overflow-hidden">
+                                        <Image
+                                          src={message.property.image}
+                                          alt={message.property.title}
+                                          fill
+                                          className="object-cover"
+                                        />
+                                      </div>
+                                    )}
+                                    <div className="flex-1 min-w-0">
+                                      <p className="text-xs font-semibold truncate">{message.property.title}</p>
+                                      <p className="text-xs opacity-80">${message.property.price.toLocaleString()}</p>
+                                    </div>
+                                    <Link href={`/properties/${message.property.id}`} target="_blank">
+                                      <ExternalLink className="h-3 w-3 opacity-70 hover:opacity-100" />
+                                    </Link>
+                                  </div>
+                                </div>
+                              )}
+
                               <p className="text-sm whitespace-pre-wrap">{message.message}</p>
                               <div
-                                className={`text-xs mt-1 flex items-center gap-1 ${
-                                  isOwn ? 'text-primary-foreground/70' : 'text-muted-foreground'
-                                }`}
+                                className={`text-xs mt-1 flex items-center gap-1 ${isOwn ? 'text-primary-foreground/70' : 'text-muted-foreground'
+                                  }`}
                               >
                                 <span>{formatTimeAgo(message.createdAt)}</span>
                                 {isOwn && message.isRead && (
@@ -323,6 +419,13 @@ export function MessagesDashboardClient() {
                 </div>
                 <div className="border-t p-4">
                   <div className="flex gap-2">
+                    {activePropertyId && (
+                      <div className="absolute bottom-full left-4 mb-2 bg-primary/10 text-primary text-xs px-2 py-1 rounded-full flex items-center gap-1">
+                        <Home className="h-3 w-3" />
+                        <span>Discussing Property</span>
+                        <button onClick={() => setActivePropertyId(null)} className="ml-1 hover:text-red-500">×</button>
+                      </div>
+                    )}
                     <Input
                       placeholder="Type a message..."
                       value={newMessage}
@@ -330,8 +433,8 @@ export function MessagesDashboardClient() {
                       onKeyDown={handleKeyDown}
                       onBlur={stopTyping}
                     />
-                    <Button 
-                      onClick={handleSendMessage} 
+                    <Button
+                      onClick={handleSendMessage}
                       disabled={!newMessage.trim() || !isConnected}
                     >
                       {!isConnected ? (

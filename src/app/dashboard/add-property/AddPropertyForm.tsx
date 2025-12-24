@@ -174,6 +174,22 @@ const baseSchema = z.object({
 
   agent: z.string().optional(),
   managementCompany: z.string().optional(),
+
+  // Verification
+  requestVerification: z.boolean().default(false),
+  documentFiles: z
+    .any()
+    .optional()
+    .refine(
+      (files) => {
+        // If not checking verification, files not needed
+        // But validation runs on whole object.
+        // We will do conditional validation in `superRefine` or simpler refine here if possible.
+        // Returning true for now, will validate in step logic or refine
+        return true;
+      },
+      "Documents required"
+    ),
 });
 
 // Updated Rental Schema
@@ -298,6 +314,8 @@ const initialFormData: Partial<PropertyFormData> & Record<string, any> = {
   floorPlans: [],
   agent: "",
   managementCompany: "",
+  requestVerification: false,
+  documentFiles: [],
 
   // Rental specific
   rentPrice: undefined, // undefined to show placeholder
@@ -340,6 +358,7 @@ const STEPS = [
   { id: 4, name: "Media" },
   { id: 5, name: "Features" },
   { id: 6, name: "Pricing & Terms" },
+  { id: 7, name: "Verification" },
 ];
 
 export function AddPropertyForm() {
@@ -426,7 +445,19 @@ export function AddPropertyForm() {
     try {
       const finalData: any = { ...data };
       const images = finalData.imageFiles as File[];
+
+      const documents = finalData.documentFiles as File[]; // Extract documents
       delete finalData.imageFiles;
+      delete finalData.documentFiles;
+      delete finalData.requestVerification; // Not sending this flag, just documents imply request? Or maybe send it?
+      // Backend createProperty doesn't have 'requestVerification' flag in body, but it has 'documents'.
+      // If documents are present, it implies verification request or just storing docs.
+      // Admin sees documents and status 'pending' (default) if docs exist?
+      // Wait, Schema has 'verificationStatus' default 'pending'.
+      // Actually backend strictly deletes verificationStatus from update.
+      // But Create allows default.
+
+      // We will rely on documents array being present.
 
       // Ensure neighborhood is set (use city as fallback if empty)
       if (!finalData.neighborhood || finalData.neighborhood.trim() === '') {
@@ -505,37 +536,29 @@ export function AddPropertyForm() {
         },
       });
 
-      try {
-        const response = await createProperty({ data: finalData, images }).unwrap();
 
-        // Show Success SweetAlert2
-        Swal.fire({
-          icon: "success",
-          title: "Property Listed!",
-          text: "Your property has been successfully added to the listings.",
-          confirmButtonText: "View Property",
-          confirmButtonColor: "#3085d6",
-        }).then((result) => {
-          if (result.isConfirmed) {
-            router.push(`/properties/${response.id}`);
-          } else {
-            // Optional: Redirect to dashboard or stay on page (reset form?)
-            // For now, let's redirect to properties list or just the new property
-            router.push(`/properties/${response.id}`);
-          }
-        });
+      const formData = new FormData();
+      // Append all text fields handled by API Slice logic now.
+      // We pass documents to the mutation which builds FormData.
 
-      } catch (err: any) {
-        console.error('Property creation error:', err);
-        const errorMessage = err?.data?.message || err?.message || "Failed to list property. Please check all required fields.";
+      const response = await createProperty({ data: finalData, images, documents }).unwrap();
 
-        Swal.fire({
-          icon: "error",
-          title: "Submission Failed",
-          text: errorMessage,
-          confirmButtonColor: "#d33",
-        });
-      }
+      // Show Success SweetAlert2
+      Swal.fire({
+        icon: "success",
+        title: "Property Listed!",
+        text: "Your property has been successfully added to the listings.",
+        confirmButtonText: "View Property",
+        confirmButtonColor: "#3085d6",
+      }).then((result) => {
+        if (result.isConfirmed) {
+          router.push(`/properties/${response.id}`);
+        } else {
+          router.push(`/properties/${response.id}`);
+        }
+      });
+
+
     } catch (error: any) {
       console.error('Property creation error:', error);
       Swal.fire({
@@ -571,7 +594,9 @@ export function AddPropertyForm() {
                 {currentStep === 3 && <Step3 />}
                 {currentStep === 4 && <Step4 />}
                 {currentStep === 5 && <Step5 />}
+                {currentStep === 5 && <Step5 />}
                 {currentStep === 6 && <Step6 listingType={listingType} />}
+                {currentStep === 7 && <Step7 />}
               </div>
 
               <div className="mt-10 flex justify-between pt-6 border-t">
@@ -1740,5 +1765,78 @@ function Step6({ listingType }: { listingType: "rent" | "sale" }) {
       )
       }
     </div >
+  );
+}
+
+function Step7() {
+  const { control, watch } = useFormContext<PropertyFormData>();
+  const requestVerification = watch("requestVerification");
+
+  return (
+    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+        <FormField
+          control={control}
+          name="requestVerification"
+          render={({ field }) => (
+            <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+              <FormControl>
+                <Checkbox
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                />
+              </FormControl>
+              <div className="space-y-1 leading-none">
+                <FormLabel className="text-lg font-semibold text-blue-900 cursor-pointer">
+                  Request "Verified Property" Badge
+                </FormLabel>
+                <div className="text-sm text-blue-700">
+                  Get 3x more views by verifying ownership. Requires uploading documents.
+                </div>
+              </div>
+            </FormItem>
+          )}
+        />
+      </div>
+
+      {requestVerification && (
+        <div className="space-y-4">
+          <div className="bg-white border rounded-lg p-6 space-y-4">
+            <h4 className="font-semibold text-gray-900">Upload Ownership Documents</h4>
+            <p className="text-sm text-gray-500">
+              Please upload clear copies of:
+              <ul className="list-disc list-inside mt-2 space-y-1">
+                <li>Property Deed / Title</li>
+                <li>Recent Utility Bill (Electricity/Water)</li>
+                <li>Tax Receipt (Khajna)</li>
+              </ul>
+            </p>
+
+            <FormField
+              control={control}
+              name="documentFiles"
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <FormImageUpload
+                      value={field.value}
+                      onChange={field.onChange}
+                      onRemove={(index) => {
+                        const newFiles = [...(field.value || [])];
+                        newFiles.splice(index, 1);
+                        field.onChange(newFiles);
+                      }}
+                      maxFiles={5}
+                      label="Upload Documents (PDF or Images)"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+        </div>
+      )}
+    </div>
   );
 }

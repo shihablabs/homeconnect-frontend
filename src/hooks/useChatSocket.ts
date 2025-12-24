@@ -1,8 +1,9 @@
 'use client';
 
-import { useEffect, useCallback, useState, useRef } from 'react';
+
 import { useSocket } from '@/contexts/SocketContext';
 import { chatApi, type ChatMessage, type Conversation } from '@/lib/api/chat-api';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
 interface UseChatSocketOptions {
@@ -15,7 +16,7 @@ interface UseChatSocketOptions {
 export function useChatSocket(options: UseChatSocketOptions = {}) {
   const { socket, isConnected, onlineUsers, typingUsers } = useSocket();
   const { partnerId, onNewMessage, onMessagesRead, onTyping } = options;
-  
+
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [loading, setLoading] = useState(false);
@@ -25,12 +26,11 @@ export function useChatSocket(options: UseChatSocketOptions = {}) {
   useEffect(() => {
     if (!socket || !isConnected || !partnerId) return;
 
-    console.log('[ChatSocket] Joining chat with:', partnerId);
+
     socket.emit('join_chat', { recipientId: partnerId });
 
     // Listen for chat history
     const handleChatHistory = (data: { messages: ChatMessage[]; roomName: string }) => {
-      console.log('[ChatSocket] Received chat history:', data.messages.length, 'messages');
       setMessages(data.messages);
     };
 
@@ -60,11 +60,10 @@ export function useChatSocket(options: UseChatSocketOptions = {}) {
     if (!socket || !isConnected) return;
 
     const handleReceiveMessage = (data: { message: ChatMessage; roomName: string }) => {
-      console.log('[ChatSocket] Received new message:', data.message.id);
-      
+
       // Only add message if it's for the current chat
       if (partnerId && (
-        data.message.sender.id === partnerId || 
+        data.message.sender.id === partnerId ||
         data.message.receiver.id === partnerId
       )) {
         setMessages((prev) => {
@@ -74,7 +73,7 @@ export function useChatSocket(options: UseChatSocketOptions = {}) {
           }
           return [...prev, data.message];
         });
-        
+
         if (onNewMessage) {
           onNewMessage(data.message);
         }
@@ -85,8 +84,7 @@ export function useChatSocket(options: UseChatSocketOptions = {}) {
     };
 
     const handleMessagesRead = (data: { readBy: string; senderId: string }) => {
-      console.log('[ChatSocket] Messages read by:', data.readBy);
-      
+
       // Update message read status
       setMessages((prev) =>
         prev.map((msg) =>
@@ -140,7 +138,7 @@ export function useChatSocket(options: UseChatSocketOptions = {}) {
   const stopTyping = useCallback(() => {
     if (!socket || !isConnected || !partnerId) return;
 
-    socket.emit('typing_stop', { recipientId: partnerId });
+
 
     if (typingTimeoutRef.current) {
       clearTimeout(typingTimeoutRef.current);
@@ -150,17 +148,23 @@ export function useChatSocket(options: UseChatSocketOptions = {}) {
 
   // Send message via socket
   const sendMessage = useCallback(
-    async (message: string) => {
+    async (message: string, propertyId?: string, messageType: "text" | "image" | "system" | "offer" = "text", metadata?: any) => {
       if (!socket || !isConnected || !partnerId || !message.trim()) {
         return;
       }
 
       try {
-        socket.emit('send_message', {
+        const payload = {
           recipientId: partnerId,
           message: message.trim(),
-        });
-        
+          property: propertyId,
+          messageType,
+          metadata
+        };
+
+        // Optimistic UI update could happen here, but we'll wait for ack/echo for now
+        socket.emit('send_message', payload);
+
         // Stop typing indicator
         stopTyping();
       } catch (error) {

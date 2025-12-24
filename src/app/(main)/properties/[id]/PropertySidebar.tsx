@@ -1,13 +1,20 @@
 "use client";
 
+import { PhoneVerification } from "@/components/auth/PhoneVerification";
+import { MakeOfferModal } from "@/components/modals/MakeOfferModal";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { useAuthGuard } from "@/hooks/useAuthGuard";
+import { bookingsApi } from "@/lib/api/bookings-api";
+import { stripePromise } from "@/lib/stripe";
+import { RootState } from "@/redux/store";
 import { OwnerAgentResponse } from "@/types/property.types";
 import { MessageSquare, Phone, Share2, ShieldCheck, User as UserIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { useSelector } from "react-redux";
 import { toast } from "sonner";
 
 interface PropertySidebarProps {
@@ -34,6 +41,53 @@ export function PropertySidebar({
   const contactPerson = agent || owner;
   const { checkAuth } = useAuthGuard();
   const router = useRouter();
+  const [isOfferModalOpen, setIsOfferModalOpen] = useState(false);
+  const [isPhoneModalOpen, setIsPhoneModalOpen] = useState(false);
+  const [isBookingLoading, setIsBookingLoading] = useState(false);
+  const { user } = useSelector((state: RootState) => state.auth);
+
+  const handleRentNow = async () => {
+    checkAuth(async () => {
+      if (!user) return;
+
+      if (!user.isPhoneVerified) {
+        setIsPhoneModalOpen(true);
+        return;
+      }
+
+      setIsBookingLoading(true);
+      try {
+        // Create a booking
+        // For simplicity, we assume a standard 12-month lease from today
+        const checkIn = new Date();
+        const checkOut = new Date();
+        checkOut.setFullYear(checkOut.getFullYear() + 1);
+
+        const booking = await bookingsApi.createBooking({
+          propertyId: propertyId!,
+          checkIn: checkIn.toISOString(),
+          checkOut: checkOut.toISOString(),
+          leaseDurationInMonths: 12,
+        });
+
+        // Create Stripe checkout session
+        const session = await bookingsApi.createPaymentSession({
+          bookingId: booking.id,
+          returnUrl: `${window.location.origin}/dashboard/bookings/${booking.id}/complete`,
+        });
+
+        const stripe = await stripePromise;
+        if (stripe) {
+          await (stripe as any).redirectToCheckout({ sessionId: session.sessionId });
+        }
+      } catch (error: any) {
+        console.error("Booking failed:", error);
+        toast.error(error.response?.data?.message || "Failed to initiate payment. Please try again.");
+      } finally {
+        setIsBookingLoading(false);
+      }
+    });
+  };
 
   const getPriceLabel = () => {
     const formattedPrice = price ? price.toLocaleString() : "00";
@@ -110,12 +164,26 @@ export function PropertySidebar({
         </div>
       </div>
 
-      {/* Action Buttons */}
+      {/* Primary Actions */}
       <div className="space-y-3.5">
+        {listingType === "rent" && (
+          <Button
+            size="lg"
+            className="w-full h-14 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-black text-lg rounded-xl shadow-xl shadow-blue-500/20 transition-all hover:scale-[1.02] active:scale-95 mb-4"
+            onClick={handleRentNow}
+            disabled={isBookingLoading}
+          >
+            {isBookingLoading ? "Processing..." : "Rent This Home Now"}
+          </Button>
+        )}
         <Button
           size="lg"
           className="w-full h-12 bg-primary hover:bg-primary/90 text-white font-bold rounded-xl shadow-lg shadow-primary/20 transition-all hover:scale-[1.02] active:scale-95"
-          onClick={() => toast.info("Messaging feature under maintenance")}
+          onClick={() => {
+            checkAuth(() => {
+              router.push(`/dashboard/messages?partner=${contactPerson.id}&property=${propertyId}`);
+            });
+          }}
         >
           <MessageSquare className="mr-2.5 h-5 w-5" />
           Message {agent ? "Agent" : "Owner"}
@@ -144,18 +212,18 @@ export function PropertySidebar({
             <Button
               variant="outline"
               className="w-full h-11 bg-gradient-to-r from-cyan-50 to-blue-50 text-cyan-700 border-cyan-200 hover:text-white hover:from-cyan-600 hover:to-blue-600 hover:border-transparent transition-all font-semibold shadow-sm"
-              onClick={() => toast.info("Information Request sent")}
+              onClick={() => setIsOfferModalOpen(true)}
             >
-              Request More Details
+              Make an Offer
             </Button>
           )}
 
           <Button
             variant="ghost"
             className="w-full h-11 border border-dashed border-gray-200 text-gray-500 hover:text-cyan-600 hover:border-cyan-200 hover:bg-cyan-50 transition-all font-medium text-xs uppercase tracking-wider"
-            onClick={() => toast.info("Inquiry Sent")}
+            onClick={() => toast.info("Feature coming soon")}
           >
-            {listingType === "rent" ? "Ask a Question" : "Make an Offer"}
+            {listingType === "rent" ? "Ask a Question" : "Inquiry Info"}
           </Button>
         </div>
 
@@ -172,6 +240,19 @@ export function PropertySidebar({
           </Button>
         </div>
       </div>
-    </Card>
+      <MakeOfferModal
+        isOpen={isOfferModalOpen}
+        onClose={() => setIsOfferModalOpen(false)}
+        propertyId={propertyId || ""}
+        propertyTitle={propertyTitle || "Property"}
+        price={price}
+        currency={currency}
+      />
+      <PhoneVerification
+        isOpen={isPhoneModalOpen}
+        onClose={() => setIsPhoneModalOpen(false)}
+        onSuccess={handleRentNow}
+      />
+    </Card >
   );
 }
