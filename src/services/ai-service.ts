@@ -35,8 +35,8 @@ export const aiService = {
 
     const propertyDetails = properties.map((p, index) => {
       const price = isRentalResponse(p)
-        ? `${p.rentPrice}/mo`
-        : `${p.salePrice}`;
+        ? `${(p as any).pricePerMonth}/mo`
+        : `${(p as any).totalPrice}`;
 
       return `
       Property ${index + 1}: ${p.title}

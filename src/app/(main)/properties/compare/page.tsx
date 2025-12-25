@@ -141,7 +141,7 @@ export default function ComparePage() {
   }
 
   const attributes = [
-    { label: "Price", getValue: (p: PropertyResponse) => isRentalResponse(p) ? `৳${(p.rentPrice || 0).toLocaleString()}/mo` : `৳${(p.salePrice || 0).toLocaleString()} (Total)` },
+    { label: "Price", getValue: (p: PropertyResponse) => isRentalResponse(p) ? `৳${(p.pricePerMonth || 0).toLocaleString()}/mo` : `৳${(p.totalPrice || 0).toLocaleString()} (Total)` },
     { label: "Location", getValue: (p: PropertyResponse) => `${p.neighborhood || 'N/A'}, ${p.city || 'N/A'}` },
     { label: "Type", getValue: (p: PropertyResponse) => (p.propertyType || '').charAt(0).toUpperCase() + (p.propertyType || '').slice(1) },
     { label: "Listing", getValue: (p: PropertyResponse) => (p.listingType || '').toUpperCase() },
@@ -221,7 +221,7 @@ export default function ComparePage() {
                           )}
                         </div>
                         <p className="text-2xl font-black text-primary">
-                          {isRentalResponse(property) ? `৳${(property.rentPrice || 0).toLocaleString()}/mo` : `৳${(property.salePrice || 0).toLocaleString()}`}
+                          {isRentalResponse(property) ? `৳${(property.pricePerMonth || 0).toLocaleString()}/mo` : `৳${(property.totalPrice || 0).toLocaleString()}`}
                         </p>
                         <Link href={`/properties/${property.id}`} className="block pt-2">
                           <Button className="w-full rounded-xl font-bold" variant="outline">View Full Details</Button>

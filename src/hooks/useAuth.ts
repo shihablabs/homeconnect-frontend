@@ -15,7 +15,7 @@ export const useAuth = () => {
   const loginMutation = useMutation({
     mutationFn: authApi.login,
     onSuccess: (data: AuthResponse) => {
-      dispatch(setCredentials({ user: data.user, token: data.token }));
+      dispatch(setCredentials({ user: data.user as any, token: data.token }));
 
       queryClient.invalidateQueries({ queryKey: ["user"] });
 
@@ -30,7 +30,7 @@ export const useAuth = () => {
   const registerMutation = useMutation({
     mutationFn: authApi.register,
     onSuccess: (data: AuthResponse) => {
-      dispatch(setCredentials({ user: data.user, token: data.token }));
+      dispatch(setCredentials({ user: data.user as any, token: data.token }));
 
       queryClient.invalidateQueries({ queryKey: ["user"] });
 

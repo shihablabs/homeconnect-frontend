@@ -72,7 +72,7 @@ const adaptProperty = (apiProperty: ApiPropertyResponse): PropertyResponse => {
     return {
       ...baseProperty,
       listingType: 'rent',
-      rentPrice: apiProperty.rentPrice || 0,
+      pricePerMonth: (apiProperty as any).pricePerMonth || (apiProperty as any).rentPrice || 0,
       securityDeposit: apiProperty.securityDeposit,
       minimumStay: 1,
       availableFrom: new Date().toISOString(),
@@ -86,7 +86,7 @@ const adaptProperty = (apiProperty: ApiPropertyResponse): PropertyResponse => {
     return {
       ...baseProperty,
       listingType: 'sale',
-      salePrice: apiProperty.salePrice || 0,
+      totalPrice: (apiProperty as any).totalPrice || (apiProperty as any).salePrice || 0,
       priceNegotiable: false,
       mortgageAvailable: false,
       propertyCondition: 'good' as PropertyCondition,

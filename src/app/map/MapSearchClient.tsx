@@ -29,8 +29,8 @@ const DEFAULT_CENTER: [number, number] = [23.8103, 90.4125];
 
 const getPriceValue = (property: MapItem) =>
   isRentalResponse(property)
-    ? property.rentPrice ?? 0
-    : property.salePrice ?? 0;
+    ? (property as any).pricePerMonth ?? 0
+    : (property as any).totalPrice ?? 0;
 
 const getCurrencyValue = (property: MapItem) => property.currency ?? "BDT";
 

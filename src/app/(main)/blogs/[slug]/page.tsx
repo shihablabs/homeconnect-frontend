@@ -2,8 +2,9 @@ import { BlogImage } from '@/components/blog/BlogImage';
 import { RelatedProperties } from '@/components/blog/RelatedProperties';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { blogApi } from '@/lib/api/blog-api';
+import { blogApi, BlogResponse } from '@/lib/api/blog-api';
 import { propertiesApi } from '@/lib/api/properties-api';
+import { PropertyResponse } from '@/types/property.types';
 import { ArrowLeft, CalendarDays, Eye, Share2, Tag, User } from 'lucide-react';
 import { Metadata } from 'next';
 import Image from 'next/image';
@@ -41,9 +42,9 @@ import { RecentBlogsSidebar } from '@/components/blog/RecentBlogsSidebar';
 export default async function BlogDetailPage({ params }: BlogPageProps) {
   const { slug } = await params;
 
-  let blog;
-  let recommendedProperties = [];
-  let recentBlogs = [];
+  let blog: BlogResponse;
+  let recommendedProperties: PropertyResponse[] = [];
+  let recentBlogs: BlogResponse[] = [];
 
   try {
     // Parallel fetching for performance

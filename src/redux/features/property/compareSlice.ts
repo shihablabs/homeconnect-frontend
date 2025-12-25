@@ -6,8 +6,8 @@ interface CompareItem {
   id: string;
   title: string;
   images: string[];
-  rentPrice?: number;
-  salePrice?: number;
+  pricePerMonth?: number;
+  totalPrice?: number;
   currency?: string;
   listingType: 'rent' | 'sale';
 }
@@ -52,9 +52,9 @@ const compareSlice = createSlice({
       };
 
       if (action.payload.listingType === 'rent') {
-        newItem.rentPrice = action.payload.rentPrice;
+        newItem.pricePerMonth = (action.payload as any).pricePerMonth;
       } else {
-        newItem.salePrice = action.payload.salePrice;
+        newItem.totalPrice = (action.payload as any).totalPrice;
       }
 
       state.items.push(newItem);

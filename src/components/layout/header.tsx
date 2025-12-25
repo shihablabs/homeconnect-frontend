@@ -8,9 +8,8 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
-  DropdownMenuTrigger,
+  DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
 import { pacifico } from "@/lib/fonts";
 import { useLogoutMutation } from "@/redux/features/auth/authApiSlice";
@@ -618,16 +617,16 @@ export default function Header() {
                             {/* Contextual Properties display based on data */}
                             {selectedNotification.data && (
                               <div className="text-sm space-y-2">
-                                {selectedNotification.data.propertyName && (
+                                {(selectedNotification.data as any).propertyName && (
                                   <div className="flex justify-between border-b pb-2">
                                     <span className="text-muted-foreground">Property:</span>
-                                    <span className="font-medium">{selectedNotification.data.propertyName}</span>
+                                    <span className="font-medium">{(selectedNotification.data as any).propertyName}</span>
                                   </div>
                                 )}
-                                {selectedNotification.data.amount && (
+                                {(selectedNotification.data as any).amount && (
                                   <div className="flex justify-between border-b pb-2">
                                     <span className="text-muted-foreground">Amount:</span>
-                                    <span className="font-medium">${selectedNotification.data.amount}</span>
+                                    <span className="font-medium">${(selectedNotification.data as any).amount}</span>
                                   </div>
                                 )}
                               </div>
@@ -637,12 +636,12 @@ export default function Header() {
                             <Button variant="outline" onClick={() => deleteNotification(selectedNotification.id).then(() => setIsDetailOpen(false))}>
                               Delete
                             </Button>
-                            {selectedNotification.data?.entityId && (
+                            {(selectedNotification.data as any)?.entityId && (
                               <Button asChild>
                                 <Link href={
-                                  selectedNotification.type === 'booking' ? `/dashboard/bookings/${selectedNotification.data.entityId}` :
-                                    selectedNotification.type === 'payment' ? `/dashboard/payments/${selectedNotification.data.entityId}` :
-                                      selectedNotification.type === 'property' ? `/properties/${selectedNotification.data.entityId}` :
+                                  selectedNotification.type === 'booking' ? `/dashboard/bookings/${(selectedNotification.data as any).entityId}` :
+                                    selectedNotification.type === 'payment' ? `/dashboard/payments/${(selectedNotification.data as any).entityId}` :
+                                      selectedNotification.type === 'property' ? `/properties/${(selectedNotification.data as any).entityId}` :
                                         '/dashboard/notifications'
                                 } onClick={() => setIsDetailOpen(false)}>
                                   View Details
@@ -656,77 +655,219 @@ export default function Header() {
                   </Dialog>
 
                   <DropdownMenu>
-                    <DropdownMenuTrigger className="outline-none">
-                      <Avatar className="h-8 w-8 md:h-9 md:w-9 border-2 border-gray-200 cursor-pointer hover:border-blue-300 transition-colors">
+                    <DropdownMenuTrigger className="outline-none group">
+                      <Avatar className="h-9 w-9 md:h-10 md:w-10 border-2 border-white ring-2 ring-gray-100 group-hover:ring-blue-200 transition-all shadow-sm">
                         <AvatarImage
                           src={user?.avatar}
                           alt={user?.name ?? "User"}
                         />
-                        <AvatarFallback className="bg-gradient-to-r from-cyan-100 to-blue-100 text-blue-600 font-medium text-xs md:text-sm">
-                          {initials}
+                        <AvatarFallback className="bg-gradient-to-br from-gray-100 to-gray-200 text-gray-600 font-medium">
+                          {/* Gender-based fallback if no avatar */}
+                          {!user?.avatar && user?.gender ? (
+                            <img
+                              src={user.gender === 'female' ? '/avatars/female.png' : '/avatars/male.png'}
+                              alt={user.gender}
+                              className="h-full w-full object-cover"
+                              // Fallback to initials if image fails to load (handled by browser usually, or we can use state)
+                              onError={(e) => {
+                                e.currentTarget.style.display = 'none';
+                                e.currentTarget.parentElement!.innerText = initials;
+                              }}
+                            />
+                          ) : (
+                            initials
+                          )}
                         </AvatarFallback>
                       </Avatar>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-56">
-                      <DropdownMenuLabel>
-                        <div className="flex flex-col">
-                          <span className="font-semibold">{user?.name}</span>
-                          <span className="text-xs text-gray-500">
-                            {user?.email}
-                          </span>
+
+                    <DropdownMenuContent align="end" className="w-80 p-2 max-h-[85vh] overflow-y-auto">
+                      <div className="px-2 py-3 bg-gray-50/50 rounded-t-lg -mx-2 -mt-2 mb-2 border-b">
+                        <div className="flex items-center gap-3">
+                          <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-lg border border-blue-200">
+                            {initials}
+                          </div>
+                          <div className="flex flex-col overflow-hidden">
+                            <span className="font-bold text-gray-900 truncate">{user?.name}</span>
+                            <span className="text-xs text-gray-500 truncate">{user?.email}</span>
+                            <div className="flex items-center gap-2 mt-1">
+                              <Badge variant="secondary" className="text-[10px] uppercase tracking-wider font-bold h-5 px-1.5 bg-blue-100/50 text-blue-700 border-blue-200">
+                                {user?.role}
+                              </Badge>
+                              {user?.isPhoneVerified && (
+                                <span className="text-[10px] text-emerald-600 flex items-center bg-emerald-50 px-1.5 rounded-full border border-emerald-100">
+                                  <LucideIcons.ShieldCheck className="w-3 h-3 mr-1" /> Verified
+                                </span>
+                              )}
+                            </div>
+                          </div>
                         </div>
-                      </DropdownMenuLabel>
-                      <DropdownMenuSeparator />
+                      </div>
 
-                      <DropdownMenuItem asChild>
-                        <Link href="/dashboard" className="cursor-pointer">
-                          <LayoutDashboard className="mr-2 h-4 w-4" />
-                          Dashboard
-                        </Link>
-                      </DropdownMenuItem>
-
-                      {/* Example: My Properties - শুধু Landlord এর জন্য */}
-                      <LandlordOnly user={user}>
-                        <DropdownMenuItem asChild>
-                          <Link
-                            href="/dashboard/properties"
-                            className="cursor-pointer"
-                          >
-                            <Home className="mr-2 h-4 w-4" />
-                            My Properties
+                      <div className="grid gap-1">
+                        <DropdownMenuItem asChild className="cursor-pointer">
+                          <Link href="/dashboard" className="flex items-center w-full font-medium">
+                            <LayoutDashboard className="mr-2 h-4 w-4 text-blue-500" />
+                            Dashboard
                           </Link>
                         </DropdownMenuItem>
-                      </LandlordOnly>
 
-                      <DropdownMenuItem asChild>
-                        <Link
-                          href="/dashboard/favorites"
-                          className="cursor-pointer"
+                        <DropdownMenuItem asChild className="cursor-pointer">
+                          <Link href="/dashboard/profile" className="flex items-center w-full font-medium">
+                            <LucideIcons.User className="mr-2 h-4 w-4 text-purple-500" />
+                            My Profile
+                          </Link>
+                        </DropdownMenuItem>
+
+                        {/* ================= TENANT MENU ================= */}
+                        {user?.role === 'tenant' && (
+                          <>
+                            <DropdownMenuSeparator className="my-2" />
+                            <div className="px-2 py-1.5 text-xs font-semibold text-gray-400 uppercase tracking-widest flex items-center">
+                              <Home className="w-3 h-3 mr-1.5" /> Rental Management
+                            </div>
+
+                            <DropdownMenuItem asChild className="cursor-pointer focus:bg-emerald-50">
+                              <Link href="/dashboard/tenant-applications" className="flex items-center w-full text-gray-700">
+                                <LucideIcons.FileText className="mr-3 h-4 w-4 text-emerald-500" />
+                                My Applications
+                                {/* Example Badge for pending items */}
+                                <span className="ml-auto bg-emerald-100 text-emerald-700 text-[10px] px-1.5 rounded-full font-bold">2</span>
+                              </Link>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem asChild className="cursor-pointer focus:bg-blue-50">
+                              <Link href="/dashboard/my-rentals" className="flex items-center w-full text-gray-700">
+                                <LucideIcons.Key className="mr-3 h-4 w-4 text-blue-500" />
+                                Active Leases
+                              </Link>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem asChild className="cursor-pointer focus:bg-amber-50">
+                              <Link href="/dashboard/property-tours" className="flex items-center w-full text-gray-700">
+                                <LucideIcons.CalendarClock className="mr-3 h-4 w-4 text-amber-500" />
+                                Scheduled Tours
+                              </Link>
+                            </DropdownMenuItem>
+
+                            <DropdownMenuSeparator className="my-1 bg-gray-100" />
+
+                            <DropdownMenuItem asChild className="cursor-pointer focus:bg-rose-50">
+                              <Link href="/dashboard/favorites" className="flex items-center w-full text-gray-700">
+                                <Heart className="mr-3 h-4 w-4 text-rose-500" />
+                                Saved Properties
+                              </Link>
+                            </DropdownMenuItem>
+
+                            <DropdownMenuSeparator className="my-2" />
+                            <div className="px-2 py-1.5 text-xs font-semibold text-gray-400 uppercase tracking-widest flex items-center">
+                              <CreditCard className="w-3 h-3 mr-1.5" /> Finance & Support
+                            </div>
+
+                            <DropdownMenuItem asChild className="cursor-pointer focus:bg-purple-50">
+                              <Link href="/dashboard/payments" className="flex items-center w-full text-gray-700">
+                                <LucideIcons.Receipt className="mr-3 h-4 w-4 text-purple-500" />
+                                Payments & Invoices
+                              </Link>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem asChild className="cursor-pointer focus:bg-orange-50">
+                              <Link href="/dashboard/maintenance" className="flex items-center w-full text-gray-700">
+                                <Wrench className="mr-3 h-4 w-4 text-orange-500" />
+                                Maintenance Requests
+                              </Link>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem asChild className="cursor-pointer focus:bg-cyan-50">
+                              <Link href="/dashboard/lease-agreements" className="flex items-center w-full text-gray-700">
+                                <LucideIcons.FolderOpen className="mr-3 h-4 w-4 text-cyan-500" />
+                                My Documents
+                              </Link>
+                            </DropdownMenuItem>
+                          </>
+                        )}
+
+                        {/* ================= LANDLORD MENU ================= */}
+                        {user?.role === 'landlord' && (
+                          <>
+                            <DropdownMenuSeparator className="my-2" />
+                            <div className="px-2 py-1.5 text-xs font-semibold text-gray-400 uppercase tracking-widest flex items-center">
+                              <Building className="w-3 h-3 mr-1.5" /> Property Hub
+                            </div>
+
+                            <DropdownMenuItem asChild className="cursor-pointer focus:bg-indigo-50">
+                              <Link href="/dashboard/properties" className="flex items-center w-full text-gray-700">
+                                <LucideIcons.Building2 className="mr-3 h-4 w-4 text-indigo-500" />
+                                My Properties
+                              </Link>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem asChild className="cursor-pointer focus:bg-blue-50">
+                              <Link href="/dashboard/add-property" className="flex items-center w-full text-gray-700">
+                                <PlusCircle className="mr-3 h-4 w-4 text-blue-600" />
+                                List New Property
+                              </Link>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem asChild className="cursor-pointer focus:bg-emerald-50">
+                              <Link href="/dashboard/tenant-applications" className="flex items-center w-full text-gray-700">
+                                <LucideIcons.ClipboardList className="mr-3 h-4 w-4 text-emerald-500" />
+                                Applications
+                                <span className="ml-auto bg-emerald-100 text-emerald-700 text-[10px] px-1.5 rounded-full font-bold">NEW</span>
+                              </Link>
+                            </DropdownMenuItem>
+
+                            <DropdownMenuSeparator className="my-2" />
+                            <div className="px-2 py-1.5 text-xs font-semibold text-gray-400 uppercase tracking-widest flex items-center">
+                              <LucideIcons.Briefcase className="w-3 h-3 mr-1.5" /> Management
+                            </div>
+
+                            <DropdownMenuItem asChild className="cursor-pointer focus:bg-cyan-50">
+                              <Link href="/dashboard/tenants" className="flex items-center w-full text-gray-700">
+                                <LucideIcons.Users className="mr-3 h-4 w-4 text-cyan-600" />
+                                Tenants & Leases
+                              </Link>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem asChild className="cursor-pointer focus:bg-orange-50">
+                              <Link href="/dashboard/maintenance" className="flex items-center w-full text-gray-700">
+                                <LucideIcons.Hammer className="mr-3 h-4 w-4 text-orange-500" />
+                                Maintenance Tasks
+                              </Link>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem asChild className="cursor-pointer focus:bg-violet-50">
+                              <Link href="/dashboard/reports" className="flex items-center w-full text-gray-700">
+                                <LucideIcons.PieChart className="mr-3 h-4 w-4 text-violet-500" />
+                                Financial Reports
+                              </Link>
+                            </DropdownMenuItem>
+                          </>
+                        )}
+
+                        <DropdownMenuSeparator className="my-2" />
+
+                        <DropdownMenuItem asChild className="cursor-pointer group">
+                          <Link href="/dashboard/messages" className="flex items-center w-full text-gray-600 group-hover:text-blue-600">
+                            <MessageSquare className="mr-3 h-4 w-4 group-hover:text-blue-600 transition-colors" />
+                            Messages
+                          </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild className="cursor-pointer group">
+                          <Link href="/dashboard/settings" className="flex items-center w-full text-gray-600 group-hover:text-gray-900">
+                            <Settings className="mr-3 h-4 w-4 group-hover:text-gray-900 transition-colors" />
+                            Settings & Privacy
+                          </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild className="cursor-pointer group">
+                          <Link href="/help" className="flex items-center w-full text-gray-600 group-hover:text-amber-600">
+                            <LucideIcons.HelpCircle className="mr-3 h-4 w-4 group-hover:text-amber-600 transition-colors" />
+                            Help & Support
+                          </Link>
+                        </DropdownMenuItem>
+
+                        <DropdownMenuSeparator className="my-2" />
+                        <DropdownMenuItem
+                          onClick={handleSignOut}
+                          disabled={isLoggingOut}
+                          className="text-red-600 cursor-pointer focus:text-red-700 focus:bg-red-50 py-2.5 font-medium"
                         >
-                          <Heart className="mr-2 h-4 w-4" />
-                          Favorites
-                        </Link>
-                      </DropdownMenuItem>
-
-                      <DropdownMenuItem asChild>
-                        <Link
-                          href="/dashboard/settings"
-                          className="cursor-pointer"
-                        >
-                          <Settings className="mr-2 h-4 w-4" />
-                          Settings
-                        </Link>
-                      </DropdownMenuItem>
-
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem
-                        onClick={handleSignOut}
-                        disabled={isLoggingOut}
-                        className="text-red-600 cursor-pointer"
-                      >
-                        <LogOut className="mr-2 h-4 w-4" />
-                        {isLoggingOut ? "Logging out..." : "Logout"}
-                      </DropdownMenuItem>
+                          <LogOut className="mr-3 h-4 w-4" />
+                          {isLoggingOut ? "Logging out..." : "Sign Out"}
+                        </DropdownMenuItem>
+                      </div>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </>

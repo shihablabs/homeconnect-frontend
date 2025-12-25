@@ -102,7 +102,7 @@ export const usePropertyForm = () => {
       case 'areaSize':
         if (!value || value <= 0) errors.areaSize = 'Area size must be positive';
         break;
-      case formData.listingType === 'rent' ? 'rentPrice' : 'salePrice':
+      case formData.listingType === 'rent' ? 'pricePerMonth' : 'totalPrice':
         if (!value || value <= 0) errors[field] = 'Price must be positive';
         break;
     }
@@ -138,12 +138,12 @@ export const usePropertyForm = () => {
 
     // Price validation based on listing type
     if (formData.listingType === 'rent') {
-      if (!formData.rentPrice || formData.rentPrice <= 0) {
-        errors.rentPrice = 'Rent price is required';
+      if (!formData.pricePerMonth || formData.pricePerMonth <= 0) {
+        errors.pricePerMonth = 'Rent price is required';
       }
     } else {
-      if (!formData.salePrice || formData.salePrice <= 0) {
-        errors.salePrice = 'Sale price is required';
+      if (!formData.totalPrice || formData.totalPrice <= 0) {
+        errors.totalPrice = 'Sale price is required';
       }
     }
     setFormErrors(errors);
@@ -192,7 +192,7 @@ export const usePropertyForm = () => {
 
     // Add rental-specific fields
     if (formData.listingType === 'rent') {
-      baseData.rentPrice = Number(formData.rentPrice) || 0;
+      baseData.pricePerMonth = Number(formData.pricePerMonth) || 0;
       baseData.currency = 'BDT';
       baseData.securityDeposit = formData.securityDeposit ? Number(formData.securityDeposit) : undefined;
       baseData.utilityDeposit = formData.utilityDeposit ? Number(formData.utilityDeposit) : undefined;
@@ -209,7 +209,7 @@ export const usePropertyForm = () => {
     }
     // Add sale-specific fields
     else {
-      baseData.salePrice = Number(formData.salePrice) || 0;
+      baseData.totalPrice = Number(formData.totalPrice) || 0;
       baseData.currency = 'BDT';
       baseData.originalPrice = formData.originalPrice ? Number(formData.originalPrice) : undefined;
       baseData.priceNegotiable = Boolean(formData.priceNegotiable);

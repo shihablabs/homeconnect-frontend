@@ -30,8 +30,8 @@ interface NewListingsGridProps {
 
 const getPriceValue = (property: PropertyResponse) =>
   isRentalResponse(property)
-    ? property.rentPrice ?? 0
-    : property.salePrice ?? 0;
+    ? (property as any).pricePerMonth ?? 0
+    : (property as any).totalPrice ?? 0;
 
 const getCurrencyValue = (property: PropertyResponse) =>
   property.currency ?? "BDT";

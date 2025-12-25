@@ -44,9 +44,9 @@ interface PropertiesListTableProps {
 function formatPrice(property: PropertyResponse) {
   const currency = property.currency || "BDT";
   if (isRentalResponse(property)) {
-    return `${currency} ${property.rentPrice.toLocaleString()}/mo`;
+    return `${currency} ${(property.pricePerMonth || 0).toLocaleString()}/mo`;
   }
-  return `${currency} ${property.salePrice.toLocaleString()}`;
+  return `${currency} ${(property.totalPrice || 0).toLocaleString()}`;
 }
 
 function getStatusVariant(

@@ -227,7 +227,7 @@ export function CreateBookingClient() {
                             {property.address}, {property.city}
                           </div>
                           <div className="text-sm font-medium text-primary">
-                            ৳{property.listingType === 'rent' ? property.rentPrice?.toLocaleString() : property.salePrice?.toLocaleString()}
+                            ৳{property.listingType === 'rent' ? (property as any).pricePerMonth?.toLocaleString() : (property as any).totalPrice?.toLocaleString()}
                             {property.listingType === 'rent' && '/mo'}
                           </div>
                         </div>

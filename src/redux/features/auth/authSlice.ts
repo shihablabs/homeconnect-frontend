@@ -7,6 +7,7 @@ export interface AuthUser {
   role: 'tenant' | 'landlord' | 'admin' | 'support';
   avatar?: string;
   phone?: string;
+  gender?: 'male' | 'female' | 'other';
   isPhoneVerified?: boolean;
 }
 
