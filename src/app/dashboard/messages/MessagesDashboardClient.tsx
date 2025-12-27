@@ -188,19 +188,7 @@ export function MessagesDashboardClient() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Messages</h1>
-          <p className="text-muted-foreground mt-1">
-            Chat with landlords, tenants, and support
-            {!isConnected && (
-              <span className="ml-2 text-yellow-600 text-sm">(Connecting...)</span>
-            )}
-          </p>
-        </div>
-      </div>
-
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between pt-10">
         <div>
           <h1 className="text-3xl font-bold">Messages</h1>
           <p className="text-muted-foreground mt-1">

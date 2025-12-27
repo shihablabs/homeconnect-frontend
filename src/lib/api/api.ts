@@ -26,7 +26,9 @@ api.interceptors.request.use(
         '/properties/filters',
       ];
 
-      const optionalAuthEndpoints: RegExp[] = [];
+      const optionalAuthEndpoints: RegExp[] = [
+        /^\/properties/, // Allow sending token for all property endpoints
+      ];
 
       const isPublicEndpoint =
         requestUrl.match(/^\/properties\/[^\/]+$/) || // Single property by ID: /properties/:id
@@ -97,7 +99,9 @@ api.interceptors.response.use(
 
         // Optional auth endpoints - work with or without token
         // If token is invalid, just retry without token (don't redirect)
-        const optionalAuthEndpoints: RegExp[] = [];
+        const optionalAuthEndpoints: RegExp[] = [
+          /^\/properties/, // Allow sending token for all property endpoints
+        ];
 
         const requestUrl = error.config?.url || '';
 

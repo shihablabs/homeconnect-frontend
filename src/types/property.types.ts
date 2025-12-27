@@ -53,6 +53,8 @@ export interface OwnerAgentResponse {
   phone?: string;
   avatar?: string;
   company?: string;
+  slug?: string;
+  username?: string;
 }
 
 export interface PropertyResponseBase {

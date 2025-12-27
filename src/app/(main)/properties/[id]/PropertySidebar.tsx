@@ -1,21 +1,25 @@
-"use client";
-
 import { PhoneVerification } from "@/components/auth/PhoneVerification";
 import { MakeOfferModal } from "@/components/modals/MakeOfferModal";
+import { RequestInfoModal } from "@/components/modals/RequestInfoModal";
+import { ScheduleVisitModal } from "@/components/modals/ScheduleVisitModal";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { useAuthGuard } from "@/hooks/useAuthGuard";
+import { useMyToursQuery } from "@/hooks/useMyToursQuery";
 import { bookingsApi } from "@/lib/api/bookings-api";
 import { stripePromise } from "@/lib/stripe";
+import { cn } from "@/lib/utils";
 import { RootState } from "@/redux/store";
 import { OwnerAgentResponse } from "@/types/property.types";
-import { MessageSquare, Phone, Share2, ShieldCheck, User as UserIcon } from "lucide-react";
+import { MessageSquare, Share2, ShieldCheck, User as UserIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useSelector } from "react-redux";
 import { toast } from "sonner";
+
+
 
 interface PropertySidebarProps {
   owner: OwnerAgentResponse;
@@ -41,8 +45,12 @@ export function PropertySidebar({
   const contactPerson = agent || owner;
   const { checkAuth } = useAuthGuard();
   const router = useRouter();
+  const [isScheduleVisitOpen, setIsScheduleVisitOpen] = useState(false);
   const [isOfferModalOpen, setIsOfferModalOpen] = useState(false);
+  const { hasPendingTour } = useMyToursQuery();
+
   const [isPhoneModalOpen, setIsPhoneModalOpen] = useState(false);
+  const [isRequestInfoOpen, setIsRequestInfoOpen] = useState(false);
   const [isBookingLoading, setIsBookingLoading] = useState(false);
   const { user } = useSelector((state: RootState) => state.auth);
 
@@ -137,7 +145,13 @@ export function PropertySidebar({
           {agent ? "Listing Representative" : "Property Owner"}
         </h3>
         <div
-          onClick={handleProfileClick}
+          onClick={() => {
+            checkAuth(() => {
+              // Prioritize username -> slug -> id
+              const profileIdentifier = contactPerson.username || contactPerson.slug || contactPerson.id;
+              router.push(`/profile/${profileIdentifier}`);
+            });
+          }}
           className="flex items-center gap-4 cursor-pointer group/author"
         >
           <div className="relative">
@@ -166,66 +180,71 @@ export function PropertySidebar({
 
       {/* Primary Actions */}
       <div className="space-y-3.5">
-        {listingType === "rent" && (
-          <Button
-            size="lg"
-            className="w-full h-14 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-black text-lg rounded-xl shadow-xl shadow-blue-500/20 transition-all hover:scale-[1.02] active:scale-95 mb-4"
-            onClick={handleRentNow}
-            disabled={isBookingLoading}
-          >
-            {isBookingLoading ? "Processing..." : "Rent This Home Now"}
-          </Button>
+        {(!user || user.role === 'tenant') && (
+          <>
+            {listingType === "rent" && (
+              <Button
+                size="lg"
+                className="w-full h-14 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-black text-lg rounded-xl shadow-xl shadow-blue-500/20 transition-all hover:scale-[1.02] active:scale-95 mb-4"
+                onClick={handleRentNow}
+                disabled={isBookingLoading}
+              >
+                {isBookingLoading ? "Processing..." : "Rent This Home Now"}
+              </Button>
+            )}
+            <Button
+              size="lg"
+              className="w-full h-12 bg-primary hover:bg-primary/90 text-white font-bold rounded-xl shadow-lg shadow-primary/20 transition-all hover:scale-[1.02] active:scale-95"
+              onClick={() => {
+                checkAuth(() => {
+                  router.push(`/dashboard/messages?partner=${contactPerson.id}&property=${propertyId}`);
+                });
+              }}
+            >
+              <MessageSquare className="mr-2.5 h-5 w-5" />
+              Message {agent ? "Agent" : "Owner"}
+            </Button>
+            {/* Secondary Actions */}
+            <div className="space-y-3 pt-4 border-t border-gray-100">
+              {listingType === "rent" ? (
+                <Button
+                  variant="outline"
+                  className={cn(
+                    "w-full h-11 bg-gradient-to-r from-cyan-50 to-blue-50 text-cyan-700 border-cyan-200 hover:text-white hover:from-cyan-600 hover:to-blue-600 hover:border-transparent transition-all font-semibold shadow-sm",
+                    propertyId && hasPendingTour(propertyId) && "opacity-100 cursor-default bg-emerald-50 text-emerald-700 border-emerald-200 from-emerald-50 to-emerald-50 hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-200 hover:from-emerald-50 hover:to-emerald-50 shadow-none"
+                  )}
+                  onClick={() => {
+                    if (propertyId && hasPendingTour(propertyId)) return;
+                    checkAuth(() => setIsScheduleVisitOpen(true));
+                  }}
+                  disabled={propertyId ? hasPendingTour(propertyId) : false}
+                >
+                  {propertyId && hasPendingTour(propertyId) ? "Visit Requested" : "Schedule a Visit"}
+                </Button>
+              ) : (
+                <Button
+                  variant="outline"
+                  className="w-full h-11 bg-gradient-to-r from-cyan-50 to-blue-50 text-cyan-700 border-cyan-200 hover:text-white hover:from-cyan-600 hover:to-blue-600 hover:border-transparent transition-all font-semibold shadow-sm"
+                  onClick={() => {
+                    checkAuth(() => setIsOfferModalOpen(true));
+                  }}
+                >
+                  Make an Offer
+                </Button>
+              )}
+
+              <Button
+                variant="ghost"
+                className="w-full h-11 border border-dashed border-gray-200 text-gray-500 hover:text-cyan-600 hover:border-cyan-200 hover:bg-cyan-50 transition-all font-medium text-xs uppercase tracking-wider"
+                onClick={() => {
+                  checkAuth(() => setIsRequestInfoOpen(true));
+                }}
+              >
+                {listingType === "rent" ? "Ask a Question" : "Inquiry Info"}
+              </Button>
+            </div>
+          </>
         )}
-        <Button
-          size="lg"
-          className="w-full h-12 bg-primary hover:bg-primary/90 text-white font-bold rounded-xl shadow-lg shadow-primary/20 transition-all hover:scale-[1.02] active:scale-95"
-          onClick={() => {
-            checkAuth(() => {
-              router.push(`/dashboard/messages?partner=${contactPerson.id}&property=${propertyId}`);
-            });
-          }}
-        >
-          <MessageSquare className="mr-2.5 h-5 w-5" />
-          Message {agent ? "Agent" : "Owner"}
-        </Button>
-        <Button
-          size="lg"
-          variant="outline"
-          className="w-full h-12 border-2 border-gray-100 hover:border-primary/20 hover:bg-primary/5 text-gray-900 font-bold rounded-xl transition-all"
-          onClick={() => contactPerson.phone ? toast.info(`Phone: ${contactPerson.phone}`) : toast.info("Requesting phone number...")}
-        >
-          <Phone className="mr-2.5 h-5 w-5 text-primary/70" />
-          {contactPerson.phone || "Call Now"}
-        </Button>
-
-        {/* Secondary Actions */}
-        <div className="space-y-3 pt-4 border-t border-gray-100">
-          {listingType === "rent" ? (
-            <Button
-              variant="outline"
-              className="w-full h-11 bg-gradient-to-r from-cyan-50 to-blue-50 text-cyan-700 border-cyan-200 hover:text-white hover:from-cyan-600 hover:to-blue-600 hover:border-transparent transition-all font-semibold shadow-sm"
-              onClick={() => toast.info("Schedule Visit form coming soon")}
-            >
-              Schedule a Visit
-            </Button>
-          ) : (
-            <Button
-              variant="outline"
-              className="w-full h-11 bg-gradient-to-r from-cyan-50 to-blue-50 text-cyan-700 border-cyan-200 hover:text-white hover:from-cyan-600 hover:to-blue-600 hover:border-transparent transition-all font-semibold shadow-sm"
-              onClick={() => setIsOfferModalOpen(true)}
-            >
-              Make an Offer
-            </Button>
-          )}
-
-          <Button
-            variant="ghost"
-            className="w-full h-11 border border-dashed border-gray-200 text-gray-500 hover:text-cyan-600 hover:border-cyan-200 hover:bg-cyan-50 transition-all font-medium text-xs uppercase tracking-wider"
-            onClick={() => toast.info("Feature coming soon")}
-          >
-            {listingType === "rent" ? "Ask a Question" : "Inquiry Info"}
-          </Button>
-        </div>
 
         <div className="space-y-3.5 mt-4">
           {/* Share Button (moved down) */}
@@ -253,6 +272,22 @@ export function PropertySidebar({
         onClose={() => setIsPhoneModalOpen(false)}
         onSuccess={handleRentNow}
       />
+      {propertyId && (
+        <ScheduleVisitModal
+          propertyId={propertyId}
+          propertyTitle={propertyTitle || "Property"}
+          isOpen={isScheduleVisitOpen}
+          onClose={() => setIsScheduleVisitOpen(false)}
+        />
+      )}
+      {propertyId && (
+        <RequestInfoModal
+          propertyId={propertyId}
+          propertyTitle={propertyTitle || "Property"}
+          isOpen={isRequestInfoOpen}
+          onClose={() => setIsRequestInfoOpen(false)}
+        />
+      )}
     </Card >
   );
 }

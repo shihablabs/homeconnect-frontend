@@ -4,6 +4,7 @@ import { api } from './api';
 
 export interface User {
   id: string;
+  username: string;
   slug: string;
   name: string;
   email: string;
@@ -12,6 +13,7 @@ export interface User {
   avatar?: string;
   isActive: boolean;
   isEmailVerified: boolean;
+  isVerified?: boolean;
   createdAt: string;
   updatedAt: string;
 }

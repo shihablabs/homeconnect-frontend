@@ -37,6 +37,7 @@ type LoginResponsePayload = {
 type ProfileResponsePayload = AuthUser;
 
 export const authApiSlice = apiSlice.injectEndpoints({
+  overrideExisting: true,
   endpoints: (builder) => ({
     register: builder.mutation<LoginResponsePayload, any>({
       query: (credentials) => ({

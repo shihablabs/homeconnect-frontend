@@ -43,3 +43,17 @@ uploadApi.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+
+// Upload service methods
+export const uploadService = {
+  uploadImage: async (file: File, folder: string = 'bookings'): Promise<{ url: string; publicId: string }> => {
+    const formData = new FormData();
+    formData.append('image', file);
+    formData.append('folder', folder);
+
+    const response = await uploadApi.post('/upload/image', formData);
+    return response.data.data;
+  },
+};
+
+export default uploadApi;

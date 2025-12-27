@@ -42,6 +42,7 @@ export interface PropertyFilters {
   q?: string;
   minBeds?: number;
   sort?: string;
+  ownerId?: string; // For fetching landlord properties
 }
 
 import { AvailableFilters, CreatePropertyData, PropertyResponse, PropertySearchResult, UpdatePropertyData } from '@/types/property.types';
@@ -171,7 +172,14 @@ export const propertiesApi = {
     const response = await api.get('/properties/user/my-properties', {
       params: { page, limit }
     });
-    return response.data.data;
+    return {
+      properties: response.data.data,
+      total: response.data.meta?.total || 0,
+      page: response.data.meta?.page || 1,
+      totalPages: response.data.meta?.totalPages || 1,
+      hasNext: response.data.meta?.hasNext || false,
+      hasPrev: response.data.meta?.hasPrev || false,
+    };
   },
 
   // Get user's favorite properties

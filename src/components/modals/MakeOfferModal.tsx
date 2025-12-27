@@ -54,6 +54,7 @@ export function MakeOfferModal({
         property: propertyId,
         offeredPrice,
         message,
+        type: 'offer',
       }).unwrap();
 
       toast.success("Offer sent successfully!");

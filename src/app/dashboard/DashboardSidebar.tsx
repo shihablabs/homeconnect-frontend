@@ -1,32 +1,18 @@
 'use client';
 
+import { navigationConfig } from '@/config/navigationConfig';
 import { useDashboardCounts } from '@/hooks/useDashboardCounts';
 import { pacifico } from '@/lib/fonts';
 import { useLogoutMutation } from '@/redux/features/auth/authApiSlice';
 import { clsx } from 'clsx';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
-  TbBell,
-  TbBook,
-  TbBuilding,
-  TbCalendar,
-  TbChartBar,
   TbChevronDown,
   TbChevronRight,
-  TbCreditCard,
-  TbFileText,
-  TbHeart,
-  TbHelp,
-  TbHome,
   TbHomeSearch,
-  TbLogout,
-  TbMessage,
-  TbPackage,
-  TbSettings,
-  TbUser,
-  TbUsers
+  TbLogout
 } from 'react-icons/tb';
 import { toast } from 'sonner';
 
@@ -35,352 +21,6 @@ interface DashboardSidebarProps {
   onClose: () => void;
   role: 'tenant' | 'landlord' | 'admin' | 'support';
 }
-
-// Role-based menu configuration
-const menuConfig = {
-  tenant: [
-    {
-      type: 'link',
-      href: '/dashboard',
-      label: 'Dashboard',
-      icon: TbChartBar,
-      badge: null
-    },
-    {
-      type: 'section',
-      label: 'Rental Management'
-    },
-    {
-      type: 'dropdown',
-      label: 'My Rentals',
-      icon: TbHome,
-      items: [
-        { href: '/dashboard/my-rentals', label: 'Current Rentals' },
-        { href: '/dashboard/rental-history', label: 'Rental History' },
-        { href: '/dashboard/lease-agreements', label: 'Lease Agreements' },
-      ]
-    },
-    {
-      type: 'link',
-      href: '/dashboard/bookings',
-      label: 'Bookings & Tours',
-      icon: TbCalendar,
-      badge: null
-    },
-    {
-      type: 'link',
-      href: '/dashboard/payments',
-      label: 'Payments',
-      icon: TbCreditCard,
-      badge: null
-    },
-    {
-      type: 'section',
-      label: 'Discovery'
-    },
-    {
-      type: 'link',
-      href: '/dashboard/search',
-      label: 'Find Properties',
-      icon: TbHomeSearch,
-      badge: null
-    },
-    {
-      type: 'link',
-      href: '/dashboard/favorites',
-      label: 'Favorites',
-      icon: TbHeart,
-      badge: null
-    },
-    {
-      type: 'section',
-      label: 'Services'
-    },
-    {
-      type: 'link',
-      href: '/dashboard/order-home',
-      label: 'Service Requisition',
-      icon: TbPackage,
-      badge: null
-    },
-    {
-      type: 'link',
-      href: '/dashboard/my-orders',
-      label: 'My Requisitions',
-      icon: TbFileText,
-      badge: null
-    },
-    {
-      type: 'section',
-      label: 'Support'
-    },
-    {
-      type: 'link',
-      href: '/dashboard/messages',
-      label: 'Messages',
-      icon: TbMessage,
-      badge: '5'
-    },
-    {
-      type: 'link',
-      href: '/dashboard/support',
-      label: 'Get Support',
-      icon: TbHelp,
-      badge: null
-    },
-    {
-      type: 'link',
-      href: '/dashboard/profile',
-      label: 'Settings',
-      icon: TbUser,
-      badge: null
-    }
-  ],
-  landlord: [
-    {
-      type: 'link',
-      href: '/dashboard',
-      label: 'Overview',
-      icon: TbChartBar,
-      badge: null
-    },
-    {
-      type: 'section',
-      label: 'Property Management'
-    },
-    {
-      type: 'dropdown',
-      label: 'Properties',
-      icon: TbBuilding,
-      items: [
-        { href: '/dashboard/properties', label: 'All Properties' },
-        { href: '/dashboard/add-property', label: 'List New Property' },
-        { href: '/dashboard/property-tours', label: 'Tour Requests' },
-      ]
-    },
-    {
-      type: 'dropdown',
-      label: 'Tenants & Leases',
-      icon: TbUsers,
-      items: [
-        { href: '/dashboard/tenants', label: 'Active Tenants' },
-        { href: '/dashboard/tenant-applications', label: 'Applications' },
-        { href: '/dashboard/tenant-screening', label: 'Screening' },
-        { href: '/dashboard/lease-templates', label: 'Lease Templates' },
-      ]
-    },
-    {
-      type: 'link',
-      href: '/dashboard/maintenance',
-      label: 'Maintenance',
-      icon: TbSettings,
-      badge: '3'
-    },
-    {
-      type: 'section',
-      label: 'Financials'
-    },
-    {
-      type: 'dropdown',
-      label: 'Finances',
-      icon: TbCreditCard,
-      items: [
-        { href: '/dashboard/rent-collection', label: 'Rent Collection' },
-        { href: '/dashboard/expenses', label: 'Expense Tracking' },
-        { href: '/dashboard/reports', label: 'Financial Reports' },
-      ]
-    },
-    {
-      type: 'section',
-      label: 'Communication'
-    },
-    {
-      type: 'link',
-      href: '/dashboard/messages',
-      label: 'Messages',
-      icon: TbMessage,
-      badge: '12'
-    },
-    {
-      type: 'link',
-      href: '/dashboard/notifications',
-      label: 'Notifications',
-      icon: TbBell,
-      badge: null
-    },
-    {
-      type: 'link',
-      href: '/dashboard/profile',
-      label: 'Settings',
-      icon: TbUser,
-      badge: null
-    }
-  ],
-  admin: [
-    {
-      type: 'link',
-      href: '/dashboard',
-      label: 'Overview',
-      icon: TbChartBar,
-      badge: null
-    },
-    {
-      type: 'section',
-      label: 'System Management'
-    },
-    {
-      type: 'link',
-      href: '/dashboard/admin/users',
-      label: 'Users & Roles',
-      icon: TbUsers,
-      badge: null
-    },
-    {
-      type: 'dropdown',
-      label: 'Properties',
-      icon: TbBuilding,
-      items: [
-        { href: '/dashboard/admin/properties', label: 'Verification Queue' },
-        { href: '/dashboard/admin/categories', label: 'Categories' },
-      ]
-    },
-    {
-      type: 'section',
-      label: 'Operations'
-    },
-    {
-      type: 'link',
-      href: '/dashboard/admin/orders',
-      label: 'Order Management',
-      icon: TbPackage,
-      badge: null
-    },
-    {
-      type: 'dropdown',
-      label: 'Financials',
-      icon: TbCreditCard,
-      items: [
-        { href: '/dashboard/admin/transactions', label: 'Transactions' },
-        { href: '/dashboard/admin/commissions', label: 'Platform Fees' },
-        { href: '/dashboard/admin/escrow', label: 'Escrow Management' },
-        { href: '/dashboard/admin/reports', label: 'Global Reports' },
-      ]
-    },
-    {
-      type: 'section',
-      label: 'Content & Support'
-    },
-
-    {
-      type: 'link',
-      href: '/dashboard/blogs',
-      label: 'Blog Management',
-      icon: TbBook,
-      badge: null
-    },
-    {
-      type: 'link',
-      href: '/dashboard/newsletter-subscribers',
-      label: 'Newsletter List',
-      icon: TbMessage,
-      badge: null
-    },
-    {
-      type: 'link',
-      href: '/dashboard/admin/support',
-      label: 'Support Center',
-      icon: TbHelp,
-      badge: '25'
-    },
-    {
-      type: 'section',
-      label: 'Configuration'
-    },
-    {
-      type: 'link',
-      href: '/dashboard/admin/site-settings',
-      label: 'Site Settings',
-      icon: TbSettings,
-      badge: null
-    },
-    {
-      type: 'link',
-      href: '/dashboard/admin/analytics',
-      label: 'Platform Analytics',
-      icon: TbChartBar,
-      badge: null
-    }
-  ],
-  support: [
-    {
-      type: 'link',
-      href: '/dashboard',
-      label: 'Overview',
-      icon: TbChartBar,
-      badge: null
-    },
-    {
-      type: 'section',
-      label: 'Ticket Management'
-    },
-    {
-      type: 'link',
-      href: '/dashboard/support/tickets',
-      label: 'All Tickets',
-      icon: TbMessage,
-      badge: null
-    },
-    {
-      type: 'link',
-      href: '/dashboard/maintenance',
-      label: 'Maintenance Requests',
-      icon: TbSettings,
-      badge: null
-    },
-    {
-      type: 'link',
-      href: '/dashboard/support/orders',
-      label: 'Order Processing',
-      icon: TbPackage,
-      badge: null
-    },
-    {
-      type: 'section',
-      label: 'User Assistance'
-    },
-    {
-      type: 'link',
-      href: '/dashboard/users',
-      label: 'User Lookup',
-      icon: TbUsers,
-      badge: null
-    },
-    {
-      type: 'dropdown',
-      label: 'Help Resources',
-      icon: TbHelp,
-      items: [
-        { href: '/dashboard/support/knowledge-base', label: 'Knowledge Base' },
-        { href: '/dashboard/support/faqs', label: 'Manage FAQs' },
-        { href: '/dashboard/support/guides', label: 'User Guides' },
-      ]
-    },
-    {
-      type: 'link',
-      href: '/dashboard/blogs',
-      label: 'Blog Management',
-      icon: TbBook,
-      badge: null
-    },
-    {
-      type: 'link',
-      href: '/dashboard/newsletter-subscribers',
-      label: 'Newsletter List',
-      icon: TbMessage,
-      badge: null
-    }
-  ]
-};
 
 export default function DashboardSidebar({ isOpen, onClose, role }: DashboardSidebarProps) {
   const pathname = usePathname();
@@ -404,21 +44,56 @@ export default function DashboardSidebar({ isOpen, onClose, role }: DashboardSid
   const [openDropdowns, setOpenDropdowns] = useState<Set<string>>(new Set());
   const [isMounted, setIsMounted] = useState(false);
 
+  // Helper to determine if a path is active (exact match or sub-path)
+  // Modified to be more robust for nested routes
+  const isPathActive = useCallback((targetPath: string) => {
+    if (!pathname || !targetPath) return false;
+
+    // Exact match
+    if (pathname === targetPath) return true;
+
+    // Dashboard home exception - only exact match
+    if (targetPath === '/dashboard' && pathname !== '/dashboard') return false;
+
+    // Sub-path match (e.g. /dashboard/users matching /dashboard/users/123)
+    // The target path must be the prefix, followed by a slash or end of string
+    return pathname.startsWith(targetPath + '/');
+  }, [pathname]);
+
   // Load dropdown state from localStorage after mount (client-side only)
+  // AND automatically expand nested menus based on current route
   useEffect(() => {
     setIsMounted(true);
     if (typeof window !== 'undefined') {
       try {
         const saved = localStorage.getItem(`dashboard-dropdowns-${role}`);
+        let initialDropdowns = new Set<string>();
+
         if (saved) {
           const parsed = JSON.parse(saved);
-          setOpenDropdowns(new Set(Array.isArray(parsed) ? parsed : []));
+          initialDropdowns = new Set(Array.isArray(parsed) ? parsed : []);
         }
+
+        // Auto-expand logic
+        const currentMenu = navigationConfig[role] || navigationConfig['tenant'];
+        if (currentMenu) {
+          currentMenu.forEach(item => {
+            if (item.type === 'dropdown' && item.items) {
+              const hasActiveChild = item.items.some(subItem => isPathActive(subItem.href));
+              if (hasActiveChild) {
+                initialDropdowns.add(item.label);
+              }
+            }
+          });
+        }
+
+        setOpenDropdowns(initialDropdowns);
+
       } catch (error) {
         console.error('Failed to load dropdown state:', error);
       }
     }
-  }, [role]);
+  }, [role, pathname, isPathActive]); // Re-run when pathname changes to auto-expand
 
   // Save dropdown state to localStorage whenever it changes
   useEffect(() => {
@@ -446,36 +121,37 @@ export default function DashboardSidebar({ isOpen, onClose, role }: DashboardSid
 
   // Get menu items with dynamic badge counts
   const getMenuItemsWithBadges = () => {
-    // Fallback to 'tenant' if role is undefined or not in menuConfig
-    const items = menuConfig[role] || menuConfig['tenant'];
+    // Fallback to 'tenant' if role is undefined or not in navigationConfig
+    const items = navigationConfig[role] || navigationConfig['tenant'];
 
     if (!items) return []; // Safety check
 
     return items.map(item => {
       if (item.type === 'link') {
+        const itemHref = item.href || '';
         // Update badges based on href
-        if (item.href === '/dashboard/messages') {
+        if (itemHref === '/dashboard/messages') {
           return { ...item, badge: unreadMessages > 0 ? unreadMessages.toString() : null };
         }
-        if (item.href === '/dashboard/notifications') {
+        if (itemHref === '/dashboard/notifications') {
           return { ...item, badge: unreadNotifications > 0 ? unreadNotifications.toString() : null };
         }
-        if (item.href === '/dashboard/maintenance') {
+        if (itemHref === '/dashboard/maintenance') {
           return { ...item, badge: pendingMaintenance > 0 ? pendingMaintenance.toString() : null };
         }
         // Support-specific badges
         if (role === 'support') {
-          if (item.href === '/dashboard/support/tickets') {
+          if (itemHref === '/dashboard/support/tickets') {
             // Could be enhanced with actual support ticket count
             return item;
           }
-          if (item.href === '/dashboard/support/escalations') {
+          if (itemHref === '/dashboard/support/escalations') {
             // Could be enhanced with actual escalation count
             return item;
           }
         }
         // Admin-specific badges
-        if (role === 'admin' && item.href === '/dashboard/admin/support') {
+        if (role === 'admin' && itemHref === '/dashboard/admin/support') {
           // Could be enhanced with actual support ticket count
           return item;
         }
@@ -541,21 +217,29 @@ export default function DashboardSidebar({ isOpen, onClose, role }: DashboardSid
               }
 
               const IconComponent = item.icon;
-              const isActive = pathname === item.href;
+              const isActive = item.href ? isPathActive(item.href) : false;
               const isDropdownOpen = openDropdowns.has(item.label);
 
               // Type guard for items with icons
               if (!IconComponent) return null;
 
               if (item.type === 'dropdown') {
+                // Check if any child is active to highlight the parent dropdown button
+                const isChildActive = item.items?.some(subItem => isPathActive(subItem.href));
+
                 return (
                   <div key={item.label} className="rounded-xl transition-all duration-200 hover:bg-white/50">
                     <button
                       onClick={() => toggleDropdown(item.label)}
-                      className="flex items-center justify-between w-full px-4 py-4 text-sm font-semibold text-gray-700 rounded-xl hover:text-gray-900 transition-all duration-200"
+                      className={clsx(
+                        "flex items-center justify-between w-full px-4 py-4 text-sm font-semibold rounded-xl transition-all duration-200",
+                        isChildActive
+                          ? "text-blue-600 bg-blue-50/50" // Highlight parent if child is active
+                          : "text-gray-700 hover:text-gray-900"
+                      )}
                     >
                       <div className="flex items-center">
-                        <IconComponent className="w-5 h-5 mr-3 text-blue-600" />
+                        <IconComponent className={clsx("w-5 h-5 mr-3", isChildActive ? "text-blue-600" : "text-blue-600")} />
                         {item.label}
                       </div>
                       {isDropdownOpen ? (
@@ -567,17 +251,25 @@ export default function DashboardSidebar({ isOpen, onClose, role }: DashboardSid
 
                     {isMounted && isDropdownOpen && (
                       <div className="ml-4 pl-8 border-l-2 border-gray-200/40 space-y-1 py-2">
-                        {item.items?.map((subItem, index) => (
-                          <Link
-                            key={`${subItem.href}-${subItem.label}-${index}`}
-                            href={subItem.href}
-                            className="flex items-center px-3 py-2 text-sm text-gray-600 rounded-lg hover:text-blue-600 hover:bg-blue-50/50 transition-all duration-200"
-                            onClick={() => window.innerWidth < 1024 && onClose()}
-                          >
-                            <TbChevronRight className="w-3 h-3 mr-2" />
-                            {subItem.label}
-                          </Link>
-                        ))}
+                        {item.items?.map((subItem, index) => {
+                          const isSubItemActive = isPathActive(subItem.href);
+                          return (
+                            <Link
+                              key={`${subItem.href}-${subItem.label}-${index}`}
+                              href={subItem.href}
+                              className={clsx(
+                                "flex items-center px-3 py-2 text-sm rounded-lg transition-all duration-200",
+                                isSubItemActive
+                                  ? "text-blue-600 bg-blue-50/50 font-medium"
+                                  : "text-gray-600 hover:text-blue-600 hover:bg-blue-50/50"
+                              )}
+                              onClick={() => window.innerWidth < 1024 && onClose()}
+                            >
+                              <TbChevronRight className="w-3 h-3 mr-2" />
+                              {subItem.label}
+                            </Link>
+                          )
+                        })}
                       </div>
                     )}
                   </div>

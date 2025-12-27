@@ -15,11 +15,12 @@ interface AuthState {
   user: AuthUser | null;
   token: string | null;
   isAuthenticated: boolean;
+  isInitialized: boolean;
 }
 
 const getInitialState = (): AuthState => {
   if (typeof window === "undefined") {
-    return { user: null, token: null, isAuthenticated: false };
+    return { user: null, token: null, isAuthenticated: false, isInitialized: false };
   }
 
   try {
@@ -32,19 +33,21 @@ const getInitialState = (): AuthState => {
         user: user,
         token: token,
         isAuthenticated: true,
+        isInitialized: true,
       };
     }
   } catch (error) {
     console.error("Failed to parse auth state from localStorage:", error);
   }
 
-  return { user: null, token: null, isAuthenticated: false };
+  return { user: null, token: null, isAuthenticated: false, isInitialized: true };
 };
 
 const initialState: AuthState = {
   user: null,
   token: null,
   isAuthenticated: false,
+  isInitialized: false, // Start uninitialized for SSR
 };
 
 const authSlice = createSlice({
@@ -80,6 +83,7 @@ const authSlice = createSlice({
       state.user = hydratedState.user;
       state.token = hydratedState.token;
       state.isAuthenticated = hydratedState.isAuthenticated;
+      state.isInitialized = true; // Mark as initialized after hydration check
     },
     updateUserProfile: (state, action: PayloadAction<Partial<AuthUser>>) => {
       if (state.user) {
@@ -101,3 +105,5 @@ export const selectCurrentUser = (state: { auth: AuthState }) =>
   state.auth.user;
 export const selectIsAuthenticated = (state: { auth: AuthState }) =>
   state.auth.isAuthenticated;
+export const selectIsInitialized = (state: { auth: AuthState }) =>
+  state.auth.isInitialized;

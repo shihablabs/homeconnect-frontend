@@ -37,6 +37,7 @@ export interface Booking {
   stripeSubscriptionId?: string;
   stripeCustomerId?: string;
   nextBillingDate?: string;
+  documents?: { name: string; type: string; url: string }[];
   createdAt: string;
   updatedAt: string;
 }
@@ -49,6 +50,7 @@ export interface CreateBookingRequest {
   leaseDurationInMonths?: number;
   leaseDocumentURL?: string;
   setupRecurringPayment?: boolean; // Frontend option to setup recurring payment
+  documents?: { name: string; type: string; url: string }[];
 }
 
 export interface CreatePaymentSessionRequest {
@@ -97,8 +99,8 @@ export const bookingsApi = {
       params: { type },
     });
     // Backend returns array directly, wrap it in bookings property
-    const bookings = Array.isArray(response.data.data) 
-      ? response.data.data 
+    const bookings = Array.isArray(response.data.data)
+      ? response.data.data
       : response.data.data?.bookings || [];
     return { bookings };
   },
@@ -119,6 +121,16 @@ export const bookingsApi = {
     data: CancelBookingRequest
   ): Promise<Booking> => {
     const response = await api.post(`/bookings/${id}/cancel`, data);
+    return response.data.data.booking;
+  },
+
+  approveBooking: async (id: string): Promise<Booking> => {
+    const response = await api.patch(`/bookings/${id}/approve`);
+    return response.data.data.booking;
+  },
+
+  rejectBooking: async (id: string, reason: string): Promise<Booking> => {
+    const response = await api.patch(`/bookings/${id}/reject`, { reason });
     return response.data.data.booking;
   },
 };

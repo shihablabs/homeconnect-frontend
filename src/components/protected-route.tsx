@@ -7,8 +7,10 @@ import { Spinner } from './ui/spinner';
 import {
   selectCurrentUser,
   selectIsAuthenticated,
+  selectIsInitialized,
 } from '@/redux/features/auth/authSlice';
 import { useAppSelector } from '@/redux/hooks';
+import { usePathname } from 'next/navigation';
 
 type UserRole = 'tenant' | 'landlord' | 'admin' | 'support';
 
@@ -19,8 +21,10 @@ interface ProtectedRouteProps {
 
 export function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) {
   const isAuthenticated = useAppSelector(selectIsAuthenticated);
+  const isInitialized = useAppSelector(selectIsInitialized);
   const user = useAppSelector(selectCurrentUser);
   const router = useRouter();
+  const pathname = usePathname();
 
   // Check if user role matches required role(s)
   const hasAccess = useCallback(() => {
@@ -32,18 +36,33 @@ export function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) 
   }, [requiredRole, user]);
 
   useEffect(() => {
+    // 1. Wait for auth to be initialized
+    if (!isInitialized) return;
+
+    // 2. Unauthenticated check
     if (!isAuthenticated) {
-      router.push('/login');
+      const returnUrl = encodeURIComponent(pathname);
+      router.push(`/login?from=${returnUrl}`);
       return;
     }
 
-    // Only redirect if user is loaded and role doesn't match
+    // 3. Role check
     if (user && requiredRole && !hasAccess()) {
       router.push('/dashboard');
     }
-  }, [isAuthenticated, user, requiredRole, router, hasAccess]);
+  }, [isAuthenticated, isInitialized, user, requiredRole, router, hasAccess, pathname]);
 
-  // Show loading while checking authentication
+  // Show loading while initializing
+  if (!isInitialized) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Spinner />
+        <span className="ml-2">Initializing...</span>
+      </div>
+    );
+  }
+
+  // Show loading while redirecting
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen flex items-center justify-center">

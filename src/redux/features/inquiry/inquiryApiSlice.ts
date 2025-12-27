@@ -2,8 +2,9 @@ import { apiSlice } from '@/redux/api/apiSlice';
 
 export interface CreateInquiryData {
   property: string; // Property ID
-  offeredPrice: number;
+  offeredPrice?: number;
   message: string;
+  type?: 'general' | 'offer';
 }
 
 export interface InquiryResponse {

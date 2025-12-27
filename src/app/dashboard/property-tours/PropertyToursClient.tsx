@@ -24,28 +24,13 @@ import {
 } from '@/components/ui/table';
 import { Textarea } from '@/components/ui/textarea';
 import { propertiesApi } from '@/lib/api/properties-api';
+import { toursApi, type TourRequest } from '@/lib/api/tours-api';
 import type { PropertyResponse } from '@/types/property.types';
-import { Calendar, CheckCircle2, Clock, Eye, Home, MapPin, Plus, XCircle } from 'lucide-react';
+import { Calendar, CheckCircle2, Clock, Home, MapPin, Plus, XCircle } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
-
-interface TourRequest {
-  id: string;
-  property: PropertyResponse;
-  tenant: {
-    id: string;
-    name: string;
-    email: string;
-    phone?: string;
-  };
-  requestedDate: string;
-  requestedTime: string;
-  status: 'pending' | 'approved' | 'rejected' | 'completed';
-  notes?: string;
-  createdAt: string;
-}
 
 export function PropertyToursClient() {
   const [properties, setProperties] = useState<PropertyResponse[]>([]);
@@ -54,6 +39,12 @@ export function PropertyToursClient() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedProperty, setSelectedProperty] = useState<string>('');
 
+  // Rejection State
+  const [isRejectDialogOpen, setIsRejectDialogOpen] = useState(false);
+  const [tourToReject, setTourToReject] = useState<string | null>(null);
+  const [rejectionReason, setRejectionReason] = useState('');
+  const [isProcessing, setIsProcessing] = useState(false);
+
   useEffect(() => {
     fetchData();
   }, []);
@@ -61,26 +52,118 @@ export function PropertyToursClient() {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const propertiesData = await propertiesApi.getUserProperties(1, 100);
+      console.log('Fetching property tour data...');
+
+      const [propertiesData, toursData] = await Promise.all([
+        propertiesApi.getUserProperties(1, 100).catch(err => {
+          console.error('Failed to fetch properties:', err);
+          return null;
+        }),
+        toursApi.getIncomingTours().catch(err => {
+          console.error('Failed to fetch incoming tours:', err);
+          return null;
+        })
+      ]);
+
+      if (!propertiesData) console.warn('Properties data is null');
+      if (!toursData) console.warn('Tours data is null');
+
       setProperties(propertiesData?.properties || []);
-      // TODO: Fetch tour requests from API
-      // const toursData = await toursApi.getTourRequests();
-      // setTours(toursData);
-      setTours([]);
+      setTours(toursData || []);
     } catch (error: unknown) {
-      console.error('Failed to fetch data:', error);
+      console.error('Failed to fetch data (general error):', error);
       toast.error('Failed to fetch data');
-      setProperties([]); // Ensure properties is always an array
+      setProperties([]);
       setTours([]);
     } finally {
       setLoading(false);
     }
   };
 
+  const handleApprove = async (tourId: string) => {
+    try {
+      setIsProcessing(true);
+      await toursApi.updateTourStatus(tourId, 'approved');
+      toast.success('Tour request approved');
+      fetchData();
+    } catch (error) {
+      toast.error("Failed to approve tour");
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  // Landlord Feedback State
+  const [feedbackOptions, setFeedbackOptions] = useState<string[]>([]);
+  const [feedbackComment, setFeedbackComment] = useState('');
+  const [targetAction, setTargetAction] = useState<'reject' | 'cancel' | null>(null);
+
+  const REJECT_REASONS = [
+    "Property unavailable for requested time",
+    "Tenant requirements not met",
+    "Too many requests for this slot",
+    "Other"
+  ];
+
+  const CANCEL_REASONS = [
+    "Tenant No-show",
+    "Property Rented",
+    "Emergency maintenance",
+    "Other"
+  ];
+
+  const initReject = (tourId: string) => {
+    setTourToReject(tourId);
+    setRejectionReason(''); // Uses state for 'reason' dropdown
+    setFeedbackComment('');
+    setFeedbackOptions(REJECT_REASONS);
+    setTargetAction('reject');
+    setIsRejectDialogOpen(true);
+  };
+
+  const initCancel = (tourId: string) => {
+    setTourToReject(tourId);
+    setRejectionReason('');
+    setFeedbackComment('');
+    setFeedbackOptions(CANCEL_REASONS);
+    setTargetAction('cancel');
+    setIsRejectDialogOpen(true);
+  };
+
+  const handleConfirmAction = async () => {
+    if (!tourToReject || !targetAction) return;
+    if (!rejectionReason) {
+      toast.error("Please select a reason");
+      return;
+    }
+
+    try {
+      setIsProcessing(true);
+      const status = targetAction === 'reject' ? 'rejected' : 'cancelled';
+
+      // We map 'rejectionReason' state to 'cancellationReason' or 'landlordNotes' depending on legacy vs new.
+      // Ideally we use the new fields.
+      await toursApi.updateTourStatus(tourToReject, status, {
+        cancellationReason: rejectionReason,
+        feedback: feedbackComment,
+        cancellationBy: 'landlord',
+        landlordNotes: feedbackComment // Backwards compatibility if needed
+      });
+
+      toast.success(`Tour request ${status}`);
+      setIsRejectDialogOpen(false);
+      fetchData();
+    } catch (error) {
+      toast.error(`Failed to ${targetAction} tour`);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
   const handleScheduleTour = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Implement tour scheduling API
-    toast.info('Tour scheduling feature coming soon');
+    // Admin/Landlord manual scheduling could go here, but for now we focus on incoming requests
+    toast.info('To schedule a specific slot manually, use the property page.');
     setIsDialogOpen(false);
   };
 
@@ -88,14 +171,14 @@ export function PropertyToursClient() {
     switch (status) {
       case 'approved':
         return (
-          <Badge variant="default" className="gap-1">
+          <Badge variant="default" className="gap-1 bg-green-600 hover:bg-green-700">
             <CheckCircle2 className="h-3 w-3" />
             Approved
           </Badge>
         );
       case 'pending':
         return (
-          <Badge variant="outline" className="gap-1">
+          <Badge variant="outline" className="gap-1 border-yellow-500 text-yellow-600">
             <Clock className="h-3 w-3" />
             Pending
           </Badge>
@@ -257,20 +340,58 @@ export function PropertyToursClient() {
                         </TableCell>
                         <TableCell>
                           <div>
-                            <div className="font-medium">{tour.tenant.name}</div>
-                            <div className="text-sm text-muted-foreground">{tour.tenant.email}</div>
+                            <div className="font-medium">{tour.user.name}</div>
+                            <div className="text-sm text-muted-foreground">{tour.user.email}</div>
                           </div>
                         </TableCell>
                         <TableCell>
-                          {new Date(tour.requestedDate).toLocaleDateString()}
+                          {new Date(tour.preferredDate).toLocaleDateString()}
                         </TableCell>
-                        <TableCell>{tour.requestedTime}</TableCell>
+                        <TableCell>
+                          {new Date(tour.preferredDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </TableCell>
                         <TableCell>{getStatusBadge(tour.status)}</TableCell>
                         <TableCell className="text-right">
-                          <Button variant="outline" size="sm">
-                            <Eye className="mr-2 h-4 w-4" />
-                            View
-                          </Button>
+                          {tour.status === 'pending' && (
+                            <div className="flex justify-end gap-2">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="h-8 w-8 p-0 border-green-200 hover:bg-green-50 hover:text-green-600"
+                                onClick={() => handleApprove(tour.id)}
+                                disabled={isProcessing}
+                                title="Approve Visit"
+                              >
+                                <CheckCircle2 className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="h-8 w-8 p-0 border-red-200 hover:bg-red-50 hover:text-red-600"
+                                onClick={() => initReject(tour.id)}
+                                disabled={isProcessing}
+                                title="Reject Visit"
+                              >
+                                <XCircle className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          )}
+                          {tour.status === 'approved' && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="h-8 text-red-600 border-red-200 hover:bg-red-50"
+                              onClick={() => initCancel(tour.id)}
+                              disabled={isProcessing}
+                            >
+                              Cancel / No-Show
+                            </Button>
+                          )}
+                          {tour.landlordNotes && (
+                            <div className="text-xs text-muted-foreground mt-1 text-right italic">
+                              Note: {tour.landlordNotes}
+                            </div>
+                          )}
                         </TableCell>
                       </TableRow>
                     ))}
@@ -280,8 +401,55 @@ export function PropertyToursClient() {
             )}
           </CardContent>
         </Card>
+
+        <Dialog open={isRejectDialogOpen} onOpenChange={setIsRejectDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>
+                {targetAction === 'reject' ? 'Reject Tour Request' : 'Cancel Tour / No-Show'}
+              </DialogTitle>
+              <DialogDescription>
+                Please provide a reason. This helps track tour outcomes.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="reason">Reason</Label>
+                <select
+                  id="reason"
+                  className="w-full p-2 border rounded-md"
+                  value={rejectionReason}
+                  onChange={(e) => setRejectionReason(e.target.value)}
+                >
+                  <option value="">Select a reason...</option>
+                  {feedbackOptions.map(opt => (
+                    <option key={opt} value={opt}>{opt}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="comment">Additional Comments (Optional)</Label>
+                <Textarea
+                  id="comment"
+                  placeholder="e.g., Tenant didn't arrive, or specific unavailable reasons..."
+                  value={feedbackComment}
+                  onChange={(e) => setFeedbackComment(e.target.value)}
+                  rows={3}
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setIsRejectDialogOpen(false)} disabled={isProcessing}>
+                Close
+              </Button>
+              <Button variant="destructive" onClick={handleConfirmAction} disabled={isProcessing || !rejectionReason}>
+                {isProcessing ? "Processing..." : `Confirm ${targetAction === 'reject' ? 'Rejection' : 'Cancellation'}`}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
-    </div>
+    </div >
   );
 }
 

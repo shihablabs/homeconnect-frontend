@@ -69,18 +69,18 @@ export function BookingsDashboardClient() {
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'confirmed':
+      case 'approved':
         return (
-          <Badge variant="default" className="gap-1">
+          <Badge className="gap-1 bg-green-600 hover:bg-green-700">
             <CheckCircle2 className="h-3 w-3" />
-            Confirmed
+            Approved
           </Badge>
         );
       case 'pending':
         return (
-          <Badge variant="outline" className="gap-1">
+          <Badge variant="outline" className="gap-1 bg-yellow-50 text-yellow-700 border-yellow-200">
             <Clock className="h-3 w-3" />
-            Pending
+            Application Pending
           </Badge>
         );
       case 'cancelled':
@@ -105,9 +105,9 @@ export function BookingsDashboardClient() {
   const getPaymentStatusBadge = (status: string) => {
     switch (status) {
       case 'paid':
-        return <Badge variant="default">Paid</Badge>;
+        return <Badge variant="default" className="bg-green-600">Paid</Badge>;
       case 'pending':
-        return <Badge variant="outline">Pending</Badge>;
+        return <Badge variant="outline">Unpaid</Badge>;
       case 'failed':
         return <Badge variant="destructive">Failed</Badge>;
       case 'refunded':
@@ -284,15 +284,16 @@ export function BookingsDashboardClient() {
                               </Button>
                             </Link>
                             {user?.role === 'tenant' &&
-                              (booking.status || 'pending') === 'pending' &&
+                              (booking.status) === 'approved' &&
                               (booking.paymentStatus || 'pending') === 'pending' && (
                                 <Button
                                   variant="default"
                                   size="sm"
                                   onClick={() => handlePay(booking)}
+                                  className="bg-green-600 hover:bg-green-700"
                                 >
                                   <CreditCard className="mr-2 h-4 w-4" />
-                                  Pay
+                                  Pay Now
                                 </Button>
                               )}
                           </div>

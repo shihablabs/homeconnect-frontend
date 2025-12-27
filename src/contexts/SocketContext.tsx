@@ -1,8 +1,7 @@
 'use client';
 
-import { API_BASE_URL } from '@/config/config';
 import { createContext, ReactNode, useContext, useEffect, useState } from 'react';
-import { io, Socket } from 'socket.io-client';
+import { Socket } from 'socket.io-client';
 
 export interface Notification {
   id: string;
@@ -38,6 +37,12 @@ export function SocketProvider({ children }: { children: ReactNode }) {
     // Only connect on client side
     if (typeof window === 'undefined') return;
 
+    // TODO: WebSocket connection temporarily disabled to prevent console errors during system development.
+    // Uncomment the code below when ready to re-enable real-time features.
+    console.log('[Socket] Connection temporarily disabled via code.');
+    return;
+
+    /*
     const token = localStorage.getItem('token');
     if (!token) {
       console.log('[Socket] No token found, skipping connection');
@@ -131,6 +136,7 @@ export function SocketProvider({ children }: { children: ReactNode }) {
       setSocket(null);
       setIsConnected(false);
     };
+    */
   }, []);
 
   return (

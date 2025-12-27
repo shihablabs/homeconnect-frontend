@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useAuthGuard } from "@/hooks/useAuthGuard";
 import { useAuthState } from "@/hooks/useAuthState";
+import { useMyToursQuery } from "@/hooks/useMyToursQuery";
 import { propertiesApi } from "@/lib/api/properties-api";
 import { cn } from "@/lib/utils";
 import { addToCompare, removeFromCompare } from "@/redux/features/property/compareSlice";
@@ -23,7 +24,6 @@ import {
   User as UserIcon
 } from "lucide-react";
 import Image from "next/image";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -35,6 +35,8 @@ import {
   ResidentialDetails,
 } from "./PropertyDetails";
 
+import { ScheduleVisitModal } from "../modals/ScheduleVisitModal";
+
 interface PropertyCardProps {
   property: PropertyResponse;
 }
@@ -45,6 +47,7 @@ export function PropertyCard({ property }: PropertyCardProps) {
   const router = useRouter();
   const dispatch = useAppDispatch();
   const { items: compareItems } = useAppSelector((state) => state.compare);
+  const { hasPendingTour } = useMyToursQuery();
 
   const {
     id,
@@ -65,6 +68,7 @@ export function PropertyCard({ property }: PropertyCardProps) {
   const [isFavorited, setIsFavorited] = useState(false);
   const [loading, setLoading] = useState(false);
   const [isQuickViewOpen, setIsQuickViewOpen] = useState(false);
+  const [isScheduleVisitOpen, setIsScheduleVisitOpen] = useState(false);
 
   const isInCompare = compareItems.some((item) => item.id === id);
 
@@ -131,8 +135,16 @@ export function PropertyCard({ property }: PropertyCardProps) {
   const handleAuthorClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+
+    if (!author?.id) {
+      console.warn('Author ID is missing', author);
+      return;
+    }
+
     checkAuth(() => {
-      router.push(`/profile/${author.id}`);
+      // Use username if available, fallback to id
+      const profileIdentifier = author.username || author.id;
+      router.push(`/profile/${profileIdentifier}`);
     });
   };
 
@@ -189,7 +201,10 @@ export function PropertyCard({ property }: PropertyCardProps) {
 
   return (
     <>
-      <Link href={`/properties/${property.slug || id}`} className="group block">
+      <div
+        onClick={() => router.push(`/properties/${property.slug || id}`)}
+        className="group block cursor-pointer"
+      >
         <Card
           className={cn(
             "relative overflow-hidden rounded-xl border bg-card text-card-foreground shadow-sm transition-all hover:shadow-xl hover:-translate-y-1",
@@ -238,83 +253,89 @@ export function PropertyCard({ property }: PropertyCardProps) {
                 </Tooltip>
               </TooltipProvider>
 
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      size="icon"
-                      variant="secondary"
-                      className={cn(
-                        "h-8 w-8 rounded-full bg-white/95 backdrop-blur-sm border border-black/5 shadow-sm transition-all hover:scale-105 active:scale-95",
-                        isInCompare ? "text-emerald-500 bg-emerald-50 hover:bg-emerald-100" : "hover:bg-emerald-50 hover:text-emerald-500"
-                      )}
-                      onClick={handleToggleCompare}
-                    >
-                      <GitCompare className="h-3.5 w-3.5" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent side="bottom">
-                    <p>{isInCompare ? "Remove from Compare" : "Add to Compare"}</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
+              {(!user || user.role === 'tenant') && (
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        size="icon"
+                        variant="secondary"
+                        className={cn(
+                          "h-8 w-8 rounded-full bg-white/95 backdrop-blur-sm border border-black/5 shadow-sm transition-all hover:scale-105 active:scale-95",
+                          isInCompare ? "text-emerald-500 bg-emerald-50 hover:bg-emerald-100" : "hover:bg-emerald-50 hover:text-emerald-500"
+                        )}
+                        onClick={handleToggleCompare}
+                      >
+                        <GitCompare className="h-3.5 w-3.5" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom">
+                      <p>{isInCompare ? "Remove from Compare" : "Add to Compare"}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              )}
 
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      size="icon"
-                      variant="secondary"
-                      className={cn(
-                        "h-8 w-8 rounded-full bg-white/95 backdrop-blur-sm border border-black/5 shadow-sm transition-all hover:scale-105 active:scale-95",
-                        isFavorited && "text-red-500 bg-red-50 hover:bg-red-100"
-                      )}
-                      onClick={handleToggleFavorite}
-                      disabled={loading}
-                    >
-                      {loading ? (
-                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                      ) : (
-                        <Heart
-                          className={cn(
-                            "h-3.5 w-3.5",
-                            isFavorited && "fill-current"
-                          )}
-                        />
-                      )}
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent side="bottom">
-                    <p>
-                      {isFavorited
-                        ? "Remove from Favorites"
-                        : "Save to Favorites"}
-                    </p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
+              {(!user || user.role === 'tenant') && (
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        size="icon"
+                        variant="secondary"
+                        className={cn(
+                          "h-8 w-8 rounded-full bg-white/95 backdrop-blur-sm border border-black/5 shadow-sm transition-all hover:scale-105 active:scale-95",
+                          isFavorited && "text-red-500 bg-red-50 hover:bg-red-100"
+                        )}
+                        onClick={handleToggleFavorite}
+                        disabled={loading}
+                      >
+                        {loading ? (
+                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                        ) : (
+                          <Heart
+                            className={cn(
+                              "h-3.5 w-3.5",
+                              isFavorited && "fill-current"
+                            )}
+                          />
+                        )}
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom">
+                      <p>
+                        {isFavorited
+                          ? "Remove from Favorites"
+                          : "Save to Favorites"}
+                      </p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              )}
 
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      size="icon"
-                      variant="secondary"
-                      className="h-8 w-8 rounded-full bg-white/95 backdrop-blur-sm border border-black/5 shadow-sm transition-all hover:scale-105 active:scale-95 text-red-600 hover:text-red-700 hover:bg-red-50"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        handleReport(e);
-                      }}
-                    >
-                      <Flag className="h-3.5 w-3.5" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent side="bottom">
-                    <p>Report Property</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
+              {(!user || user.role === 'tenant') && (
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        size="icon"
+                        variant="secondary"
+                        className="h-8 w-8 rounded-full bg-white/95 backdrop-blur-sm border border-black/5 shadow-sm transition-all hover:scale-105 active:scale-95 text-red-600 hover:text-red-700 hover:bg-red-50"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          handleReport(e);
+                        }}
+                      >
+                        <Flag className="h-3.5 w-3.5" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom">
+                      <p>Report Property</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              )}
             </div>
 
             {/* Price Overlay */}
@@ -381,32 +402,44 @@ export function PropertyCard({ property }: PropertyCardProps) {
               </div>
               <div
                 className="flex items-center gap-2"
-                onClick={(e) => e.preventDefault()}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  e.preventDefault();
+                }}
               >
-                {listingType === "rent" ? (
-                  <Button
-                    className="flex-1 text-[11px] h-9 bg-primary/10 hover:bg-primary text-primary hover:text-white border-none shadow-none font-semibold transition-all duration-300"
-                    variant="outline"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      toast.info("Schedule Visit feature under development");
-                    }}
-                  >
-                    <Calendar className="h-3.5 w-3.5 mr-1.5" />
-                    Schedule Visit
-                  </Button>
-                ) : (
-                  <Button
-                    className="flex-1 text-[11px] h-9 bg-emerald-50 hover:bg-emerald-600 text-emerald-700 hover:text-white border-none shadow-none font-semibold transition-all duration-300"
-                    variant="outline"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      toast.info("Inquiry feature under development");
-                    }}
-                  >
-                    <Info className="h-3.5 w-3.5 mr-1.5" />
-                    Request Info
-                  </Button>
+                {(!user || user.role === 'tenant') && (
+                  listingType === "rent" ? (
+                    <Button
+                      className={cn(
+                        "flex-1 text-[11px] h-9 bg-primary/10 hover:bg-primary text-primary hover:text-white border-none shadow-none font-semibold transition-all duration-300",
+                        hasPendingTour(id) && "opacity-70 cursor-not-allowed bg-gray-100 text-gray-500 hover:bg-gray-100 hover:text-gray-500"
+                      )}
+                      variant="outline"
+                      disabled={hasPendingTour(id)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (hasPendingTour(id)) return;
+                        checkAuth(() => {
+                          setIsScheduleVisitOpen(true);
+                        });
+                      }}
+                    >
+                      <Calendar className="h-3.5 w-3.5 mr-1.5" />
+                      {hasPendingTour(id) ? "Visit Requested" : "Schedule Visit"}
+                    </Button>
+                  ) : (
+                    <Button
+                      className="flex-1 text-[11px] h-9 bg-emerald-50 hover:bg-emerald-600 text-emerald-700 hover:text-white border-none shadow-none font-semibold transition-all duration-300"
+                      variant="outline"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toast.info("Inquiry feature under development");
+                      }}
+                    >
+                      <Info className="h-3.5 w-3.5 mr-1.5" />
+                      Request Info
+                    </Button>
+                  )
                 )}
 
                 <Button
@@ -439,11 +472,17 @@ export function PropertyCard({ property }: PropertyCardProps) {
             </div>
           </div>
         </Card>
-      </Link>
+      </div>
       <QuickViewModal
         property={property}
         isOpen={isQuickViewOpen}
         onClose={() => setIsQuickViewOpen(false)}
+      />
+      <ScheduleVisitModal
+        propertyId={id}
+        propertyTitle={title}
+        isOpen={isScheduleVisitOpen}
+        onClose={() => setIsScheduleVisitOpen(false)}
       />
     </>
   );

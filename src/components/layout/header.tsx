@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
-import { LandlordOnly } from "@/components/shared/RoleGuard";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,12 +17,14 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useNotificationsSocket } from "@/hooks/useNotificationsSocket";
+import { Conversation } from "@/lib/api/chat-api";
 import { type Notification } from "@/lib/api/notifications-api";
 import {
   selectCurrentUser,
   selectIsAuthenticated,
 } from "@/redux/features/auth/authSlice";
 import { AppDispatch } from "@/redux/store";
+import { formatDistanceToNow } from "date-fns";
 import * as LucideIcons from "lucide-react";
 import {
   Bell,
@@ -167,6 +168,23 @@ export default function Header() {
   const [selectedNotification, setSelectedNotification] = useState<Notification | null>(null);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
 
+  // Chat/Messages State
+  const [isMessageOpen, setIsMessageOpen] = useState(false);
+  const [recentConversations, setRecentConversations] = useState<Conversation[]>([]);
+  const [unreadMsgCount, setUnreadMsgCount] = useState(0);
+
+  useEffect(() => {
+    if (user) {
+      // Fetch recent conversations
+      // TODO: Temporarily disabled chat fetch to prevent errors while system logic is paused.
+      // chatApi.getConversations().then(data => {
+      //   setRecentConversations(data);
+      //   const unread = data.reduce((acc, curr) => acc + curr.unreadCount, 0);
+      //   setUnreadMsgCount(unread);
+      // }).catch(console.error);
+    }
+  }, [user]);
+
   const {
     notifications,
     stats,
@@ -174,7 +192,9 @@ export default function Header() {
     markAllAsRead,
     deleteNotification,
   } = useNotificationsSocket({
-    autoFetch: isAuthenticated, // Only fetch if authenticated
+    // TODO: Temporarily disabled notifications to prevent "Failed to fetch" errors while system logic is paused.
+    // Re-enable when notification system is active.
+    autoFetch: false, // was: isAuthenticated
   });
 
   const unreadCount = stats?.unread || 0;
@@ -261,13 +281,6 @@ export default function Header() {
       showAlways: true,
       hasDropdown: true,
       dropdownType: "properties"
-    },
-    {
-      href: "/market-trends",
-      label: "Market Trends",
-      icon: TrendingUp,
-      showAlways: true,
-      hasDropdown: false
     },
     {
       href: "/blogs", // Assuming /blogs based on prev conversations, verified existence in generic sense
@@ -406,6 +419,14 @@ export default function Header() {
                               {/* Left Content - 2 Columns */}
                               <div className="flex-1 p-8 grid grid-cols-2 gap-8">
                                 <div className="space-y-6">
+                                  {/* All Properties Link */}
+                                  <Link href="/properties" className="block group/item" onClick={() => setDesktopActiveDropdown(null)}>
+                                    <h4 className="text-base font-bold text-gray-900 group-hover/item:text-blue-600 transition-colors">All Properties</h4>
+                                    <p className="mt-1 text-xs text-gray-500 line-clamp-2">
+                                      Browse our complete collection of verified listings.
+                                    </p>
+                                  </Link>
+
                                   <Link href="/properties?lt=rent" className="block group/item" onClick={() => setDesktopActiveDropdown(null)}>
                                     <h4 className="text-base font-bold text-gray-900 group-hover/item:text-blue-600 transition-colors">Rent Property</h4>
                                     <p className="mt-1 text-xs text-gray-500 line-clamp-2">
@@ -418,15 +439,15 @@ export default function Header() {
                                       Standalone homes with space for your family.
                                     </p>
                                   </Link>
+                                </div>
+
+                                <div className="space-y-6">
                                   <Link href="/properties?pt=commercial" className="block group/item" onClick={() => setDesktopActiveDropdown(null)}>
                                     <h4 className="text-base font-bold text-gray-900 group-hover/item:text-blue-600 transition-colors">Commercial</h4>
                                     <p className="mt-1 text-xs text-gray-500 line-clamp-2">
                                       Offices and retail spaces for your business.
                                     </p>
                                   </Link>
-                                </div>
-
-                                <div className="space-y-6">
                                   <Link href="/properties?lt=sale" className="block group/item" onClick={() => setDesktopActiveDropdown(null)}>
                                     <h4 className="text-base font-bold text-gray-900 group-hover/item:text-blue-600 transition-colors">Buy Property</h4>
                                     <p className="mt-1 text-xs text-gray-500 line-clamp-2">
@@ -439,16 +460,10 @@ export default function Header() {
                                       Modern flats in prime locations.
                                     </p>
                                   </Link>
-                                  <Link href="/properties?pt=land" className="block group/item" onClick={() => setDesktopActiveDropdown(null)}>
-                                    <h4 className="text-base font-bold text-gray-900 group-hover/item:text-blue-600 transition-colors">Land</h4>
-                                    <p className="mt-1 text-xs text-gray-500 line-clamp-2">
-                                      Plots ready for your dream construction.
-                                    </p>
-                                  </Link>
                                 </div>
                               </div>
 
-                              {/* Right Panel - Gradient Card */}
+                              {/* Right Panel - Dynamic Gradient Card */}
                               <div className="w-[300px] bg-gradient-to-br from-cyan-600 via-blue-600 to-indigo-700 p-8 flex flex-col justify-between text-white relative overflow-hidden">
                                 <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
                                 <div className="absolute bottom-0 left-0 w-24 h-24 bg-cyan-400/20 rounded-full blur-2xl translate-y-1/2 -translate-x-1/2" />
@@ -457,19 +472,58 @@ export default function Header() {
                                   <div className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-lg flex items-center justify-center mb-4">
                                     <Home className="w-6 h-6 text-white" />
                                   </div>
-                                  <h3 className="text-xl font-bold mb-2 font-heading">Join HomeConnect</h3>
-                                  <p className="text-sm text-cyan-100 leading-relaxed">
-                                    List your property today and reach thousands of potential buyers and tenants instantly.
-                                  </p>
+
+                                  {/* Dynamic Content based on Auth & Role */}
+                                  {!isAuthenticated ? (
+                                    <>
+                                      <h3 className="text-xl font-bold mb-2 font-heading">Join HomeConnect</h3>
+                                      <p className="text-sm text-cyan-100 leading-relaxed">
+                                        List your property today and reach thousands of potential buyers and tenants instantly.
+                                      </p>
+                                    </>
+                                  ) : user?.role === 'landlord' || user?.role === 'admin' ? (
+                                    <>
+                                      <h3 className="text-xl font-bold mb-2 font-heading">Grow Your Portfolio</h3>
+                                      <p className="text-sm text-cyan-100 leading-relaxed">
+                                        Manage your properties and list new units to reach verified tenants quickly.
+                                      </p>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <h3 className="text-xl font-bold mb-2 font-heading">Find Your Home</h3>
+                                      <p className="text-sm text-cyan-100 leading-relaxed">
+                                        Browse our exclusive listings to find the perfect place for you and your family.
+                                      </p>
+                                    </>
+                                  )}
                                 </div>
 
-                                <Link
-                                  href="/dashboard/add-property"
-                                  className="relative z-10 inline-flex items-center text-sm font-semibold hover:text-cyan-200 transition-colors mt-6"
-                                  onClick={() => setDesktopActiveDropdown(null)}
-                                >
-                                  List Property <LucideIcons.ArrowRight className="w-4 h-4 ml-2" />
-                                </Link>
+                                {/* Dynamic Action Button */}
+                                {!isAuthenticated ? (
+                                  <Link
+                                    href="/dashboard/add-property"
+                                    className="relative z-10 inline-flex items-center text-sm font-semibold hover:text-cyan-200 transition-colors mt-4"
+                                    onClick={() => setDesktopActiveDropdown(null)}
+                                  >
+                                    List Property <LucideIcons.ArrowRight className="w-4 h-4 ml-2" />
+                                  </Link>
+                                ) : user?.role === 'landlord' || user?.role === 'admin' ? (
+                                  <Link
+                                    href="/dashboard/add-property"
+                                    className="relative z-10 inline-flex items-center text-sm font-semibold hover:text-cyan-200 transition-colors mt-4"
+                                    onClick={() => setDesktopActiveDropdown(null)}
+                                  >
+                                    List Property <LucideIcons.ArrowRight className="w-4 h-4 ml-2" />
+                                  </Link>
+                                ) : (
+                                  <Link
+                                    href="/properties"
+                                    className="relative z-10 inline-flex items-center text-sm font-semibold hover:text-cyan-200 transition-colors mt-4"
+                                    onClick={() => setDesktopActiveDropdown(null)}
+                                  >
+                                    Browse Properties <LucideIcons.ArrowRight className="w-4 h-4 ml-2" />
+                                  </Link>
+                                )}
                               </div>
                             </div>
                           ) : (
@@ -501,17 +555,119 @@ export default function Header() {
             <div className="hidden md:flex items-center space-x-2">
               {isAuthenticated ? (
                 <>
-                  <LandlordOnly user={user}>
-                    <Link href="/dashboard/add-property">
-                      <Button className="bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm font-medium shadow-lg shadow-cyan-500/20">
-                        <PlusCircle className="mr-1.5 md:mr-2 h-3.5 w-3.5 md:h-4 md:w-4" />
-                        <span className="hidden lg:inline">List Property</span>
-                        <span className="lg:hidden">List</span>
+                  {/* Simplified Dynamic CTA Buttons */}
+                  {pathname?.startsWith('/dashboard') ? (
+                    // IF on Dashboard: Show "Browse Homes" for ALL roles
+                    <Link href="/properties">
+                      <Button className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm font-medium shadow-lg shadow-blue-500/20 transition-all hover:scale-105">
+                        <Home className="mr-1.5 md:mr-2 h-3.5 w-3.5 md:h-4 md:w-4" />
+                        <span className="hidden lg:inline">Browse Properties</span>
+                        <span className="lg:hidden">Browse</span>
                       </Button>
                     </Link>
-                  </LandlordOnly>
+                  ) : (
+                    // IF on Public Site: Show Role-specific action
+                    user?.role === 'landlord' ? (
+                      <Link href="/dashboard/add-property">
+                        <Button className="bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm font-medium shadow-lg shadow-cyan-500/20 transition-all hover:scale-105">
+                          <PlusCircle className="mr-1.5 md:mr-2 h-3.5 w-3.5 md:h-4 md:w-4" />
+                          <span className="hidden lg:inline">List Property</span>
+                          <span className="lg:hidden">List</span>
+                        </Button>
+                      </Link>
+                    ) : (
+                      <Link href="/dashboard">
+                        <Button className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm font-medium shadow-lg shadow-blue-500/20 transition-all hover:scale-105">
+                          <LayoutDashboard className="mr-1.5 md:mr-2 h-3.5 w-3.5 md:h-4 md:w-4" />
+                          <span className="hidden lg:inline">Dashboard</span>
+                          <span className="lg:hidden">Dash</span>
+                        </Button>
+                      </Link>
+                    )
+                  )}
 
 
+
+                  <DropdownMenu open={isMessageOpen} onOpenChange={setIsMessageOpen}>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="relative rounded-full hover:bg-gray-100 text-gray-500 hover:text-blue-600 transition-colors"
+                      >
+                        <MessageSquare className="h-5 w-5" />
+                        {unreadMsgCount > 0 && (
+                          <span className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center animate-pulse">
+                            {unreadMsgCount > 9 ? '9+' : unreadMsgCount}
+                          </span>
+                        )}
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-80 p-0">
+                      <div className="flex items-center justify-between p-3 border-b bg-gray-50/50">
+                        <h4 className="font-semibold text-sm">Messages</h4>
+                        {unreadMsgCount > 0 && (
+                          <span className="text-xs text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full font-medium">
+                            {unreadMsgCount} new
+                          </span>
+                        )}
+                      </div>
+                      <ScrollArea className="h-[320px]">
+                        {recentConversations.length > 0 ? (
+                          <div className="divide-y">
+                            {recentConversations.slice(0, 5).map((conv) => (
+                              <Link
+                                key={conv.id || conv.partner.id}
+                                href={`/dashboard/messages?partner=${conv.partner.id}`}
+                                onClick={() => setIsMessageOpen(false)}
+                                className={`block p-3 hover:bg-gray-50 transition-colors ${conv.unreadCount > 0 ? 'bg-blue-50/30' : ''}`}
+                              >
+                                <div className="flex items-center gap-3">
+                                  <div className="relative shrink-0">
+                                    <Avatar className="h-9 w-9 border border-gray-100">
+                                      <AvatarImage src={conv.partner.avatar} />
+                                      <AvatarFallback>{conv.partner.name.charAt(0)}</AvatarFallback>
+                                    </Avatar>
+                                    {conv.partner.isOnline && (
+                                      <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-white rounded-full"></span>
+                                    )}
+                                  </div>
+                                  <div className="flex-1 min-w-0 overflow-hidden">
+                                    <div className="flex justify-between items-baseline mb-0.5">
+                                      <p className="text-sm font-medium text-gray-900 truncate pr-2">{conv.partner.name}</p>
+                                      {conv.lastMessage && (
+                                        <span className="text-[10px] text-gray-400 shrink-0">
+                                          {formatDistanceToNow(new Date(conv.lastMessage.timestamp), { addSuffix: true }).replace('about ', '')}
+                                        </span>
+                                      )}
+                                    </div>
+                                    <p className={`text-xs truncate ${conv.unreadCount > 0 ? 'font-medium text-gray-900' : 'text-gray-500'}`}>
+                                      {conv.lastMessage?.isFromMe && 'You: '}
+                                      {conv.lastMessage?.content || 'No messages yet'}
+                                    </p>
+                                  </div>
+                                </div>
+                              </Link>
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="flex flex-col items-center justify-center py-12 text-center text-gray-500">
+                            <MessageSquare className="h-10 w-10 mb-2 opacity-10" />
+                            <p className="text-sm">No messages yet</p>
+                          </div>
+                        )}
+                      </ScrollArea>
+                      <div className="p-2 border-t bg-gray-50 text-center">
+                        <Link
+                          href="/dashboard/messages"
+                          className="text-xs text-blue-600 hover:underline font-medium block w-full py-1"
+                          onClick={() => setIsMessageOpen(false)}
+                        >
+                          View All Messages
+                        </Link>
+                      </div>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
 
                   <DropdownMenu open={isNotificationOpen} onOpenChange={setIsNotificationOpen}>
                     <DropdownMenuTrigger asChild>
@@ -655,56 +811,50 @@ export default function Header() {
                   </Dialog>
 
                   <DropdownMenu>
-                    <DropdownMenuTrigger className="outline-none group">
-                      <Avatar className="h-9 w-9 md:h-10 md:w-10 border-2 border-white ring-2 ring-gray-100 group-hover:ring-blue-200 transition-all shadow-sm">
+                    <DropdownMenuTrigger className="outline-none rounded-full ring-offset-2 ring-offset-background transition-all hover:ring-2 hover:ring-primary/20 focus:ring-2 focus:ring-primary/40">
+                      <Avatar className="h-9 w-9 md:h-10 md:w-10 border border-gray-200 shadow-sm">
                         <AvatarImage
                           src={user?.avatar}
                           alt={user?.name ?? "User"}
+                          className="object-cover"
                         />
-                        <AvatarFallback className="bg-gradient-to-br from-gray-100 to-gray-200 text-gray-600 font-medium">
-                          {/* Gender-based fallback if no avatar */}
-                          {!user?.avatar && user?.gender ? (
-                            <img
-                              src={user.gender === 'female' ? '/avatars/female.png' : '/avatars/male.png'}
-                              alt={user.gender}
-                              className="h-full w-full object-cover"
-                              // Fallback to initials if image fails to load (handled by browser usually, or we can use state)
-                              onError={(e) => {
-                                e.currentTarget.style.display = 'none';
-                                e.currentTarget.parentElement!.innerText = initials;
-                              }}
-                            />
-                          ) : (
-                            initials
-                          )}
+                        <AvatarFallback className="bg-primary/5 text-primary font-semibold text-sm">
+                          {initials}
                         </AvatarFallback>
                       </Avatar>
                     </DropdownMenuTrigger>
 
-                    <DropdownMenuContent align="end" className="w-80 p-2 max-h-[85vh] overflow-y-auto">
-                      <div className="px-2 py-3 bg-gray-50/50 rounded-t-lg -mx-2 -mt-2 mb-2 border-b">
-                        <div className="flex items-center gap-3">
-                          <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-lg border border-blue-200">
-                            {initials}
-                          </div>
-                          <div className="flex flex-col overflow-hidden">
-                            <span className="font-bold text-gray-900 truncate">{user?.name}</span>
-                            <span className="text-xs text-gray-500 truncate">{user?.email}</span>
-                            <div className="flex items-center gap-2 mt-1">
-                              <Badge variant="secondary" className="text-[10px] uppercase tracking-wider font-bold h-5 px-1.5 bg-blue-100/50 text-blue-700 border-blue-200">
-                                {user?.role}
-                              </Badge>
-                              {user?.isPhoneVerified && (
-                                <span className="text-[10px] text-emerald-600 flex items-center bg-emerald-50 px-1.5 rounded-full border border-emerald-100">
-                                  <LucideIcons.ShieldCheck className="w-3 h-3 mr-1" /> Verified
-                                </span>
-                              )}
-                            </div>
+                    <DropdownMenuContent align="end" className="w-[320px] p-0 overflow-hidden shadow-xl border-gray-100/50 mt-2">
+                      {/* Header Section */}
+                      <div className="flex flex-col items-center justify-center pt-5 pb-6 bg-white">
+                        <div className="relative mb-3">
+                          <Avatar className="h-20 w-20 border-[3px] border-white shadow-lg ring-1 ring-gray-100">
+                            <AvatarImage src={user?.avatar} className="object-cover" />
+                            <AvatarFallback className="text-2xl bg-primary/10 text-primary font-bold">
+                              {initials}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="absolute bottom-0 right-0 bg-white rounded-full p-1 shadow-sm border border-gray-100">
+                            <div className="bg-emerald-500 h-3.5 w-3.5 rounded-full border-2 border-white"></div>
                           </div>
                         </div>
+
+                        <h3 className="font-bold text-lg text-gray-900 mb-0.5">{user?.name}</h3>
+                        <p className="text-sm text-muted-foreground mb-4">{user?.email}</p>
+
+                        <Button
+                          variant="outline"
+                          className="rounded-full px-6 h-9 text-xs font-semibold border-gray-200 hover:bg-gray-50 hover:text-gray-900 transition-colors"
+                          onClick={() => router.push('/dashboard/profile')}
+                        >
+                          Manage your HomeConnect Account
+                        </Button>
                       </div>
 
-                      <div className="grid gap-1">
+                      <div className="h-px bg-gray-100 w-full mb-2" />
+
+
+                      <div className="grid gap-1 p-5">
                         <DropdownMenuItem asChild className="cursor-pointer">
                           <Link href="/dashboard" className="flex items-center w-full font-medium">
                             <LayoutDashboard className="mr-2 h-4 w-4 text-blue-500" />
@@ -723,61 +873,22 @@ export default function Header() {
                         {user?.role === 'tenant' && (
                           <>
                             <DropdownMenuSeparator className="my-2" />
-                            <div className="px-2 py-1.5 text-xs font-semibold text-gray-400 uppercase tracking-widest flex items-center">
-                              <Home className="w-3 h-3 mr-1.5" /> Rental Management
-                            </div>
-
-                            <DropdownMenuItem asChild className="cursor-pointer focus:bg-emerald-50">
-                              <Link href="/dashboard/tenant-applications" className="flex items-center w-full text-gray-700">
-                                <LucideIcons.FileText className="mr-3 h-4 w-4 text-emerald-500" />
-                                My Applications
-                                {/* Example Badge for pending items */}
-                                <span className="ml-auto bg-emerald-100 text-emerald-700 text-[10px] px-1.5 rounded-full font-bold">2</span>
-                              </Link>
-                            </DropdownMenuItem>
                             <DropdownMenuItem asChild className="cursor-pointer focus:bg-blue-50">
                               <Link href="/dashboard/my-rentals" className="flex items-center w-full text-gray-700">
                                 <LucideIcons.Key className="mr-3 h-4 w-4 text-blue-500" />
                                 Active Leases
                               </Link>
                             </DropdownMenuItem>
-                            <DropdownMenuItem asChild className="cursor-pointer focus:bg-amber-50">
-                              <Link href="/dashboard/property-tours" className="flex items-center w-full text-gray-700">
-                                <LucideIcons.CalendarClock className="mr-3 h-4 w-4 text-amber-500" />
-                                Scheduled Tours
-                              </Link>
-                            </DropdownMenuItem>
-
-                            <DropdownMenuSeparator className="my-1 bg-gray-100" />
-
                             <DropdownMenuItem asChild className="cursor-pointer focus:bg-rose-50">
                               <Link href="/dashboard/favorites" className="flex items-center w-full text-gray-700">
                                 <Heart className="mr-3 h-4 w-4 text-rose-500" />
                                 Saved Properties
                               </Link>
                             </DropdownMenuItem>
-
-                            <DropdownMenuSeparator className="my-2" />
-                            <div className="px-2 py-1.5 text-xs font-semibold text-gray-400 uppercase tracking-widest flex items-center">
-                              <CreditCard className="w-3 h-3 mr-1.5" /> Finance & Support
-                            </div>
-
-                            <DropdownMenuItem asChild className="cursor-pointer focus:bg-purple-50">
-                              <Link href="/dashboard/payments" className="flex items-center w-full text-gray-700">
-                                <LucideIcons.Receipt className="mr-3 h-4 w-4 text-purple-500" />
-                                Payments & Invoices
-                              </Link>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem asChild className="cursor-pointer focus:bg-orange-50">
-                              <Link href="/dashboard/maintenance" className="flex items-center w-full text-gray-700">
-                                <Wrench className="mr-3 h-4 w-4 text-orange-500" />
-                                Maintenance Requests
-                              </Link>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem asChild className="cursor-pointer focus:bg-cyan-50">
-                              <Link href="/dashboard/lease-agreements" className="flex items-center w-full text-gray-700">
-                                <LucideIcons.FolderOpen className="mr-3 h-4 w-4 text-cyan-500" />
-                                My Documents
+                            <DropdownMenuItem asChild className="cursor-pointer focus:bg-emerald-50">
+                              <Link href="/dashboard/my-tours" className="flex items-center w-full text-gray-700">
+                                <LucideIcons.CalendarClock className="mr-3 h-4 w-4 text-emerald-500" />
+                                Scheduled Visits
                               </Link>
                             </DropdownMenuItem>
                           </>
@@ -787,10 +898,6 @@ export default function Header() {
                         {user?.role === 'landlord' && (
                           <>
                             <DropdownMenuSeparator className="my-2" />
-                            <div className="px-2 py-1.5 text-xs font-semibold text-gray-400 uppercase tracking-widest flex items-center">
-                              <Building className="w-3 h-3 mr-1.5" /> Property Hub
-                            </div>
-
                             <DropdownMenuItem asChild className="cursor-pointer focus:bg-indigo-50">
                               <Link href="/dashboard/properties" className="flex items-center w-full text-gray-700">
                                 <LucideIcons.Building2 className="mr-3 h-4 w-4 text-indigo-500" />
@@ -803,58 +910,15 @@ export default function Header() {
                                 List New Property
                               </Link>
                             </DropdownMenuItem>
-                            <DropdownMenuItem asChild className="cursor-pointer focus:bg-emerald-50">
-                              <Link href="/dashboard/tenant-applications" className="flex items-center w-full text-gray-700">
-                                <LucideIcons.ClipboardList className="mr-3 h-4 w-4 text-emerald-500" />
-                                Applications
-                                <span className="ml-auto bg-emerald-100 text-emerald-700 text-[10px] px-1.5 rounded-full font-bold">NEW</span>
-                              </Link>
-                            </DropdownMenuItem>
-
-                            <DropdownMenuSeparator className="my-2" />
-                            <div className="px-2 py-1.5 text-xs font-semibold text-gray-400 uppercase tracking-widest flex items-center">
-                              <LucideIcons.Briefcase className="w-3 h-3 mr-1.5" /> Management
-                            </div>
-
-                            <DropdownMenuItem asChild className="cursor-pointer focus:bg-cyan-50">
-                              <Link href="/dashboard/tenants" className="flex items-center w-full text-gray-700">
-                                <LucideIcons.Users className="mr-3 h-4 w-4 text-cyan-600" />
-                                Tenants & Leases
-                              </Link>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem asChild className="cursor-pointer focus:bg-orange-50">
-                              <Link href="/dashboard/maintenance" className="flex items-center w-full text-gray-700">
-                                <LucideIcons.Hammer className="mr-3 h-4 w-4 text-orange-500" />
-                                Maintenance Tasks
-                              </Link>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem asChild className="cursor-pointer focus:bg-violet-50">
-                              <Link href="/dashboard/reports" className="flex items-center w-full text-gray-700">
-                                <LucideIcons.PieChart className="mr-3 h-4 w-4 text-violet-500" />
-                                Financial Reports
-                              </Link>
-                            </DropdownMenuItem>
                           </>
                         )}
 
                         <DropdownMenuSeparator className="my-2" />
 
                         <DropdownMenuItem asChild className="cursor-pointer group">
-                          <Link href="/dashboard/messages" className="flex items-center w-full text-gray-600 group-hover:text-blue-600">
-                            <MessageSquare className="mr-3 h-4 w-4 group-hover:text-blue-600 transition-colors" />
-                            Messages
-                          </Link>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem asChild className="cursor-pointer group">
                           <Link href="/dashboard/settings" className="flex items-center w-full text-gray-600 group-hover:text-gray-900">
                             <Settings className="mr-3 h-4 w-4 group-hover:text-gray-900 transition-colors" />
                             Settings & Privacy
-                          </Link>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem asChild className="cursor-pointer group">
-                          <Link href="/help" className="flex items-center w-full text-gray-600 group-hover:text-amber-600">
-                            <LucideIcons.HelpCircle className="mr-3 h-4 w-4 group-hover:text-amber-600 transition-colors" />
-                            Help & Support
                           </Link>
                         </DropdownMenuItem>
 
@@ -1008,7 +1072,8 @@ export default function Header() {
                       <span className="text-sm">Dashboard</span>
                     </Link>
                     {/* Example: Mobile List Property - শুধু Landlord এর জন্য */}
-                    <LandlordOnly user={user}>
+                    {/* Dynamic Logic for Mobile - List Property for Landlords, Browse for Tenants */}
+                    {user?.role === 'landlord' || user?.role === 'admin' ? (
                       <Link
                         href="/dashboard/add-property"
                         onClick={() => setIsMobileMenuOpen(false)}
@@ -1017,7 +1082,16 @@ export default function Header() {
                         <PlusCircle className="h-4 w-4" />
                         <span className="text-sm">List Property</span>
                       </Link>
-                    </LandlordOnly>
+                    ) : (
+                      <Link
+                        href="/properties"
+                        onClick={() => setIsMobileMenuOpen(false)}
+                        className="flex items-center justify-center space-x-2 p-3 border rounded-lg hover:bg-gray-50 bg-blue-50 text-blue-600 border-blue-100"
+                      >
+                        <Home className="h-4 w-4" />
+                        <span className="text-sm">Browse Homes</span>
+                      </Link>
+                    )}
                   </div>
 
                   <button

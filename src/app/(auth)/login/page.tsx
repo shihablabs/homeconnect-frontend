@@ -23,10 +23,13 @@ import { pacifico } from '@/lib/fonts';
 import { loginSchema, type LoginFormData } from '@/lib/validation';
 import { useLoginMutation } from '@/redux/features/auth/authApiSlice';
 import { RootState } from '@/redux/store';
+import { useSearchParams } from 'next/navigation';
 import { LoginForm } from './LoginForm';
 
 export default function LoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const returnUrl = searchParams.get('from');
   const { user, isAuthenticated } = useSelector((state: RootState) => state.auth);
 
   const [login, { isLoading, isSuccess, error }] = useLoginMutation();
@@ -37,7 +40,15 @@ export default function LoginPage() {
   useEffect(() => {
     if (isAuthenticated) {
       console.log('🔐 User already logged in, redirecting...');
-      // Redirect based on role
+
+      // 1. Check for return URL
+      if (returnUrl) {
+        const decodedUrl = decodeURIComponent(returnUrl);
+        router.push(decodedUrl);
+        return;
+      }
+
+      // 2. Fallback based on role
       switch (user?.role) {
         case 'landlord':
         case 'admin':
@@ -50,7 +61,7 @@ export default function LoginPage() {
           break;
       }
     }
-  }, [isAuthenticated, user, router]);
+  }, [isAuthenticated, user, router, returnUrl]);
 
   useEffect(() => {
     if (isSuccess) {
