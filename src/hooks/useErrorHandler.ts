@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+
 
 import { AppError, ValidationError } from '@/types/error.types';
 import { extractErrorMessage, extractValidationErrors, getErrorCode } from '@/utils/error.utils';
@@ -63,7 +63,7 @@ export const useErrorHandler = () => {
 
     setFormErrors(newErrors);
 
-    // Show a general toast if there are validation errors
+    
     if (validationErrors.length > 0) {
       toast.error('Please check the form for errors', {
         duration: 3000,

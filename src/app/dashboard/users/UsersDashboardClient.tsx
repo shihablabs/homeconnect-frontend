@@ -90,13 +90,13 @@ export function UsersDashboardClient() {
 
   useEffect(() => {
     fetchUsers();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    
   }, [page, roleFilter, statusFilter]);
 
-  // Debounce search - only fetch if search changed and is not empty
+  
   useEffect(() => {
     if (search === '') {
-      // If search is cleared, fetch immediately
+      
       setPage(1);
       fetchUsers();
       return;
@@ -108,7 +108,7 @@ export function UsersDashboardClient() {
     }, 500);
 
     return () => clearTimeout(timer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    
   }, [search]);
 
   const handleSearch = () => {
@@ -198,7 +198,7 @@ export function UsersDashboardClient() {
         </div>
       </div>
 
-      {/* Filters */}
+      {}
       <Card>
         <CardHeader>
           <CardTitle>Filters</CardTitle>
@@ -245,7 +245,7 @@ export function UsersDashboardClient() {
         </CardContent>
       </Card>
 
-      {/* Users Table */}
+      {}
       <Card>
         <CardHeader>
           <CardTitle>All Users</CardTitle>
@@ -356,7 +356,7 @@ export function UsersDashboardClient() {
                               </Button>
                             </Link>
 
-                            {/* Block/Unblock - Admin Only */}
+                            {}
                             {currentUserRole === 'admin' && (
                               <Button
                                 variant={user.isActive ? "destructive" : "default"}
@@ -380,7 +380,7 @@ export function UsersDashboardClient() {
                               </Button>
                             )}
 
-                            {/* Delete - Admin Only */}
+                            {}
                             {currentUserRole === 'admin' && !user.deletedAt && (
                               <AlertDialog>
                                 <AlertDialogTrigger asChild>
@@ -420,7 +420,7 @@ export function UsersDashboardClient() {
                   </TableBody>
                 </Table>
               </div>
-              {/* Pagination */}
+              {}
               {totalPages > 1 && (
                 <div className="flex items-center justify-between mt-4">
                   <div className="text-sm text-muted-foreground">

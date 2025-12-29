@@ -19,8 +19,8 @@ export const useAuthGuard = () => {
         showCancelButton: true,
         confirmButtonText: 'Login / Sign Up',
         cancelButtonText: 'Cancel',
-        confirmButtonColor: '#0f172a', // Slate 900
-        cancelButtonColor: '#64748b',  // Slate 500
+        confirmButtonColor: '#0f172a', 
+        cancelButtonColor: '#64748b',  
         background: '#ffffff',
         customClass: {
           popup: 'rounded-xl border border-gray-100 shadow-2xl',

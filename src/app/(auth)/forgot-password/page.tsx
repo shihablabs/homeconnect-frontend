@@ -29,7 +29,7 @@ import { Input } from "@/components/ui/input";
 import { authApi } from "@/lib/api/auth-api";
 import { pacifico } from "@/lib/fonts";
 
-// Validation schema
+
 const forgotPasswordSchema = z.object({
   email: z
     .string()

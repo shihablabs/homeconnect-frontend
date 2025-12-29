@@ -65,7 +65,7 @@ export function CategoriesManagementClient() {
       const response = await propertiesApi.getAvailableFilters();
       return response;
     },
-    staleTime: 300000, // 5 minutes
+    staleTime: 300000, 
     refetchOnWindowFocus: false,
     retry: (failureCount, error: unknown) => {
       if (error && typeof error === 'object' && 'response' in error) {
@@ -76,12 +76,12 @@ export function CategoriesManagementClient() {
     },
   });
 
-  // Transform propertyTypes array to Category format
+  
   const propertyTypes: Category[] = (filtersData?.propertyTypes || []).map((type, index) => ({
     id: `type-${index}`,
     name: type,
     slug: type.toLowerCase().replace(/\s+/g, '-'),
-    propertyCount: undefined, // Backend doesn't provide count
+    propertyCount: undefined, 
     createdAt: new Date().toISOString(),
   }));
 
@@ -110,10 +110,10 @@ export function CategoriesManagementClient() {
 
     try {
       if (isEditMode && selectedCategory) {
-        // TODO: Implement category update API
+        
         toast.info('Category update feature coming soon');
       } else {
-        // TODO: Implement category creation API
+        
         toast.info('Category creation feature coming soon');
       }
       setIsDialogOpen(false);
@@ -136,7 +136,7 @@ export function CategoriesManagementClient() {
     if (!deleteConfirm.categoryId) return;
 
     try {
-      // TODO: Implement category deletion API
+      
       toast.info('Category deletion feature coming soon');
       refetch();
     } catch {
@@ -372,7 +372,7 @@ export function CategoriesManagementClient() {
         </Tabs>
       </div>
 
-      {/* Delete Confirmation Dialog */}
+      {}
       <ConfirmDialog
         open={deleteConfirm.open}
         onOpenChange={(open) => setDeleteConfirm({ ...deleteConfirm, open })}

@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
+
 "use client";
 
 import { Badge } from "@/components/ui/badge";
@@ -73,7 +73,7 @@ export function PropertiesListTable({ properties }: PropertiesListTableProps) {
   const [deleteProperty, { isLoading: isDeleting }] =
     useDeletePropertyMutation();
 
-  // Check if user is admin or support
+  
   const isAdminOrSupport = user?.role === 'admin' || user?.role === 'support';
 
   const handleDelete = async (id: string) => {
@@ -181,7 +181,7 @@ export function PropertiesListTable({ properties }: PropertiesListTableProps) {
                       <Copy className="mr-2 h-4 w-4" /> Copy Link
                     </DropdownMenuItem>
 
-                    {/* Show delete for owner, admin, or support */}
+                    {}
                     {(property.owner?.id === user?.id || isAdminOrSupport) && (
                       <>
                         <DropdownMenuSeparator />

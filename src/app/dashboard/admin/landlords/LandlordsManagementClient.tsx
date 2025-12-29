@@ -265,7 +265,7 @@ export function LandlordsManagementClient() {
                                 View
                               </Button>
                             </Link>
-                            {/* Both admin and support can manage landlords */}
+                            {}
                             {(isAdmin || isSupport) && (
                               <Button
                                 variant={landlord.isActive ? 'destructive' : 'default'}
@@ -320,7 +320,7 @@ export function LandlordsManagementClient() {
       </Card>
       </div>
 
-      {/* Status Toggle Confirmation Dialog */}
+      {}
       <ConfirmDialog
         open={confirmDialog.open}
         onOpenChange={(open) => setConfirmDialog({ ...confirmDialog, open })}

@@ -22,7 +22,7 @@ export function MyRentalsClient() {
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['bookings', 'tenant', 'rentals'],
     queryFn: () => bookingsApi.getUserBookings('tenant'),
-    staleTime: 60000, // 1 minute
+    staleTime: 60000, 
     refetchOnWindowFocus: false,
     retry: (failureCount, error: unknown) => {
       if (error && typeof error === 'object' && 'response' in error) {
@@ -35,7 +35,7 @@ export function MyRentalsClient() {
     },
   });
 
-  // Filter only confirmed/completed bookings (active rentals)
+  
   const activeRentals = useMemo(() => {
     if (!data?.bookings) return [];
     return data.bookings.filter(

@@ -70,7 +70,7 @@ export default function NewListingsGrid({
     };
   }, [listingType, bedsMin, priceRange, sortKey, initialLimit]);
 
-  // Fetch properties from API
+  
   const { data, isLoading, error } = useProperties(queryOpts);
 
   const rawItems = useMemo(() => data?.properties ?? [], [data?.properties]);
@@ -80,7 +80,7 @@ export default function NewListingsGrid({
   );
   const currency = items[0] ? getCurrencyValue(items[0]) : "BDT";
 
-  // Update price range when data loads
+  
   useEffect(() => {
     if (items.length > 0) {
       const prices = items.map((i) => getPriceValue(i));
@@ -92,7 +92,7 @@ export default function NewListingsGrid({
     }
   }, [items]);
 
-  // Dynamic slider step
+  
   const step = useMemo(() => {
     if (items.length === 0) return 1;
     const minPrice = Math.min(...items.map(getPriceValue));
@@ -129,7 +129,7 @@ export default function NewListingsGrid({
   return (
     <section className="py-12">
       <div className="container mx-auto px-4">
-        {/* Heading */}
+        {}
         <div className="mb-4 flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
           <div>
             <h3 className="text-2xl font-bold">{title}</h3>
@@ -142,9 +142,9 @@ export default function NewListingsGrid({
           </Button>
         </div>
 
-        {/* Controls */}
+        {}
         <div className="mb-6 grid gap-3 rounded-xl border bg-background p-4 md:grid-cols-12">
-          {/* Type */}
+          {}
           <div className="md:col-span-3">
             <label className="mb-2 block text-sm font-medium">Type</label>
             <ToggleGroup
@@ -174,7 +174,7 @@ export default function NewListingsGrid({
             </ToggleGroup>
           </div>
 
-          {/* Beds */}
+          {}
           <div className="md:col-span-3">
             <label className="mb-2 block text-sm font-medium">Beds (min)</label>
             <ToggleGroup
@@ -216,7 +216,7 @@ export default function NewListingsGrid({
             </ToggleGroup>
           </div>
 
-          {/* Sort */}
+          {}
           <div className="md:col-span-3">
             <label className="mb-2 block text-sm font-medium">Sort by</label>
             <Select
@@ -234,7 +234,7 @@ export default function NewListingsGrid({
             </Select>
           </div>
 
-          {/* Price range */}
+          {}
           <div className="md:col-span-3">
             <div className="flex items-center justify-between">
               <label className="block text-sm font-medium">Price range</label>
@@ -257,7 +257,7 @@ export default function NewListingsGrid({
             </div>
           </div>
 
-          {/* Reset */}
+          {}
           <div className="md:col-span-12 flex justify-end">
             <Button
               type="button"
@@ -271,7 +271,7 @@ export default function NewListingsGrid({
           </div>
         </div>
 
-        {/* Grid */}
+        {}
         {isLoading ? (
           <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
             {Array.from({ length: 10 }).map((_, i) => (

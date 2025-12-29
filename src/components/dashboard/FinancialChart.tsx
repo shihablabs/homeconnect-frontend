@@ -34,31 +34,31 @@ export function FinancialChart({ className }: FinancialChartProps) {
 
   useEffect(() => {
     fetchFinancialData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    
   }, [months]);
 
   const fetchFinancialData = async () => {
     try {
       setLoading(true);
       const summary = await financialApi.getFinancialSummary({ months });
-      // Use monthlyBreakdown from financial summary
+      
       if (summary.monthlyBreakdown && summary.monthlyBreakdown.length > 0) {
         setData(summary.monthlyBreakdown);
       } else {
-        // Handle empty data array
+        
         setData([]);
       }
     } catch (error) {
       console.error('Failed to fetch financial data:', error);
       toast.error('Failed to load financial data');
-      // Set empty array on error instead of mock data
+      
       setData([]);
     } finally {
       setLoading(false);
     }
   };
 
-  // Format currency for display
+  
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('en-BD', {
       style: 'currency',
@@ -68,15 +68,15 @@ export function FinancialChart({ className }: FinancialChartProps) {
     }).format(value);
   };
 
-  // Custom tooltip component
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  
+  
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       const data = payload[0]?.payload as MonthlyFinancialData;
       return (
         <div className="bg-white p-4 border border-gray-200 rounded-lg shadow-lg">
           <p className="font-semibold text-gray-900 mb-2">{label}</p>
-          {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+          {}
           {payload.map((entry: any, index: number) => (
             <p key={index} className="text-sm" style={{ color: entry.color }}>
               <span className="font-medium">{entry.name}:</span>{' '}
@@ -222,7 +222,7 @@ export function FinancialChart({ className }: FinancialChartProps) {
           </ResponsiveContainer>
         )}
 
-        {/* Summary Statistics */}
+        {}
         {data.length > 0 && (
           <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4 pt-6 border-t">
             <div className="text-center">

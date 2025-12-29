@@ -7,12 +7,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { ConfirmDialogWithInput } from '@/components/ui/confirm-dialog-with-input';
 import { adminApi, type PropertyWithVerification } from '@/lib/api/admin-api';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { ArrowLeft, CheckCircle2, Clock, FileText, Loader2, XCircle } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, ChevronLeft, ChevronRight, Clock, FileText, Loader2, XCircle } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
+import Lightbox from "yet-another-react-lightbox";
+import "yet-another-react-lightbox/styles.css";
 
 interface PropertyReviewClientProps {
   propertyId: string;
@@ -29,14 +31,35 @@ export function PropertyReviewClient({ propertyId }: PropertyReviewClientProps) 
     newStatus?: string;
   }>({ open: false, type: 'status' });
 
-  // Re-fetch function to be called after mutation
+  
+  const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true });
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const [lightboxIndex, setLightboxIndex] = useState(-1);
+
+  const scrollPrev = useCallback(() => {
+    if (emblaApi) emblaApi.scrollPrev();
+  }, [emblaApi]);
+
+  const scrollNext = useCallback(() => {
+    if (emblaApi) emblaApi.scrollNext();
+  }, [emblaApi]);
+
+  useEffect(() => {
+    if (emblaApi) {
+      emblaApi.on('select', () => {
+        setCurrentSlide(emblaApi.selectedScrollSnap());
+      });
+    }
+  }, [emblaApi]);
+
+  
   const fetchProperty = async () => {
     try {
       setLoading(true);
       const data = await adminApi.getPropertyForReview(propertyId);
       setProperty(data);
     } catch (error: unknown) {
-      // Error handling matches original useEffect
+      
       const errorMessage = error && typeof error === 'object' && 'response' in error
         ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
         : undefined;
@@ -74,10 +97,10 @@ export function PropertyReviewClient({ propertyId }: PropertyReviewClientProps) 
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin', 'properties'] }); // Invalidate list
+      queryClient.invalidateQueries({ queryKey: ['admin', 'properties'] }); 
       toast.success('Status updated successfully');
       setConfirmDialog({ ...confirmDialog, open: false });
-      fetchProperty(); // Refresh current page data
+      fetchProperty(); 
     },
     onError: (error: unknown) => {
       const errorMessage = error && typeof error === 'object' && 'response' in error
@@ -159,7 +182,7 @@ export function PropertyReviewClient({ propertyId }: PropertyReviewClientProps) 
         </div>
 
         <div className="grid gap-6 md:grid-cols-3">
-          {/* Property Details */}
+          {}
           <div className="md:col-span-2 space-y-6">
             <Card>
               <CardHeader>
@@ -215,18 +238,79 @@ export function PropertyReviewClient({ propertyId }: PropertyReviewClientProps) 
                 {property.images && property.images.length > 0 && (
                   <div>
                     <h4 className="font-semibold mb-2">Images</h4>
-                    <div className="grid grid-cols-3 gap-2">
-                      {property.images.slice(0, 6).map((img, idx) => (
-                        <Image
+
+                    <div className="relative group rounded-lg overflow-hidden border bg-gray-100">
+                      <div className="overflow-hidden" ref={emblaRef}>
+                        <div className="flex">
+                          {property.images.map((src, index) => (
+                            <div className="relative flex-[0_0_100%] min-w-0" key={index}>
+                              <div
+                                className="relative aspect-video cursor-zoom-in"
+                                onClick={() => setLightboxIndex(index)}
+                              >
+                                <Image
+                                  src={src}
+                                  alt={`Property image ${index + 1}`}
+                                  fill
+                                  className="object-contain"
+                                />
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      {property.images.length > 1 && (
+                        <>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="absolute left-2 top-1/2 -translate-y-1/2 h-8 w-8 rounded-full bg-black/50 text-white hover:bg-black/70 opacity-0 group-hover:opacity-100 transition-opacity"
+                            onClick={scrollPrev}
+                          >
+                            <ChevronLeft className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 rounded-full bg-black/50 text-white hover:bg-black/70 opacity-0 group-hover:opacity-100 transition-opacity"
+                            onClick={scrollNext}
+                          >
+                            <ChevronRight className="h-4 w-4" />
+                          </Button>
+                        </>
+                      )}
+
+                      <div className="absolute bottom-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded">
+                        {currentSlide + 1} / {property.images.length}
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-4 sm:grid-cols-6 gap-2 mt-2">
+                      {property.images.map((img, idx) => (
+                        <div
                           key={idx}
-                          src={img}
-                          alt={`Property image ${idx + 1}`}
-                          width={200}
-                          height={200}
-                          className="rounded-md object-cover h-32 w-full"
-                        />
+                          className={`relative aspect-square cursor-pointer rounded-md overflow-hidden border-2 transition-all ${currentSlide === idx ? 'border-primary' : 'border-transparent opacity-70 hover:opacity-100'}`}
+                          onClick={() => {
+                            if (emblaApi) emblaApi.scrollTo(idx);
+                          }}
+                        >
+                          <Image
+                            src={img}
+                            alt={`Thumbnail ${idx + 1}`}
+                            fill
+                            className="object-cover"
+                          />
+                        </div>
                       ))}
                     </div>
+
+                    <Lightbox
+                      open={lightboxIndex >= 0}
+                      close={() => setLightboxIndex(-1)}
+                      index={lightboxIndex}
+                      slides={property.images.map(src => ({ src }))}
+                    />
                   </div>
                 )}
 
@@ -254,9 +338,9 @@ export function PropertyReviewClient({ propertyId }: PropertyReviewClientProps) 
             </Card>
           </div>
 
-          {/* Verification Panel - Contextual based on status */}
+          {}
           <div className="space-y-6">
-            {/* APPROVED: Show only read-only status card */}
+            {}
             {property.verificationStatus === 'approved' && (
               <Card className="border-green-200 bg-gradient-to-br from-green-50 to-green-50/50">
                 <CardHeader>
@@ -303,7 +387,7 @@ export function PropertyReviewClient({ propertyId }: PropertyReviewClientProps) 
               </Card>
             )}
 
-            {/* REJECTED: Show status only */}
+            {}
             {property.verificationStatus === 'rejected' && (
               <Card className="border-red-200 bg-gradient-to-br from-red-50 to-red-50/50">
                 <CardHeader>
@@ -348,7 +432,7 @@ export function PropertyReviewClient({ propertyId }: PropertyReviewClientProps) 
               </Card>
             )}
 
-            {/* PENDING / UNDER_REVIEW: Show status only */}
+            {}
             {(property.verificationStatus === 'pending' || property.verificationStatus === 'under_review') && (
               <Card className="border-blue-200 bg-gradient-to-br from-blue-50 to-blue-50/50">
                 <CardHeader>
@@ -433,7 +517,7 @@ export function PropertyReviewClient({ propertyId }: PropertyReviewClientProps) 
         </div>
       </div>
 
-      {/* Status Change Confirmation Dialog */}
+      {}
       <ConfirmDialogWithInput
         open={confirmDialog.open}
         onOpenChange={(open) => setConfirmDialog({ ...confirmDialog, open })}

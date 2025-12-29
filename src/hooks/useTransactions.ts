@@ -26,9 +26,9 @@ export const useTransactions = (options: UseTransactionsOptions = {}) => {
       };
     },
     enabled,
-    staleTime: 30000, // Consider data fresh for 30 seconds
+    staleTime: 30000, 
     refetchOnWindowFocus: true,
-    refetchInterval: 60000, // Auto-refetch every minute
+    refetchInterval: 60000, 
     retry: (failureCount, error: unknown) => {
       if (error && typeof error === 'object' && 'response' in error) {
         const err = error as { response?: { status?: number } };

@@ -1,6 +1,6 @@
 import { api } from './api';
 
-// --- Interfaces & Types ---
+
 
 export interface ChatMessage {
   id: string;
@@ -38,7 +38,7 @@ export interface SendMessageRequest {
 }
 
 export interface Conversation {
-  id?: string; // Optional for compatibility
+  id?: string; 
   partner: {
     id: string;
     name: string;
@@ -74,36 +74,28 @@ export interface ChatHistoryResponse {
   hasNext: boolean;
 }
 
-// --- API Implementation ---
+
 
 export const chatApi = {
-  /**
-   * Get all conversations
-   */
+  
   getConversations: async (): Promise<Conversation[]> => {
     const response = await api.get('/chat/conversations');
     return response.data.data;
   },
 
-  /**
-   * Get unread message count
-   */
+  
   getUnreadCount: async (): Promise<{ count: number }> => {
     const response = await api.get('/chat/unread-count');
     return response.data.data;
   },
 
-  /**
-   * Send a message (REST fallback - prefer Socket.io for real-time)
-   */
+  
   sendMessage: async (data: SendMessageRequest): Promise<ChatMessage> => {
     const response = await api.post('/chat/send', data);
     return response.data.data;
   },
 
-  /**
-   * Get chat history with a user
-   */
+  
   getChatHistory: async (
     partnerId: string,
     params?: ChatHistoryParams
@@ -112,17 +104,13 @@ export const chatApi = {
     return response.data.data;
   },
 
-  /**
-   * Mark messages as read
-   */
+  
   markAsRead: async (partnerId: string): Promise<{ count: number }> => {
     const response = await api.patch(`/chat/${partnerId}/read`);
     return response.data.data;
   },
 
-  /**
-   * Delete a message
-   */
+  
   deleteMessage: async (messageId: string): Promise<{ message: string }> => {
     const response = await api.delete(`/chat/message/${messageId}`);
     return response.data;

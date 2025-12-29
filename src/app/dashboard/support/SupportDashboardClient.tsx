@@ -72,7 +72,7 @@ export function SupportDashboardClient() {
           </Button>
         </div>
 
-        {/* Stats Cards */}
+        {}
         <div className="grid gap-4 md:grid-cols-3">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -114,7 +114,7 @@ export function SupportDashboardClient() {
           </Card>
         </div>
 
-        {/* Pending Maintenance Requests */}
+        {}
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between">
@@ -195,7 +195,7 @@ export function SupportDashboardClient() {
           </CardContent>
         </Card>
 
-        {/* Quick Actions */}
+        {}
         <Card>
           <CardHeader>
             <CardTitle>Quick Actions</CardTitle>

@@ -16,7 +16,7 @@ import Link from 'next/link';
 
 interface RentPropertyCardProps {
   booking: Booking;
-  paymentStatus: 'paid' | 'pending' | 'late' | 'partial'; // simplified status for UI
+  paymentStatus: 'paid' | 'pending' | 'late' | 'partial'; 
   amountDue?: number;
   onRecordPayment: (bookingId: string) => void;
   onSendReminder: (bookingId: string) => void;
@@ -62,7 +62,7 @@ export function RentPropertyCard({
     <Card className="overflow-hidden hover:shadow-md transition-shadow">
       <CardContent className="p-0">
         <div className="flex flex-col sm:flex-row">
-          {/* Property Image Section */}
+          {}
           <div className="relative w-full sm:w-48 h-32 sm:h-auto shrink-0 bg-muted">
             {booking.property.images?.[0] ? (
               <Image
@@ -81,7 +81,7 @@ export function RentPropertyCard({
             </div>
           </div>
 
-          {/* Details Section */}
+          {}
           <div className="flex-1 p-4 flex flex-col justify-between gap-4">
             <div>
               <div className="flex justify-between items-start">

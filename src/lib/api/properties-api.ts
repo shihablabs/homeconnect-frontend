@@ -1,8 +1,8 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
+
 
 import { api } from './api';
 
-// --- Interfaces & Types ---
+
 
 export type ListingType = 'rent' | 'sale';
 
@@ -42,7 +42,7 @@ export interface PropertyFilters {
   q?: string;
   minBeds?: number;
   sort?: string;
-  ownerId?: string; // For fetching landlord properties
+  ownerId?: string; 
 }
 
 import { AvailableFilters, CreatePropertyData, PropertyResponse, PropertySearchResult, UpdatePropertyData } from '@/types/property.types';
@@ -52,7 +52,7 @@ export interface FavoriteResponse {
   favorited: boolean;
 }
 
-// --- API Implementation ---
+
 
 export const propertiesApi = {
   getAllProperties: async (): Promise<PropertyResponse[]> => {
@@ -61,33 +61,33 @@ export const propertiesApi = {
     return response.data.data;
   },
 
-  // Get all properties with filters
+  
   getProperties: async (filters: PropertyFilters = {}): Promise<PropertySearchResult> => {
-    // Mapping simple filters to backend filters if needed
+    
     if (filters.q) {
       filters.search = filters.q;
       delete filters.q;
     }
-    // Add other mappings if 'sort' or 'minBeds' are used
+    
 
     const response = await api.get('/properties', { params: filters });
     return response.data.data;
   },
 
-  // Get single property by ID
+  
   getProperty: async (id: string): Promise<PropertyResponse> => {
     const response = await api.get(`/properties/${id}`);
     return response.data.data.property;
   },
 
-  // Create new property
+  
   createProperty: async (data: CreatePropertyData, images?: File[]): Promise<PropertyResponse> => {
     const formData = new FormData();
 
-    // Create a copy of data without the images field
+    
     const { images: _, ...dataWithoutImages } = data;
 
-    // Append all data fields except images
+    
     Object.keys(dataWithoutImages).forEach(key => {
       const value = (dataWithoutImages as Record<string, unknown>)[key];
       if (value !== undefined && value !== null) {
@@ -103,7 +103,7 @@ export const propertiesApi = {
       }
     });
 
-    // Append image files (these go to req.files in backend)
+    
     if (images && images.length > 0) {
       images.forEach(image => {
         formData.append('images', image);
@@ -118,13 +118,13 @@ export const propertiesApi = {
     return response.data.data.property;
   },
 
-  // Update property
+  
   updateProperty: async (id: string, data: UpdatePropertyData): Promise<PropertyResponse> => {
     const response = await api.patch(`/properties/${id}`, data);
     return response.data.data.property;
   },
 
-  // Delete property
+  
   deleteProperty: async (id: string, reason?: string): Promise<{ message: string }> => {
     const response = await api.delete(`/properties/${id}`, {
       data: reason ? { reason } : undefined,
@@ -132,13 +132,13 @@ export const propertiesApi = {
     return response.data;
   },
 
-  // Favorite/Unfavorite property
+  
   toggleFavorite: async (id: string): Promise<FavoriteResponse> => {
     const response = await api.post(`/properties/${id}/favorite`);
     return response.data.data;
   },
 
-  // Inquiries & Tours
+  
   createInquiry: async (propertyId: string, message: string) => {
     const response = await api.post(`/properties/${propertyId}/inquiry`, { message });
     return response.data.data;
@@ -149,25 +149,25 @@ export const propertiesApi = {
     return response.data.data;
   },
 
-  // Comparison
+  
   compareProperties: async (ids: string[]): Promise<PropertyResponse[]> => {
     const response = await api.get('/properties/compare', { params: { ids } });
     return response.data.data;
   },
 
-  // Get featured properties
+  
   getFeaturedProperties: async (limit: number = 6): Promise<PropertyResponse[]> => {
     const response = await api.get('/properties/featured', { params: { limit } });
     return response.data.data.properties;
   },
 
-  // Get properties by city
+  
   getPropertiesByCity: async (city: string): Promise<PropertyResponse[]> => {
     const response = await api.get(`/properties/city/${city}`);
     return response.data.data.properties;
   },
 
-  // Get user's properties
+  
   getUserProperties: async (page: number = 1, limit: number = 10): Promise<PropertySearchResult> => {
     const response = await api.get('/properties/user/my-properties', {
       params: { page, limit }
@@ -182,7 +182,7 @@ export const propertiesApi = {
     };
   },
 
-  // Get user's favorite properties
+  
   getUserFavoriteProperties: async (
     page: number = 1,
     limit: number = 20,
@@ -191,7 +191,7 @@ export const propertiesApi = {
     const response = await api.get('/properties/user/favorites', {
       params: { page, limit, listingType }
     });
-    // Backend returns { data: properties[], meta: { total, page, totalPages, ... } }
+    
     const properties = response.data.data || [];
     const meta = response.data.meta || {};
     return {
@@ -204,13 +204,13 @@ export const propertiesApi = {
     };
   },
 
-  // Get available filters
+  
   getAvailableFilters: async (): Promise<AvailableFilters> => {
     const response = await api.get('/properties/filters');
     return response.data.data;
   },
 
-  // Get city stats
+  
   getCityStats: async (cities?: string[]): Promise<{ city: string; count: number }[]> => {
     const params = cities && cities.length > 0 ? { cities: cities.join(',') } : undefined;
     const response = await api.get('/properties/city-stats', { params });
@@ -218,7 +218,7 @@ export const propertiesApi = {
   },
 };
 
-// --- Utility & Wrapper Functions ---
+
 
 const DEFAULT_NEW_DAYS = 30;
 
@@ -227,22 +227,22 @@ export function isNewListing(p: { createdAt: string }, days = DEFAULT_NEW_DAYS) 
   return ageDays <= days;
 }
 
-// Get single property by ID
+
 export async function getPropertyById(id: string): Promise<PropertyResponse | null> {
   return await propertiesApi.getProperty(id);
 }
 
-// Query properties with filters
+
 export async function queryProperties(opts: PropertyFilters = {}) {
   return await propertiesApi.getProperties(opts);
 }
 
-// Featured listings
+
 export async function getFeaturedProperties(limit?: number): Promise<PropertyResponse[]> {
   return await propertiesApi.getFeaturedProperties(limit);
 }
 
-// Get available filters
+
 export async function getAvailableFilters() {
   return await propertiesApi.getAvailableFilters();
 }

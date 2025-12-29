@@ -66,9 +66,9 @@ export function SupportTicketsClient() {
       });
       return response.data;
     },
-    staleTime: 30000, // 30 seconds
+    staleTime: 30000, 
     refetchOnWindowFocus: true,
-    refetchInterval: 60000, // Auto-refetch every minute
+    refetchInterval: 60000, 
     retry: (failureCount, error: unknown) => {
       if (error && typeof error === 'object' && 'response' in error) {
         const err = error as { response?: { status?: number } };
@@ -301,9 +301,9 @@ export function SupportTicketsClient() {
                         </TableCell>
                         <TableCell>
                           <div>
-                            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                            {}
                             <div className="font-medium">{(ticket.user as any).name || 'Unknown'}</div>
-                            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                            {}
                             <div className="text-sm text-muted-foreground">{(ticket.user as any).email || 'No email'}</div>
                           </div>
                         </TableCell>
@@ -354,9 +354,9 @@ export function SupportTicketsClient() {
                 <div>
                   <Label>User</Label>
                   <div className="mt-1 text-sm">
-                    {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                    {}
                     {(selectedTicket.user as any).name || 'Unknown'} <br />
-                    {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                    {}
                     <span className="text-muted-foreground">{(selectedTicket.user as any).email || 'No email'}</span>
                   </div>
                 </div>

@@ -1,5 +1,5 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable @typescript-eslint/no-explicit-any */
+
+
 "use client";
 
 import { Button } from "@/components/ui/button";
@@ -17,6 +17,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { RichTextEditor } from "@/components/ui/rich-text-editor";
 import {
   Select,
   SelectContent,
@@ -49,31 +50,32 @@ import Swal from "sweetalert2";
 import { z } from "zod";
 import { FormImageUpload } from "./FormImageUpload";
 import { FormStepper } from "./FormStepper";
-// --- START: Updated Constants and Schemas ---
 
-// 1. CONSTANTS
-// 1. CONSTANTS
+
+
+
+
 const RENT_PROPERTY_TYPES = [
   "apartment",
   "house",
   "villa",
   "studio",
   "penthouse",
-  "room",        // Sublet/Room share
-  "office",      // Commercial rent
-  "shop",        // Commercial rent
+  "room",        
+  "office",      
+  "shop",        
 ] as const;
 
 const SALE_PROPERTY_TYPES = [
-  "apartment",   // Flat
-  "house",       // Standalone building
-  "land",        // Plot
-  "commercial",  // Commercial space
-  "office",      // Office space
-  "warehouse",   // Industrial
+  "apartment",   
+  "house",       
+  "land",        
+  "commercial",  
+  "office",      
+  "warehouse",   
 ] as const;
 
-// Combined list for validation (unique values)
+
 const allPropertyTypes = Array.from(new Set([...RENT_PROPERTY_TYPES, ...SALE_PROPERTY_TYPES])) as [string, ...string[]];
 
 const areaUnits = ["sqft", "sqm", "acres", "hectares"] as const;
@@ -110,17 +112,17 @@ const amenitiesList = [
   "Air Conditioning",
   "Heating",
   "Laundry",
-  "Internet",
-  "Cable TV",
   "Pet Friendly",
+  "Backup Generator",
+  "Intercom",
 ];
 
-// 2. VALIDATION SCHEMA (Simplified & Fixed)
+
 const requiredString = z.string().min(1, "This field is required");
-// Use coerce to handle string inputs from forms safely
+
 const requiredNumber = z.coerce.number().min(1, "This field is required");
 
-// Individual Schemas
+
 const CurrencySchema = z.enum(currencies);
 const PetPolicySchema = z.enum(petPolicies);
 const SmokingPolicySchema = z.enum(smokingPolicies);
@@ -175,24 +177,24 @@ const baseSchema = z.object({
   agent: z.string().optional(),
   managementCompany: z.string().optional(),
 
-  // Verification
+  
   requestVerification: z.boolean().default(false),
   documentFiles: z
     .any()
     .optional()
     .refine(
       (files) => {
-        // If not checking verification, files not needed
-        // But validation runs on whole object.
-        // We will do conditional validation in `superRefine` or simpler refine here if possible.
-        // Returning true for now, will validate in step logic or refine
+        
+        
+        
+        
         return true;
       },
       "Documents required"
     ),
 });
 
-// Updated Rental Schema
+
 const rentalSchema = baseSchema.extend({
   listingType: z.literal("rent"),
   pricePerMonth: requiredNumber.max(1000000, "Rent price seems too high"),
@@ -249,7 +251,7 @@ const rentalSchema = baseSchema.extend({
   }),
 });
 
-// Updated Sale Schema
+
 const saleSchema = baseSchema.extend({
   listingType: z.literal("sale"),
   totalPrice: requiredNumber.max(100000000, "Sale price seems too high"),
@@ -291,7 +293,7 @@ export const propertyFormSchema = z.discriminatedUnion("listingType", [
 
 export type PropertyFormData = z.infer<typeof propertyFormSchema>;
 
-// 3. INITIAL FORM DATA (Updated)
+
 const initialFormData: Partial<PropertyFormData> & Record<string, any> = {
   title: "",
   description: "",
@@ -321,8 +323,8 @@ const initialFormData: Partial<PropertyFormData> & Record<string, any> = {
   requestVerification: false,
   documentFiles: [],
 
-  // Rental specific
-  pricePerMonth: undefined, // undefined to show placeholder
+  
+  pricePerMonth: undefined, 
   currency: "BDT",
   securityDeposit: undefined,
   utilityDeposit: undefined,
@@ -338,7 +340,7 @@ const initialFormData: Partial<PropertyFormData> & Record<string, any> = {
   petPolicy: "not-allowed",
   smokingPolicy: "not-allowed",
 
-  // Sale specific
+  
   totalPrice: undefined,
   originalPrice: undefined,
   priceNegotiable: true,
@@ -353,7 +355,7 @@ const initialFormData: Partial<PropertyFormData> & Record<string, any> = {
   offerDeadline: undefined,
 };
 
-// --- END: Updated Definitions ---
+
 
 const STEPS = [
   { id: 1, name: "Basic Info" },
@@ -422,7 +424,7 @@ export function AddPropertyForm() {
             ? ["pricePerMonth", "currency", "availableFrom"]
             : ["totalPrice", "currency", "propertyCondition"]
         );
-        // Additional check: valid if price > 0
+        
         if (listingType === "rent" && form.getValues("pricePerMonth") <= 0) {
           form.setError("pricePerMonth", { type: "manual", message: "Rent price must be greater than 0" });
           isValid = false;
@@ -450,34 +452,34 @@ export function AddPropertyForm() {
       const finalData: any = { ...data };
       const images = finalData.imageFiles as File[];
 
-      const documents = finalData.documentFiles as File[]; // Extract documents
+      const documents = finalData.documentFiles as File[]; 
       delete finalData.imageFiles;
       delete finalData.documentFiles;
-      delete finalData.requestVerification; // Not sending this flag, just documents imply request? Or maybe send it?
-      // Backend createProperty doesn't have 'requestVerification' flag in body, but it has 'documents'.
-      // If documents are present, it implies verification request or just storing docs.
-      // Admin sees documents and status 'pending' (default) if docs exist?
-      // Wait, Schema has 'verificationStatus' default 'pending'.
-      // Actually backend strictly deletes verificationStatus from update.
-      // But Create allows default.
+      delete finalData.requestVerification; 
+      
+      
+      
+      
+      
+      
 
-      // We will rely on documents array being present.
+      
 
-      // Ensure neighborhood is set (use city as fallback if empty)
+      
       if (!finalData.neighborhood || finalData.neighborhood.trim() === '') {
         finalData.neighborhood = finalData.city || 'N/A';
       }
 
-      // Ensure availableFrom is properly formatted as ISO string for rental properties
+      
       if (finalData.listingType === 'rent' && finalData.availableFrom) {
         const availableFromDate = new Date(finalData.availableFrom);
         if (isNaN(availableFromDate.getTime())) {
-          // Invalid date, set to tomorrow
+          
           const tomorrow = new Date();
           tomorrow.setDate(tomorrow.getDate() + 1);
           finalData.availableFrom = tomorrow.toISOString();
         } else {
-          // Ensure it's in the future
+          
           const now = new Date();
           if (availableFromDate <= now) {
             const tomorrow = new Date();
@@ -489,23 +491,23 @@ export function AddPropertyForm() {
         }
       }
 
-      // Clean up data - remove undefined/null values and ensure proper types
+      
       Object.keys(finalData).forEach(key => {
         const value = finalData[key];
 
-        // Skip special handling for required fields
+        
         if (value === undefined || value === null) {
-          // Only delete optional fields
+          
           if (['zipCode', 'yearBuilt', 'lotSize', 'agent', 'managementCompany', 'videos', 'floorPlans', 'tags'].includes(key)) {
             delete finalData[key];
           }
         } else if (value === '' && ['zipCode', 'agent', 'managementCompany'].includes(key)) {
-          // Remove empty optional strings
+          
           delete finalData[key];
         }
       });
 
-      // Ensure arrays are properly formatted (don't delete if empty, backend expects arrays)
+      
       if (finalData.amenities && !Array.isArray(finalData.amenities)) {
         finalData.amenities = [];
       }
@@ -522,14 +524,14 @@ export function AddPropertyForm() {
         finalData.floorPlans = [];
       }
 
-      // Handle offerDeadline
+      
       if (finalData.offerDeadline instanceof Date) {
         finalData.offerDeadline = finalData.offerDeadline.toISOString();
       } else {
         delete finalData.offerDeadline;
       }
 
-      // Show loading with SweetAlert2
+      
       Swal.fire({
         title: "Submitting Property...",
         text: "Please wait while we list your property.",
@@ -542,12 +544,12 @@ export function AddPropertyForm() {
 
 
       const formData = new FormData();
-      // Append all text fields handled by API Slice logic now.
-      // We pass documents to the mutation which builds FormData.
+      
+      
 
       const response = await createProperty({ data: finalData, images, documents }).unwrap();
 
-      // Show Success SweetAlert2
+      
       Swal.fire({
         icon: "success",
         title: "Property Listed!",
@@ -584,7 +586,7 @@ export function AddPropertyForm() {
     <FormProvider {...form}>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit, onInvalid)}>
-          <Card className="shadow-lg border">
+          <Card className="shadow-lg border mt-4">
             <CardContent className="p-6 md:p-8">
               <FormStepper
                 steps={STEPS}
@@ -609,15 +611,16 @@ export function AddPropertyForm() {
                   variant="outline"
                   onClick={handlePrevious}
                   disabled={currentStep === 1}
+                  className="min-w-[120px]"
                 >
                   Previous
                 </Button>
                 {currentStep < STEPS.length ? (
-                  <Button type="button" onClick={handleNext}>
+                  <Button type="button" onClick={handleNext} className="min-w-[120px]">
                     Next
                   </Button>
                 ) : (
-                  <Button type="submit" disabled={isLoading}>
+                  <Button type="submit" disabled={isLoading} className="min-w-[150px]">
                     {isLoading && (
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     )}
@@ -633,104 +636,29 @@ export function AddPropertyForm() {
   );
 }
 
-// --- Updated Step Components ---
+
 
 function Step1() {
   const { control, watch, setValue } = useFormContext<PropertyFormData>();
   const listingType = watch("listingType");
   const propertyType = watch("propertyType");
 
-  // Dynamic Property Types based on Listing Type
+  
   const availableTypes = listingType === "rent" ? RENT_PROPERTY_TYPES : SALE_PROPERTY_TYPES;
 
-  // Reset property type if current selection is invalid for new mode
-  // Using useEffect to handle side-effect of changing listingType
-  // We need to allow the component to render first, so we check on render
+  
+  
+  
   if (listingType === "rent" && !RENT_PROPERTY_TYPES.includes(propertyType as any)) {
-    // Default for Rent
-    // We should do this via an effect, but in RHF changing during render is risky. 
-    // Better to do it in the onChange handler of listingType below.
+    
+    
+    
   }
 
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      {/* Listing Type - Pro Card Style */}
-      {/* Row 1: Listing Type & Property Category */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
-        {/* Listing Type - Spans 2 columns to give equal width to its 2 buttons */}
-        <FormField
-          control={control}
-          name="listingType"
-          render={({ field }) => (
-            <FormItem className="space-y-3 md:col-span-2">
-              <FormLabel className="text-lg font-semibold text-gray-800">I want to...</FormLabel>
-              <FormControl>
-                <RadioGroup
-                  onValueChange={(val) => {
-                    field.onChange(val);
-                    // Auto-switch property type default to avoid mismatch
-                    if (val === "rent") setValue("propertyType", "apartment");
-                    else setValue("propertyType", "apartment");
-                  }}
-                  defaultValue={field.value}
-                  className="grid grid-cols-2 gap-4"
-                >
-                  <FormItem>
-                    <FormControl>
-                      <RadioGroupItem value="rent" className="peer sr-only" />
-                    </FormControl>
-                    <FormLabel className="flex h-[52px] items-center justify-center gap-2 rounded-lg border bg-white px-3 text-gray-600 hover:bg-gray-50 hover:text-gray-900 peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/5 peer-data-[state=checked]:text-primary cursor-pointer transition-all duration-200 ease-in-out">
-                      <span className="text-lg">🏠</span>
-                      <span className="font-medium">Rent Out</span>
-                    </FormLabel>
-                  </FormItem>
-                  <FormItem>
-                    <FormControl>
-                      <RadioGroupItem value="sale" className="peer sr-only" />
-                    </FormControl>
-                    <FormLabel className="flex h-[52px] items-center justify-center gap-2 rounded-lg border bg-white px-3 text-gray-600 hover:bg-gray-50 hover:text-gray-900 peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/5 peer-data-[state=checked]:text-primary cursor-pointer transition-all duration-200 ease-in-out">
-                      <span className="text-lg">🏷️</span>
-                      <span className="font-medium">Sell Property</span>
-                    </FormLabel>
-                  </FormItem>
-                </RadioGroup>
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+    <div className="space-y-8 pt-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
 
-        {/* Property Category - 1 Column */}
-        <FormField
-          control={control}
-          name="propertyType"
-          render={({ field }) => (
-            <FormItem className="space-y-3">
-              <FormLabel className="text-lg font-semibold text-gray-800">Property Category</FormLabel>
-              <Select
-                onValueChange={field.onChange}
-                defaultValue={field.value}
-                value={field.value}
-              >
-                <FormControl>
-                  <SelectTrigger className="h-[52px] shadow-sm">
-                    <SelectValue placeholder="Select Category" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {availableTypes.map((type) => (
-                    <SelectItem key={type} value={type} className="capitalize cursor-pointer">
-                      {type}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-      </div>
-
+      {}
       <FormField
         control={control}
         name="title"
@@ -749,6 +677,81 @@ function Step1() {
         )}
       />
 
+      {}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-end">
+
+        {}
+        <FormField
+          control={control}
+          name="listingType"
+          render={({ field }) => (
+            <FormItem className="space-y-3">
+              <FormLabel>I want to...</FormLabel>
+              <FormControl>
+                <RadioGroup
+                  onValueChange={(val) => {
+                    field.onChange(val);
+                    if (val === "rent") setValue("propertyType", "apartment");
+                    else setValue("propertyType", "apartment");
+                  }}
+                  defaultValue={field.value}
+                  className="flex items-center gap-1 p-1 bg-slate-100/80 rounded-lg w-fit border border-slate-200"
+                >
+                  <FormItem className="space-y-0">
+                    <FormControl>
+                      <RadioGroupItem value="rent" className="peer sr-only" />
+                    </FormControl>
+                    <FormLabel className="flex items-center justify-center px-6 py-2 rounded-md text-sm font-medium transition-all cursor-pointer peer-data-[state=checked]:bg-white peer-data-[state=checked]:text-primary peer-data-[state=checked]:shadow-sm text-gray-500 hover:text-gray-700">
+                      Rent Out
+                    </FormLabel>
+                  </FormItem>
+                  <FormItem className="space-y-0">
+                    <FormControl>
+                      <RadioGroupItem value="sale" className="peer sr-only" />
+                    </FormControl>
+                    <FormLabel className="flex items-center justify-center px-6 py-2 rounded-md text-sm font-medium transition-all cursor-pointer peer-data-[state=checked]:bg-white peer-data-[state=checked]:text-primary peer-data-[state=checked]:shadow-sm text-gray-500 hover:text-gray-700">
+                      Sell Property
+                    </FormLabel>
+                  </FormItem>
+                </RadioGroup>
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {}
+        <FormField
+          control={control}
+          name="propertyType"
+          render={({ field }) => (
+            <FormItem className="space-y-1.5 pt-1">
+              <FormLabel>Property Category</FormLabel>
+              <Select
+                onValueChange={field.onChange}
+                defaultValue={field.value}
+                value={field.value}
+              >
+                <FormControl>
+                  <SelectTrigger className="h-11 shadow-sm bg-white">
+                    <SelectValue placeholder="Select Category" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {availableTypes.map((type) => (
+                    <SelectItem key={type} value={type} className="capitalize cursor-pointer">
+                      {type}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      </div>
+
+      {}
       <FormField
         control={control}
         name="description"
@@ -756,11 +759,11 @@ function Step1() {
           <FormItem>
             <FormLabel>Description</FormLabel>
             <FormControl>
-              <Textarea
+              <RichTextEditor
                 placeholder="Describe the key features, neighborhood, and amenities..."
-                {...field}
-                rows={5}
-                className="resize-none shadow-sm focus-visible:ring-primary/20"
+                value={field.value}
+                onChange={field.onChange}
+                className="min-h-[200px]"
               />
             </FormControl>
             <FormMessage />
@@ -802,9 +805,48 @@ function Step2() {
   );
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8 pt-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
+
+      {}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* --- Country (Disabled) --- */}
+        <FormField
+          control={control}
+          name="address"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Street Address</FormLabel>
+              <FormControl>
+                <Input
+                  placeholder="e.g., House 123, Road 4, Block B"
+                  className="h-11 shadow-sm focus-visible:ring-primary/20"
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={control}
+          name="neighborhood"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Neighborhood / Area</FormLabel>
+              <FormControl>
+                <Input
+                  placeholder="e.g., Gulshan, Dhanmondi, Banani"
+                  className="h-11 shadow-sm focus-visible:ring-primary/20"
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      </div>
+
+      {}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <FormField
           control={control}
           name="country"
@@ -812,14 +854,16 @@ function Step2() {
             <FormItem>
               <FormLabel>Country</FormLabel>
               <FormControl>
-                <Input {...field} disabled />
+                <Input
+                  {...field}
+                  disabled
+                  className="h-11 bg-gray-50 text-gray-500 shadow-sm"
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
-
-        {/* --- State/Division Select --- */}
         <FormField
           control={control}
           name="state"
@@ -831,8 +875,7 @@ function Step2() {
                   value={field.value || undefined}
                   onValueChange={(value) => {
                     field.onChange(value);
-                    setValue("city", "");
-
+                    setValue("city", ""); 
                     const division = divisionOptions.find(
                       (d) => d.value === value
                     );
@@ -842,8 +885,8 @@ function Step2() {
                     }
                   }}
                 >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a division" />
+                  <SelectTrigger className="h-11 shadow-sm bg-white">
+                    <SelectValue placeholder="Select Division" />
                   </SelectTrigger>
                   <SelectContent>
                     {divisionOptions.map((division) => (
@@ -860,102 +903,69 @@ function Step2() {
         />
       </div>
 
-      {/* --- City/District Select --- */}
-      <FormField
-        control={control}
-        name="city"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>City / District</FormLabel>
-            <FormControl>
-              <Select
-                value={field.value || undefined}
-                onValueChange={(value) => {
-                  field.onChange(value);
+      {}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <FormField
+          control={control}
+          name="city"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>City / District</FormLabel>
+              <FormControl>
+                <Select
+                  value={field.value || undefined}
+                  onValueChange={(value) => {
+                    field.onChange(value);
+                    const city = districtOptions.find((c) => c.value === value);
+                    if (city) {
+                      setValue("latitude", city.latitude);
+                      setValue("longitude", city.longitude);
+                    }
+                  }}
+                  disabled={!watchedDivision}
+                >
+                  <SelectTrigger className="h-11 shadow-sm bg-white">
+                    <SelectValue placeholder="Select City / District" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {districtOptions.map((city) => (
+                      <SelectItem key={city.value} value={city.value}>
+                        {city.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={control}
+          name="zipCode"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Zip Code</FormLabel>
+              <FormControl>
+                <Input
+                  placeholder="e.g., 1212"
+                  className="h-11 shadow-sm focus-visible:ring-primary/20"
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      </div>
 
-                  const city = districtOptions.find((c) => c.value === value);
-                  if (city) {
-                    setValue("latitude", city.latitude);
-                    setValue("longitude", city.longitude);
-                  }
-                }}
-                disabled={!watchedDivision}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a city/district" />
-                </SelectTrigger>
-                <SelectContent>
-                  {districtOptions.map((city) => (
-                    <SelectItem key={city.value} value={city.value}>
-                      {city.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-
-      {/* --- Street Address --- */}
-      <FormField
-        control={control}
-        name="address"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Street Address</FormLabel>
-            <FormControl>
-              <Input
-                placeholder="e.g., House 123, Road 4, Block B"
-                {...field}
-              />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-
-      {/* --- Neighborhood --- */}
-      <FormField
-        control={control}
-        name="neighborhood"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Neighborhood / Area</FormLabel>
-            <FormControl>
-              <Input
-                placeholder="e.g., Gulshan, Dhanmondi, Banani"
-                {...field}
-              />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-
-      {/* --- Zip Code (Optional) --- */}
-      <FormField
-        control={control}
-        name="zipCode"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Zip Code (Optional)</FormLabel>
-            <FormControl>
-              <Input placeholder="e.g., 1212" {...field} />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-
-      {/* --- 6. Add the Map Component (Same as before) --- */}
-      <div className="space-y-2">
-        <FormLabel>Set Property Location on Map</FormLabel>
+      {}
+      <div className="space-y-3 pt-2">
+        <FormLabel className="text-base font-semibold text-gray-800">Set Property Location</FormLabel>
         <p className="text-sm text-gray-500">
-          Drag the marker to the exact location.
+          Drag the marker to pinpoint the exact location.
         </p>
-        <div className="h-96 rounded-lg overflow-hidden border z-0">
+        <div className="h-[400px] rounded-xl overflow-hidden border border-gray-200 shadow-sm z-0 relative bg-gray-50">
           <LocationMap />
         </div>
       </div>
@@ -1102,7 +1112,7 @@ function Step5() {
 
   return (
     <div className="space-y-6">
-      {/* Amenities */}
+      {}
       <FormField
         control={control}
         name="amenities"
@@ -1147,7 +1157,7 @@ function Step5() {
         )}
       />
 
-      {/* Rental Specific Features */}
+      {}
       {listingType === "rent" && (
         <>
           <FormField
@@ -1578,6 +1588,50 @@ function Step6({ listingType }: { listingType: "rent" | "sale" }) {
             />
             <FormField
               control={control}
+              name="offerDeadline"
+              render={({ field }) => (
+                <FormItem className="flex flex-col">
+                  <FormLabel>Offer Deadline (Optional)</FormLabel>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <FormControl>
+                        <Button
+                          variant={"outline"}
+                          className={cn(
+                            "w-full pl-3 text-left font-normal",
+                            !field.value && "text-muted-foreground"
+                          )}
+                        >
+                          {field.value ? (
+                            format(field.value, "PPP")
+                          ) : (
+                            <span>Pick a date</span>
+                          )}
+                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                        </Button>
+                      </FormControl>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={field.value}
+                        onSelect={field.onChange}
+                        disabled={(date) =>
+                          date < new Date(new Date().setHours(0, 0, 0, 0))
+                        }
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <FormField
+              control={control}
               name="propertyCondition"
               render={({ field }) => (
                 <FormItem className="flex flex-col">
@@ -1607,9 +1661,6 @@ function Step6({ listingType }: { listingType: "rent" | "sale" }) {
                 </FormItem>
               )}
             />
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <FormField
               control={control}
               name="ownershipType"
@@ -1641,6 +1692,9 @@ function Step6({ listingType }: { listingType: "rent" | "sale" }) {
                 </FormItem>
               )}
             />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <FormField
               control={control}
               name="hoaFee"
@@ -1657,6 +1711,37 @@ function Step6({ listingType }: { listingType: "rent" | "sale" }) {
                       }
                     />
                   </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={control}
+              name="hoaFrequency"
+              render={({ field }) => (
+                <FormItem className="flex flex-col">
+                  <FormLabel>HOA Frequency</FormLabel>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select frequency" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {hoaFrequencies.map((item) => (
+                        <SelectItem
+                          key={item}
+                          value={item}
+                          className="capitalize"
+                        >
+                          {item}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                   <FormMessage />
                 </FormItem>
               )}
@@ -1704,8 +1789,6 @@ function Step6({ listingType }: { listingType: "rent" | "sale" }) {
             />
           </div>
 
-
-
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <FormField
               control={control}
@@ -1734,50 +1817,6 @@ function Step6({ listingType }: { listingType: "rent" | "sale" }) {
                       onCheckedChange={field.onChange}
                     />
                   </FormControl>
-                </FormItem>
-              )}
-            />
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
-            <FormField
-              control={control}
-              name="offerDeadline"
-              render={({ field }) => (
-                <FormItem className="flex flex-col">
-                  <FormLabel>Offer Deadline (Optional)</FormLabel>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <FormControl>
-                        <Button
-                          variant={"outline"}
-                          className={cn(
-                            "w-full pl-3 text-left font-normal",
-                            !field.value && "text-muted-foreground"
-                          )}
-                        >
-                          {field.value ? (
-                            format(field.value, "PPP")
-                          ) : (
-                            <span>Pick a date</span>
-                          )}
-                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                        </Button>
-                      </FormControl>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar
-                        mode="single"
-                        selected={field.value}
-                        onSelect={field.onChange}
-                        disabled={(date) =>
-                          date < new Date(new Date().setHours(0, 0, 0, 0))
-                        }
-                        initialFocus
-                      />
-                    </PopoverContent>
-                  </Popover>
-                  <FormMessage />
                 </FormItem>
               )}
             />

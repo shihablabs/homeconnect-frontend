@@ -1,13 +1,10 @@
-/**
- * Support API
- * API methods for Knowledge Base, FAQs, and User Guides
- */
+
 
 import axios from "axios";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 
-// ==================== TYPES ====================
+
 
 export type KnowledgeBaseCategory =
   | "general"
@@ -187,14 +184,12 @@ export interface SupportContentResponse<T> {
   };
 }
 
-// ==================== API METHODS ====================
 
-// ==================== TICKET API ====================
+
+
 
 export const ticketApi = {
-  /**
-   * Get tickets
-   */
+  
   getTickets: async (
     options: GetTicketsOptions = {},
   ): Promise<SupportContentResponse<SupportTicket>> => {
@@ -218,9 +213,7 @@ export const ticketApi = {
     };
   },
 
-  /**
-   * Get ticket by ID
-   */
+  
   getTicketById: async (ticketId: string): Promise<SupportTicket> => {
     const response = await axios.get(
       `${API_BASE_URL}/support/tickets/${ticketId}`,
@@ -230,9 +223,7 @@ export const ticketApi = {
     return response.data.data;
   },
 
-  /**
-   * Create ticket
-   */
+  
   createTicket: async (data: CreateTicketRequest): Promise<SupportTicket> => {
     const response = await axios.post(
       `${API_BASE_URL}/support/tickets`,
@@ -243,9 +234,7 @@ export const ticketApi = {
     return response.data.data;
   },
 
-  /**
-   * Update ticket
-   */
+  
   updateTicket: async (
     ticketId: string,
     data: UpdateTicketRequest,
@@ -260,9 +249,7 @@ export const ticketApi = {
   },
 };
 
-/**
- * Get authorization headers
- */
+
 const getAuthHeaders = () => {
   const token = localStorage.getItem("token");
   return {
@@ -271,12 +258,10 @@ const getAuthHeaders = () => {
   };
 };
 
-// ==================== KNOWLEDGE BASE API ====================
+
 
 export const knowledgeBaseApi = {
-  /**
-   * Get knowledge base articles
-   */
+  
   getKnowledgeBaseArticles: async (
     options: GetSupportContentOptions = {},
   ): Promise<SupportContentResponse<KnowledgeArticle>> => {
@@ -299,9 +284,7 @@ export const knowledgeBaseApi = {
     };
   },
 
-  /**
-   * Get knowledge base article by ID
-   */
+  
   getKnowledgeBaseArticleById: async (
     articleId: string,
   ): Promise<KnowledgeArticle> => {
@@ -313,9 +296,7 @@ export const knowledgeBaseApi = {
     return response.data.data;
   },
 
-  /**
-   * Create knowledge base article
-   */
+  
   createKnowledgeBaseArticle: async (
     data: CreateKnowledgeArticleRequest,
   ): Promise<KnowledgeArticle> => {
@@ -328,9 +309,7 @@ export const knowledgeBaseApi = {
     return response.data.data;
   },
 
-  /**
-   * Update knowledge base article
-   */
+  
   updateKnowledgeBaseArticle: async (
     articleId: string,
     data: UpdateKnowledgeArticleRequest,
@@ -344,9 +323,7 @@ export const knowledgeBaseApi = {
     return response.data.data;
   },
 
-  /**
-   * Delete knowledge base article
-   */
+  
   deleteKnowledgeBaseArticle: async (articleId: string): Promise<void> => {
     await axios.delete(`${API_BASE_URL}/support/knowledge-base/${articleId}`, {
       headers: getAuthHeaders(),
@@ -354,12 +331,10 @@ export const knowledgeBaseApi = {
   },
 };
 
-// ==================== FAQ API ====================
+
 
 export const faqApi = {
-  /**
-   * Get FAQs
-   */
+  
   getFAQs: async (
     options: GetSupportContentOptions = {},
   ): Promise<SupportContentResponse<FAQ>> => {
@@ -382,9 +357,7 @@ export const faqApi = {
     };
   },
 
-  /**
-   * Get FAQ by ID
-   */
+  
   getFAQById: async (faqId: string): Promise<FAQ> => {
     const response = await axios.get(`${API_BASE_URL}/support/faqs/${faqId}`, {
       headers: getAuthHeaders(),
@@ -393,9 +366,7 @@ export const faqApi = {
     return response.data.data;
   },
 
-  /**
-   * Create FAQ
-   */
+  
   createFAQ: async (data: CreateFAQRequest): Promise<FAQ> => {
     const response = await axios.post(
       `${API_BASE_URL}/support/faqs`,
@@ -406,9 +377,7 @@ export const faqApi = {
     return response.data.data;
   },
 
-  /**
-   * Update FAQ
-   */
+  
   updateFAQ: async (
     faqId: string,
     data: UpdateFAQRequest,
@@ -422,9 +391,7 @@ export const faqApi = {
     return response.data.data;
   },
 
-  /**
-   * Delete FAQ
-   */
+  
   deleteFAQ: async (faqId: string): Promise<void> => {
     await axios.delete(`${API_BASE_URL}/support/faqs/${faqId}`, {
       headers: getAuthHeaders(),
@@ -432,12 +399,10 @@ export const faqApi = {
   },
 };
 
-// ==================== USER GUIDE API ====================
+
 
 export const userGuideApi = {
-  /**
-   * Get user guides
-   */
+  
   getUserGuides: async (
     options: GetSupportContentOptions = {},
   ): Promise<SupportContentResponse<UserGuide>> => {
@@ -462,9 +427,7 @@ export const userGuideApi = {
     };
   },
 
-  /**
-   * Get user guide by ID
-   */
+  
   getUserGuideById: async (guideId: string): Promise<UserGuide> => {
     const response = await axios.get(`${API_BASE_URL}/support/guides/${guideId}`, {
       headers: getAuthHeaders(),
@@ -473,9 +436,7 @@ export const userGuideApi = {
     return response.data.data;
   },
 
-  /**
-   * Create user guide
-   */
+  
   createUserGuide: async (data: CreateUserGuideRequest): Promise<UserGuide> => {
     const response = await axios.post(
       `${API_BASE_URL}/support/guides`,
@@ -486,9 +447,7 @@ export const userGuideApi = {
     return response.data.data;
   },
 
-  /**
-   * Update user guide
-   */
+  
   updateUserGuide: async (
     guideId: string,
     data: UpdateUserGuideRequest,
@@ -502,9 +461,7 @@ export const userGuideApi = {
     return response.data.data;
   },
 
-  /**
-   * Delete user guide
-   */
+  
   deleteUserGuide: async (guideId: string): Promise<void> => {
     await axios.delete(`${API_BASE_URL}/support/guides/${guideId}`, {
       headers: getAuthHeaders(),

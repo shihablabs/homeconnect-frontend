@@ -1,5 +1,5 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable @typescript-eslint/no-explicit-any */
+
+
 
 import { apiSlice } from '@/redux/api/apiSlice';
 import { AuthUser, logout, setCredentials, updateUserProfile } from './authSlice';
@@ -53,7 +53,7 @@ export const authApiSlice = apiSlice.injectEndpoints({
           const { data } = await queryFulfilled;
           dispatch(setCredentials(data));
         } catch (error) {
-          // Error is handled by components
+          
         }
       },
     }),
@@ -72,7 +72,7 @@ export const authApiSlice = apiSlice.injectEndpoints({
           const { data } = await queryFulfilled;
           dispatch(setCredentials(data));
         } catch (error) {
-          // Error is handled by components
+          
         }
       },
     }),
@@ -158,7 +158,7 @@ export const authApiSlice = apiSlice.injectEndpoints({
           const { data } = await queryFulfilled;
           dispatch(updateUserProfile(data));
         } catch (error) {
-          // Handle profile fetch error
+          
         }
       },
     }),
@@ -180,7 +180,7 @@ export const authApiSlice = apiSlice.injectEndpoints({
           const { data } = await queryFulfilled;
           dispatch(updateUserProfile(data));
         } catch (error) {
-          // Handle error
+          
         }
       },
     }),

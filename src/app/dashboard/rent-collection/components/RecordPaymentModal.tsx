@@ -48,9 +48,9 @@ export function RecordPaymentModal({
       await paymentsApi.createRentPayment({
         bookingId,
         amount: Number(amount),
-        rentMonth: new Date(date).toISOString(), // Using selected date as the rent month identifier for now
+        rentMonth: new Date(date).toISOString(), 
         notes,
-        method: 'cash', // Default to cash for manual recording
+        method: 'cash', 
       });
 
       toast.success('Payment recorded successfully');

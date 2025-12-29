@@ -51,7 +51,7 @@ export function MaintenanceDashboardClient() {
   const [creating, setCreating] = useState(false);
   const [updating, setUpdating] = useState(false);
 
-  // Create form state
+  
   const [createForm, setCreateForm] = useState({
     property: '',
     title: '',
@@ -82,16 +82,24 @@ export function MaintenanceDashboardClient() {
         ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
         : undefined;
       toast.error(errorMessage || 'Failed to fetch maintenance requests');
-      setRequests([]); // Ensure requests is always an array
+      setRequests([]); 
       setTotalPages(1);
     } finally {
       setLoading(false);
     }
   };
 
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    if (searchParams.get('action') === 'create') {
+      setIsCreateDialogOpen(true);
+    }
+  }, [searchParams]);
+
   useEffect(() => {
     fetchRequests();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    
   }, [page, statusFilter, priorityFilter]);
 
   const handleCreate = async () => {
@@ -303,7 +311,7 @@ export function MaintenanceDashboardClient() {
           )}
         </div>
 
-        {/* Filters */}
+        {}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -346,7 +354,7 @@ export function MaintenanceDashboardClient() {
           </CardContent>
         </Card>
 
-        {/* Requests Table */}
+        {}
         <Card>
           <CardHeader>
             <CardTitle>All Requests</CardTitle>
@@ -452,7 +460,7 @@ export function MaintenanceDashboardClient() {
                     </TableBody>
                   </Table>
                 </div>
-                {/* Pagination */}
+                {}
                 {totalPages > 1 && (
                   <div className="flex items-center justify-between mt-4">
                     <div className="text-sm text-muted-foreground">
@@ -483,7 +491,7 @@ export function MaintenanceDashboardClient() {
           </CardContent>
         </Card>
 
-        {/* Details Dialog */}
+        {}
         <Dialog open={isDetailsDialogOpen} onOpenChange={setIsDetailsDialogOpen}>
           <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>

@@ -24,7 +24,7 @@ function LoadingSkeleton() {
 }
 
 export function GoodDeals() {
-  // Fetch properties that could be considered "Good Deals" (e.g., lowest price)
+  
   const {
     data: searchResult,
     isLoading,
@@ -32,8 +32,8 @@ export function GoodDeals() {
   } = useGetPropertiesQuery({
     limit: 4,
     sortBy: 'price',
-    sortOrder: 'asc', // Cheapest first
-    listingType: 'sale' // Focus on sales for deals, or remove to include rent
+    sortOrder: 'asc', 
+    listingType: 'sale' 
   });
 
   const properties = searchResult?.properties;
@@ -41,7 +41,7 @@ export function GoodDeals() {
   if (isLoading) {
     return (
       <section className="py-12 md:py-20 relative overflow-hidden">
-        {/* Background Gradients */}
+        {}
         <div className="absolute inset-0 bg-gradient-to-b from-orange-50/50 to-white -z-10" />
 
         <div className="container mx-auto px-4">
@@ -66,7 +66,7 @@ export function GoodDeals() {
 
   return (
     <section className="py-12 md:py-20 relative overflow-hidden">
-      {/* Background Gradients */}
+      {}
       <div className="absolute inset-0 bg-gradient-to-b from-orange-50/50 to-white -z-10" />
       <div className="absolute top-0 right-0 w-96 h-96 bg-orange-200/20 rounded-full blur-3xl -z-10" />
 

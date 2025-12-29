@@ -40,17 +40,17 @@ export function ScheduleVisitModal({
   const [notes, setNotes] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // New state for handling existing tours
+  
   const [existingTour, setExistingTour] = useState<TourRequest | null>(null);
   const [checkingTour, setCheckingTour] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
 
-  // Check for existing tour when modal opens
+  
   useEffect(() => {
     if (isOpen && propertyId) {
       checkExistingTour();
     } else {
-      // Reset state on close
+      
       setExistingTour(null);
       setIsEditing(false);
       setDate("");
@@ -63,7 +63,7 @@ export function ScheduleVisitModal({
     try {
       setCheckingTour(true);
       const myTours = await toursApi.getMyTours();
-      // Find active tour for this property
+      
       const tour = myTours.find(t =>
         t.property.id === propertyId &&
         (t.status === 'pending' || t.status === 'approved')
@@ -71,7 +71,7 @@ export function ScheduleVisitModal({
 
       if (tour) {
         setExistingTour(tour);
-        // Pre-fill form
+        
         const tourDate = new Date(tour.preferredDate);
         setDate(tourDate.toISOString().split('T')[0]);
         setTime(tourDate.toTimeString().split(' ')[0].substring(0, 5));
@@ -102,17 +102,17 @@ export function ScheduleVisitModal({
       setLoading(true);
 
       if (isEditing && existingTour) {
-        // Update existing tour
+        
         await toursApi.updateTour(existingTour.id, {
           preferredDate: preferredDate.toISOString(),
           notes
         });
         toast.success("Visit request updated successfully!");
         setIsEditing(false);
-        checkExistingTour(); // Refresh data
+        checkExistingTour(); 
         await queryClient.invalidateQueries({ queryKey: ["myTours", user?.id] });
       } else {
-        // Create new tour
+        
         await propertiesApi.scheduleTour(propertyId, preferredDate.toISOString(), notes);
         await queryClient.invalidateQueries({ queryKey: ["myTours", user?.id] });
         toast.success("Visit scheduled successfully! The landlord will confirm shortly.");
@@ -271,7 +271,7 @@ export function ScheduleVisitModal({
               />
             </div>
 
-            {/* Warning Note - Moved here per request */}
+            {}
             {!isEditing && (
               <div className="bg-amber-50 border border-amber-100 rounded-xl p-3 flex gap-2">
                 <Info className="h-4 w-4 text-amber-600 shrink-0 mt-0.5" />

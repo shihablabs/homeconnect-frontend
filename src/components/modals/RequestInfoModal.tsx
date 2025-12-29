@@ -46,7 +46,7 @@ export function RequestInfoModal({
       }).unwrap();
 
       toast.success("Inquiry sent successfully! The owner will reply soon.");
-      setMessage(""); // Clear message on success
+      setMessage(""); 
       onClose();
     } catch (error: any) {
       console.error("Failed to send inquiry:", error);

@@ -9,7 +9,7 @@ import { selectCurrentUser } from '@/redux/features/auth/authSlice';
 export default function SupportPage() {
   const user = useAppSelector(selectCurrentUser);
 
-  // Show support dashboard for support role, tenant support for tenants
+  
   if (user?.role === 'support') {
     return (
       <ProtectedRoute requiredRole="support">

@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
+
 "use client";
 
 import { Card } from "@/components/ui/card";
@@ -36,7 +36,7 @@ export default function Comments({ propertyId }: { propertyId: string }) {
 
   useEffect(() => {
     loadComments();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    
   }, [propertyId]);
 
   async function handleSubmit(e: React.FormEvent) {
@@ -53,7 +53,7 @@ export default function Comments({ propertyId }: { propertyId: string }) {
       createdAt: new Date().toISOString(),
     };
 
-    // Optimistic update
+    
     setComments((prev) => [optimistic, ...prev]);
 
     try {
@@ -66,16 +66,16 @@ export default function Comments({ propertyId }: { propertyId: string }) {
       if (!res.ok) throw new Error("Failed to post comment");
       const data = await res.json();
 
-      // Replace optimistic item with the real one
+      
       setComments((prev) => {
         const withoutTemp = prev.filter((c) => c.id !== optimistic.id);
         return [data.comment, ...withoutTemp];
       });
 
       setMessage("");
-      // keep author as-is for convenience
+      
     } catch (e) {
-      // rollback
+      
       setComments((prev) => prev.filter((c) => c.id !== optimistic.id));
       setError("Could not post comment. Please try again.");
     } finally {

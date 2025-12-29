@@ -20,7 +20,7 @@ const resolveApiBaseUrl = () => {
   }
 
   if (process.env.NODE_ENV === "development") {
-    // Debug logging
+    
     if (typeof window !== "undefined") {
       const host = window.location.hostname;
       console.log("[Config] resolving API URL:", {

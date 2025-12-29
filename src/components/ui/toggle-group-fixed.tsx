@@ -1,4 +1,4 @@
-// src/components/ui/toggle-group-fixed.tsx
+
 "use client"
 
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"

@@ -19,7 +19,7 @@ import { AlertCircle, Building2, Calendar, CheckCircle2, DollarSign, Loader2, St
 import Image from 'next/image';
 import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
-// Format date helper (using native Date methods)
+
 const formatDate = (dateString: string) => {
   const date = new Date(dateString);
   return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
@@ -45,7 +45,7 @@ export function MaintenanceList({ userRole = 'tenant' }: MaintenanceListProps) {
     limit: 10,
   });
 
-  // Vendor assignment state
+  
   const [selectedRequest, setSelectedRequest] = useState<MaintenanceRequest | null>(null);
   const [vendors, setVendors] = useState<Vendor[]>([]);
   const [loadingVendors, setLoadingVendors] = useState(false);
@@ -127,9 +127,9 @@ export function MaintenanceList({ userRole = 'tenant' }: MaintenanceListProps) {
     try {
       setLoadingVendors(true);
       const response = await vendorsApi.getVendors({
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        
         serviceCategory: category as any,
-        isVerified: true, // Only show verified vendors
+        isVerified: true, 
         sortBy: 'rating',
         sortOrder: 'desc',
         limit: 50,
@@ -158,13 +158,13 @@ export function MaintenanceList({ userRole = 'tenant' }: MaintenanceListProps) {
     try {
       setIsUpdating(true);
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      
       const updateData: any = {
         status: selectedRequest.status,
         estimatedCost: selectedRequest.estimatedCost,
       };
 
-      // Include vendor assignment if changed
+      
       if (selectedVendorId !== selectedRequest.assignedVendorId) {
         updateData.assignedVendorId = selectedVendorId || null;
       }
@@ -172,14 +172,14 @@ export function MaintenanceList({ userRole = 'tenant' }: MaintenanceListProps) {
       await maintenanceApi.updateMaintenanceRequest(selectedRequest.id, updateData);
       toast.success('Maintenance request updated successfully');
 
-      // Refresh list
+      
       await fetchRequests();
       setIsDialogOpen(false);
       setSelectedRequest(null);
       setSelectedVendorId('');
     } catch (error: unknown) {
       console.error('Failed to update maintenance request:', error);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      
       const errorMessage = (error as any)?.response?.data?.message || 'Failed to update maintenance request';
       toast.error(errorMessage);
     } finally {
@@ -200,7 +200,7 @@ export function MaintenanceList({ userRole = 'tenant' }: MaintenanceListProps) {
 
   return (
     <div className="space-y-6">
-      {/* Filters */}
+      {}
       <Card>
         <CardHeader>
           <CardTitle>Filters</CardTitle>
@@ -210,7 +210,7 @@ export function MaintenanceList({ userRole = 'tenant' }: MaintenanceListProps) {
             <Select
               value={filters.status || 'all'}
               onValueChange={(value) =>
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                
                 setFilters({ ...filters, status: value === 'all' ? undefined : value as any, page: 1 })
               }
             >
@@ -229,7 +229,7 @@ export function MaintenanceList({ userRole = 'tenant' }: MaintenanceListProps) {
             <Select
               value={filters.priority || 'all'}
               onValueChange={(value) =>
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                
                 setFilters({ ...filters, priority: value === 'all' ? undefined : value as any, page: 1 })
               }
             >
@@ -247,7 +247,7 @@ export function MaintenanceList({ userRole = 'tenant' }: MaintenanceListProps) {
             <Select
               value={filters.category || 'all'}
               onValueChange={(value) =>
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                
                 setFilters({ ...filters, category: value === 'all' ? undefined : value as any, page: 1 })
               }
             >
@@ -270,7 +270,7 @@ export function MaintenanceList({ userRole = 'tenant' }: MaintenanceListProps) {
             <Select
               value={filters.sortBy || 'createdAt'}
               onValueChange={(value) =>
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                
                 setFilters({ ...filters, sortBy: value as any })
               }
             >
@@ -288,7 +288,7 @@ export function MaintenanceList({ userRole = 'tenant' }: MaintenanceListProps) {
         </CardContent>
       </Card>
 
-      {/* Requests List */}
+      {}
       {requests.length === 0 ? (
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12">
@@ -359,7 +359,7 @@ export function MaintenanceList({ userRole = 'tenant' }: MaintenanceListProps) {
                     )}
                   </div>
 
-                  {/* Images */}
+                  {}
                   {request.images && request.images.length > 0 && (
                     <div>
                       <p className="text-sm text-muted-foreground mb-2">Images</p>
@@ -386,7 +386,7 @@ export function MaintenanceList({ userRole = 'tenant' }: MaintenanceListProps) {
                     </div>
                   )}
 
-                  {/* Vendor Assignment Display */}
+                  {}
                   {(userRole === 'landlord' || userRole === 'admin' || userRole === 'support') && (
                     <div className="pt-2 border-t">
                       <div className="flex items-center justify-between">
@@ -423,7 +423,7 @@ export function MaintenanceList({ userRole = 'tenant' }: MaintenanceListProps) {
                     </div>
                   )}
 
-                  {/* User Info */}
+                  {}
                   <div className="flex items-center gap-4 text-sm pt-2 border-t">
                     <div>
                       <p className="text-muted-foreground">Tenant</p>
@@ -443,7 +443,7 @@ export function MaintenanceList({ userRole = 'tenant' }: MaintenanceListProps) {
         </div>
       )}
 
-      {/* Pagination */}
+      {}
       {pagination.totalPages > 1 && (
         <div className="flex items-center justify-between">
           <p className="text-sm text-muted-foreground">
@@ -472,7 +472,7 @@ export function MaintenanceList({ userRole = 'tenant' }: MaintenanceListProps) {
         </div>
       )}
 
-      {/* Vendor Assignment Dialog */}
+      {}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
@@ -484,13 +484,13 @@ export function MaintenanceList({ userRole = 'tenant' }: MaintenanceListProps) {
 
           {selectedRequest && (
             <div className="space-y-6 py-4">
-              {/* Status Update */}
+              {}
               <div className="space-y-2">
                 <Label>Status</Label>
                 <Select
                   value={selectedRequest.status}
                   onValueChange={(value) =>
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    
                     setSelectedRequest({ ...selectedRequest, status: value as any })
                   }
                 >
@@ -506,7 +506,7 @@ export function MaintenanceList({ userRole = 'tenant' }: MaintenanceListProps) {
                 </Select>
               </div>
 
-              {/* Estimated Cost */}
+              {}
               <div className="space-y-2">
                 <Label>Estimated Cost (৳)</Label>
                 <Input
@@ -523,7 +523,7 @@ export function MaintenanceList({ userRole = 'tenant' }: MaintenanceListProps) {
                 />
               </div>
 
-              {/* Vendor Assignment */}
+              {}
               <div className="space-y-2">
                 <Label>Assign Vendor</Label>
                 {loadingVendors ? (
@@ -570,7 +570,7 @@ export function MaintenanceList({ userRole = 'tenant' }: MaintenanceListProps) {
                   </Select>
                 )}
 
-                {/* Selected Vendor Details */}
+                {}
                 {selectedVendorId && (
                   <div className="p-3 bg-muted rounded-lg">
                     {(() => {
@@ -601,7 +601,7 @@ export function MaintenanceList({ userRole = 'tenant' }: MaintenanceListProps) {
                   </div>
                 )}
 
-                {/* Current Vendor Display */}
+                {}
                 {selectedRequest.assignedVendor && selectedVendorId !== selectedRequest.assignedVendor.id && (
                   <div className="p-3 bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg">
                     <p className="text-sm font-medium text-blue-900 dark:text-blue-100 mb-1">

@@ -263,7 +263,7 @@ export function TenantsManagementClient() {
                                 View
                               </Button>
                             </Link>
-                            {/* Both admin and support can manage tenants */}
+                            {}
                             {(isAdmin || isSupport) && (
                               <Button
                                 variant={tenant.isActive ? 'destructive' : 'default'}
@@ -318,7 +318,7 @@ export function TenantsManagementClient() {
       </Card>
       </div>
 
-      {/* Status Toggle Confirmation Dialog */}
+      {}
       <ConfirmDialog
         open={confirmDialog.open}
         onOpenChange={(open) => setConfirmDialog({ ...confirmDialog, open })}

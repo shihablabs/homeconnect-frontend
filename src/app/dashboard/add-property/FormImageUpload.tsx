@@ -1,4 +1,4 @@
-/* eslint-disable react-hooks/exhaustive-deps */
+
 "use client";
 
 import { Input } from "@/components/ui/input";
@@ -8,7 +8,7 @@ import { useEffect, useMemo } from "react";
 interface FormImageUploadProps {
   value: File[];
   onChange: (files: File[]) => void;
-  error?: string; // Add error prop
+  error?: string; 
   maxFiles?: number;
   label?: string;
   onRemove?: (index: number) => void;
@@ -20,7 +20,7 @@ export function FormImageUpload({ value, onChange, error, maxFiles = 10, label, 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const newFiles = Array.from(e.target.files);
-      onChange([...files, ...newFiles].slice(0, maxFiles)); // Max images
+      onChange([...files, ...newFiles].slice(0, maxFiles)); 
     }
   };
 
@@ -50,11 +50,8 @@ export function FormImageUpload({ value, onChange, error, maxFiles = 10, label, 
             key={index}
             className="relative aspect-square rounded-lg overflow-hidden border bg-gray-100"
           >
-            {/* 
-              Using standard <img> instead of Next.js <Image> for Blob URLs 
-              to avoid optimization issues and net::ERR_FILE_NOT_FOUND errors.
-            */}
-            {/* eslint-disable-next-line @next/next/no-img-element */}
+            {}
+            {}
             <img
               src={src}
               alt={`Preview ${index + 1}`}
@@ -87,14 +84,14 @@ export function FormImageUpload({ value, onChange, error, maxFiles = 10, label, 
         )}
       </div>
 
-      {/* Empty State / Help Text */}
+      {}
       {files.length === 0 && (
         <div className="mt-2 flex flex-col items-center justify-center text-gray-400">
           <p className="text-xs">Upload up to {maxFiles} images.</p>
         </div>
       )}
 
-      {/* Error Message Display */}
+      {}
       {error && (
         <p className="mt-2 text-sm font-medium text-red-600 flex items-center gap-2">
           <X className="w-4 h-4" />

@@ -1,6 +1,6 @@
 import { api } from './api';
 
-// --- Interfaces & Types ---
+
 
 export type PaymentMethodType =
   | 'card'
@@ -41,37 +41,28 @@ export interface UpdatePaymentMethodData {
   description?: string;
 }
 
-// --- API Implementation ---
+
 
 export const paymentMethodsApi = {
-  /**
-   * Get live payment methods (Public)
-   * Used by frontend to display available payment options
-   */
+  
   getLivePaymentMethods: async (): Promise<PaymentMethod[]> => {
     const response = await api.get('/payment-methods/live');
     return response.data.data;
   },
 
-  /**
-   * Get all payment methods (Admin only)
-   */
+  
   getAllPaymentMethods: async (): Promise<PaymentMethod[]> => {
     const response = await api.get('/payment-methods');
     return response.data.data;
   },
 
-  /**
-   * Get a single payment method by ID (Admin only)
-   */
+  
   getPaymentMethod: async (id: string): Promise<PaymentMethod> => {
     const response = await api.get(`/payment-methods/${id}`);
     return response.data.data;
   },
 
-  /**
-   * Create a new payment method (Admin only)
-   */
+  
   createPaymentMethod: async (
     data: CreatePaymentMethodData
   ): Promise<PaymentMethod> => {
@@ -79,9 +70,7 @@ export const paymentMethodsApi = {
     return response.data.data;
   },
 
-  /**
-   * Update payment method (Admin only)
-   */
+  
   updatePaymentMethod: async (
     id: string,
     data: UpdatePaymentMethodData
@@ -90,9 +79,7 @@ export const paymentMethodsApi = {
     return response.data.data;
   },
 
-  /**
-   * Delete payment method (Admin only)
-   */
+  
   deletePaymentMethod: async (id: string): Promise<{ message: string }> => {
     const response = await api.delete(`/payment-methods/${id}`);
     return response.data;

@@ -1,16 +1,16 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable @typescript-eslint/no-explicit-any */
-// src/hooks/useProperties.ts
+
+
+
 import { propertiesApi, PropertyFilters } from '@/lib/api/properties-api';
 import { CreatePropertyData, UpdatePropertyData } from '@/types/property.types';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-// Query Hooks
+
 export const useProperties = (filters: PropertyFilters = {}) => {
   return useQuery({
     queryKey: ['properties', filters],
     queryFn: () => propertiesApi.getProperties(filters),
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 5 * 60 * 1000, 
   });
 };
 
@@ -44,7 +44,7 @@ export const usePropertyFilters = () => {
   return useQuery({
     queryKey: ['properties', 'filters'],
     queryFn: () => propertiesApi.getAvailableFilters(),
-    staleTime: 30 * 60 * 1000, // 30 minutes
+    staleTime: 30 * 60 * 1000, 
   });
 };
 
@@ -52,11 +52,11 @@ export const useUserProperties = (page: number = 1, limit: number = 10) => {
   return useQuery({
     queryKey: ['properties', 'user', page, limit],
     queryFn: () => propertiesApi.getUserProperties(page, limit),
-    staleTime: 2 * 60 * 1000, // 2 minutes
+    staleTime: 2 * 60 * 1000, 
   });
 };
 
-// Mutation Hooks
+
 export const useCreateProperty = () => {
   const queryClient = useQueryClient();
 
@@ -66,7 +66,7 @@ export const useCreateProperty = () => {
       images?: File[]
     }) => propertiesApi.createProperty(propertyData, images),
     onSuccess: () => {
-      // Invalidate relevant queries
+      
       queryClient.invalidateQueries({ queryKey: ['properties'] });
       queryClient.invalidateQueries({ queryKey: ['properties', 'user'] });
       queryClient.invalidateQueries({ queryKey: ['properties', 'featured'] });
@@ -84,7 +84,7 @@ export const useUpdateProperty = () => {
     mutationFn: ({ id, data }: { id: string; data: UpdatePropertyData }) =>
       propertiesApi.updateProperty(id, data),
     onSuccess: (data, variables) => {
-      // Invalidate and refetch
+      
       queryClient.invalidateQueries({ queryKey: ['properties'] });
       queryClient.invalidateQueries({ queryKey: ['properties', variables.id] });
       queryClient.invalidateQueries({ queryKey: ['properties', 'user'] });
@@ -117,7 +117,7 @@ export const useToggleFavorite = () => {
   return useMutation({
     mutationFn: (id: string) => propertiesApi.toggleFavorite(id),
     onSuccess: (data, propertyId) => {
-      // Update the specific property cache
+      
       queryClient.invalidateQueries({ queryKey: ['properties', propertyId] });
       queryClient.invalidateQueries({ queryKey: ['properties'] });
     },
@@ -128,7 +128,7 @@ export const useToggleFavorite = () => {
   });
 };
 
-// Utility Hooks
+
 export const usePropertyActions = () => {
   const createMutation = useCreateProperty();
   const updateMutation = useUpdateProperty();
@@ -145,7 +145,7 @@ export const usePropertyActions = () => {
   };
 };
 
-// Search Hook with Debouncing
+
 export const usePropertySearch = (filters: PropertyFilters, delay: number = 500) => {
   return useQuery({
     queryKey: ['properties', 'search', filters],

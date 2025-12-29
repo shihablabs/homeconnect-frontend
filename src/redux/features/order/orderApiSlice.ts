@@ -1,4 +1,4 @@
-// orderApiSlice.ts
+
 import { apiSlice } from '../../api/apiSlice';
 
 export interface OrderPackage {

@@ -54,7 +54,7 @@ export function BookingDetailsClient({ bookingId }: BookingDetailsClientProps) {
 
   useEffect(() => {
     fetchBooking();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    
   }, [bookingId]);
 
   const handlePay = async () => {
@@ -181,7 +181,7 @@ export function BookingDetailsClient({ bookingId }: BookingDetailsClientProps) {
       </div>
 
       <div className="grid gap-6 md:grid-cols-3">
-        {/* Booking Info */}
+        {}
         <div className="md:col-span-2 space-y-6">
           <Card>
             <CardHeader>
@@ -254,7 +254,7 @@ export function BookingDetailsClient({ bookingId }: BookingDetailsClientProps) {
           )}
         </div>
 
-        {/* Sidebar */}
+        {}
         <div className="space-y-6">
           <Card>
             <CardHeader>

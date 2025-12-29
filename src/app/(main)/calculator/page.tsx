@@ -23,7 +23,7 @@ export default function EMICalculatorPage() {
   const [loanTenure, setLoanTenure] = useState<number>(20);
   const [showAmortization, setShowAmortization] = useState<boolean>(false);
 
-  // Calculate EMI using the formula: EMI = [P x R x (1+R)^N] / [(1+R)^N - 1]
+  
   const calculateEMI = useMemo(() => {
     const principal = loanAmount;
     const monthlyRate = interestRate / 12 / 100;
@@ -48,7 +48,7 @@ export default function EMICalculatorPage() {
     return totalAmount - loanAmount;
   }, [totalAmount, loanAmount]);
 
-  // Generate amortization schedule
+  
   const amortizationSchedule = useMemo(() => {
     const schedule: AmortizationEntry[] = [];
     let balance = loanAmount;
@@ -82,7 +82,7 @@ export default function EMICalculatorPage() {
 
   return (
     <div className="container mx-auto max-w-7xl px-4 py-8 md:py-12">
-      {/* Hero Section */}
+      {}
       <div className="mb-8 text-center">
         <div className="flex items-center justify-center gap-2 mb-4">
           <Calculator className="h-8 w-8 text-blue-600" />
@@ -97,7 +97,7 @@ export default function EMICalculatorPage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left Column: Input Form */}
+        {}
         <div className="lg:col-span-1 space-y-6">
           <Card>
             <CardHeader>
@@ -108,7 +108,7 @@ export default function EMICalculatorPage() {
               <CardDescription>Enter your loan information to calculate EMI</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              {/* Loan Amount */}
+              {}
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <Label htmlFor="loanAmount" className="flex items-center gap-2">
@@ -157,7 +157,7 @@ export default function EMICalculatorPage() {
                 </div>
               </div>
 
-              {/* Interest Rate */}
+              {}
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <Label htmlFor="interestRate" className="flex items-center gap-2">
@@ -206,7 +206,7 @@ export default function EMICalculatorPage() {
                 </div>
               </div>
 
-              {/* Loan Tenure */}
+              {}
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <Label htmlFor="loanTenure" className="flex items-center gap-2">
@@ -257,7 +257,7 @@ export default function EMICalculatorPage() {
             </CardContent>
           </Card>
 
-          {/* Quick Tips */}
+          {}
           <Card className="bg-gradient-to-br from-blue-50 to-purple-50 border-blue-200">
             <CardHeader>
               <CardTitle className="text-sm flex items-center gap-2">
@@ -274,9 +274,9 @@ export default function EMICalculatorPage() {
           </Card>
         </div>
 
-        {/* Right Column: Results */}
+        {}
         <div className="lg:col-span-2 space-y-6">
-          {/* EMI Result Card */}
+          {}
           <Card className="border-2 border-blue-200 bg-gradient-to-br from-blue-50 to-purple-50">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -295,7 +295,7 @@ export default function EMICalculatorPage() {
             </CardContent>
           </Card>
 
-          {/* Summary Cards */}
+          {}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <Card>
               <CardHeader className="pb-3">
@@ -349,7 +349,7 @@ export default function EMICalculatorPage() {
             </Card>
           </div>
 
-          {/* Breakdown Visualization */}
+          {}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -360,7 +360,7 @@ export default function EMICalculatorPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {/* Visual Bar */}
+                {}
                 <div className="relative h-12 rounded-lg overflow-hidden border">
                   <div
                     className="absolute left-0 top-0 h-full bg-gradient-to-r from-blue-600 to-blue-500 flex items-center justify-center text-white font-semibold text-sm"
@@ -376,7 +376,7 @@ export default function EMICalculatorPage() {
                   </div>
                 </div>
 
-                {/* Legend */}
+                {}
                 <div className="grid grid-cols-2 gap-4">
                   <div className="flex items-center gap-3">
                     <div className="w-4 h-4 rounded bg-gradient-to-r from-blue-600 to-blue-500"></div>
@@ -401,7 +401,7 @@ export default function EMICalculatorPage() {
             </CardContent>
           </Card>
 
-          {/* Amortization Schedule */}
+          {}
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between">

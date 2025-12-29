@@ -10,7 +10,7 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-// Initialize Firebase
+
 const initFirebase = () => {
   if (getApps().length > 0) return { app: getApp(), auth: getAuth(getApp()) };
 
@@ -18,7 +18,7 @@ const initFirebase = () => {
     if (typeof window !== 'undefined') {
       console.warn("Firebase API Key is missing. Phone verification will be disabled. Check .env to enable.");
     }
-    // Return nulls to prevent crash, consumers must handle it
+    
     return { app: null, auth: null };
   }
 

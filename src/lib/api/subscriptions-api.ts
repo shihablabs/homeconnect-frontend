@@ -1,6 +1,6 @@
 import { api } from './api';
 
-// --- Interfaces & Types ---
+
 
 export interface Subscription {
   id: string;
@@ -29,12 +29,10 @@ export interface CreateSubscriptionResponse {
   currentPeriodEnd: string;
 }
 
-// --- API Implementation ---
+
 
 export const subscriptionsApi = {
-  /**
-   * Create a recurring subscription for a booking
-   */
+  
   createSubscription: async (
     data: CreateSubscriptionRequest
   ): Promise<CreateSubscriptionResponse> => {
@@ -42,17 +40,13 @@ export const subscriptionsApi = {
     return response.data.data;
   },
 
-  /**
-   * Get subscription details for a booking
-   */
+  
   getSubscription: async (bookingId: string): Promise<Subscription> => {
     const response = await api.get(`/subscriptions/${bookingId}`);
     return response.data.data;
   },
 
-  /**
-   * Cancel a recurring subscription
-   */
+  
   cancelSubscription: async (
     bookingId: string
   ): Promise<{ message: string }> => {

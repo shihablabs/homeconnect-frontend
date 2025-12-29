@@ -1,5 +1,5 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
-/* eslint-disable @typescript-eslint/no-require-imports */
+
+
 "use client";
 
 import L from "leaflet";
@@ -14,7 +14,7 @@ interface PropertyMapProps {
 
 export function PropertyMap({ position, address }: PropertyMapProps) {
   useEffect(() => {
-    // @ts-ignore
+    
     delete L.Icon.Default.prototype._getIconUrl;
 
     L.Icon.Default.mergeOptions({

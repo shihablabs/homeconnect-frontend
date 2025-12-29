@@ -39,7 +39,7 @@ export function PropertyToursClient() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedProperty, setSelectedProperty] = useState<string>('');
 
-  // Rejection State
+  
   const [isRejectDialogOpen, setIsRejectDialogOpen] = useState(false);
   const [tourToReject, setTourToReject] = useState<string | null>(null);
   const [rejectionReason, setRejectionReason] = useState('');
@@ -93,7 +93,7 @@ export function PropertyToursClient() {
     }
   };
 
-  // Landlord Feedback State
+  
   const [feedbackOptions, setFeedbackOptions] = useState<string[]>([]);
   const [feedbackComment, setFeedbackComment] = useState('');
   const [targetAction, setTargetAction] = useState<'reject' | 'cancel' | null>(null);
@@ -114,7 +114,7 @@ export function PropertyToursClient() {
 
   const initReject = (tourId: string) => {
     setTourToReject(tourId);
-    setRejectionReason(''); // Uses state for 'reason' dropdown
+    setRejectionReason(''); 
     setFeedbackComment('');
     setFeedbackOptions(REJECT_REASONS);
     setTargetAction('reject');
@@ -141,13 +141,13 @@ export function PropertyToursClient() {
       setIsProcessing(true);
       const status = targetAction === 'reject' ? 'rejected' : 'cancelled';
 
-      // We map 'rejectionReason' state to 'cancellationReason' or 'landlordNotes' depending on legacy vs new.
-      // Ideally we use the new fields.
+      
+      
       await toursApi.updateTourStatus(tourToReject, status, {
         cancellationReason: rejectionReason,
         feedback: feedbackComment,
         cancellationBy: 'landlord',
-        landlordNotes: feedbackComment // Backwards compatibility if needed
+        landlordNotes: feedbackComment 
       });
 
       toast.success(`Tour request ${status}`);
@@ -162,7 +162,7 @@ export function PropertyToursClient() {
 
   const handleScheduleTour = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Admin/Landlord manual scheduling could go here, but for now we focus on incoming requests
+    
     toast.info('To schedule a specific slot manually, use the property page.');
     setIsDialogOpen(false);
   };

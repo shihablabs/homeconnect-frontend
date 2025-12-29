@@ -1,5 +1,5 @@
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
+
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -41,14 +41,14 @@ export default function LoginPage() {
     if (isAuthenticated) {
       console.log('🔐 User already logged in, redirecting...');
 
-      // 1. Check for return URL
+      
       if (returnUrl) {
         const decodedUrl = decodeURIComponent(returnUrl);
         router.push(decodedUrl);
         return;
       }
 
-      // 2. Fallback based on role
+      
       switch (user?.role) {
         case 'landlord':
         case 'admin':
@@ -57,7 +57,7 @@ export default function LoginPage() {
           break;
         case 'tenant':
         default:
-          router.push('/properties'); // Tenants usually want to browse first
+          router.push('/properties'); 
           break;
       }
     }
@@ -150,7 +150,7 @@ export default function LoginPage() {
                     setRememberMe={setRememberMe}
                   />
 
-                  {/* Demo Accounts */}
+                  {}
                   <div className="border-t pt-6 mt-6">
                     <p className="text-xs text-gray-500 text-center mb-4 font-medium uppercase tracking-wide">
                       Demo Accounts

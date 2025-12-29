@@ -7,15 +7,15 @@ import { usePathname } from "next/navigation";
 export default function Breadcrumb() {
   const pathname = usePathname();
 
-  // Don't show breadcrumb on home page
+  
   if (pathname === "/") {
     return null;
   }
 
-  // Generate breadcrumb items from pathname
+  
   const pathSegments = pathname.split("/").filter(Boolean);
 
-  // Route label mappings for better readability
+  
   const routeLabels: Record<string, string> = {
     "dashboard": "Dashboard",
     "properties": "Properties",
@@ -35,12 +35,12 @@ export default function Breadcrumb() {
     ...pathSegments.map((segment, index) => {
       const href = "/" + pathSegments.slice(0, index + 1).join("/");
 
-      // Check if it's a UUID or long ID (typically 36+ chars), show "Details"
+      
       if (segment.length > 30 || /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(segment)) {
         return { label: "Details", href };
       }
 
-      // Use mapped label or format from segment
+      
       const label = routeLabels[segment] || segment
         .split("-")
         .map((word) => word.charAt(0).toUpperCase() + word.slice(1))

@@ -30,7 +30,7 @@ export function FavoritesClient() {
     {
       page: 1,
       limit: 100,
-      // Removed type filter from API to handle it reliably on client side for favorites
+      
     },
     {
       refetchOnMountOrArgChange: true,
@@ -59,7 +59,7 @@ export function FavoritesClient() {
       } else {
         toast.success('Removed from favorites');
       }
-      // RTK Query automatically refetches if tags are invalidated correctly
+      
     } catch (error: unknown) {
       const errorMessage =
         error &&
@@ -75,7 +75,7 @@ export function FavoritesClient() {
   };
 
   const filteredFavorites = favorites.filter((property: PropertyResponse) => {
-    // Client-side filtering for immediate and reliable results
+    
     const matchesType = typeFilter === 'all' || property.listingType === typeFilter;
     const matchesSearch =
       !searchQuery ||
@@ -164,7 +164,7 @@ export function FavoritesClient() {
                 key={property.id}
                 className="group relative overflow-hidden rounded-2xl bg-white border-0 shadow-sm hover:shadow-2xl transition-all duration-300 ring-1 ring-gray-100 p-0"
               >
-                {/* Image Section */}
+                {}
                 <div className="relative h-[240px] w-full overflow-hidden">
                   <Link href={`/properties/${property.id}`}>
                     <Image
@@ -179,10 +179,10 @@ export function FavoritesClient() {
                     />
                   </Link>
 
-                  {/* Overlay Gradient on Hover */}
+                  {}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
 
-                  {/* Top Badges */}
+                  {}
                   <div className="absolute top-3 left-3 flex gap-2">
                     <Badge
                       className={`${property.listingType === 'rent'
@@ -199,7 +199,7 @@ export function FavoritesClient() {
                     )}
                   </div>
 
-                  {/* Favorite Button */}
+                  {}
                   <Button
                     variant="ghost"
                     size="icon"
@@ -212,7 +212,7 @@ export function FavoritesClient() {
                     <Heart className="h-4 w-4 fill-current" />
                   </Button>
 
-                  {/* Price Overlay */}
+                  {}
                   <div className="absolute bottom-3 left-3 right-3">
                     <div className="inline-flex items-baseline px-3 py-1.5 rounded-lg bg-white/95 backdrop-blur-md shadow-lg">
                       <span className="text-lg font-bold text-gray-900">
@@ -227,7 +227,7 @@ export function FavoritesClient() {
                   </div>
                 </div>
 
-                {/* Content Section */}
+                {}
                 <CardContent className="p-5">
                   <div className="mb-4">
                     <div className="flex items-center justify-between mb-2">
@@ -252,7 +252,7 @@ export function FavoritesClient() {
                     </div>
                   </div>
 
-                  {/* Features Grid */}
+                  {}
                   <div className="grid grid-cols-3 gap-2 py-3 border-t border-gray-100">
                     <div className="flex flex-col items-center justify-center p-2 rounded-lg bg-gray-50 group-hover:bg-blue-50/50 transition-colors">
                       <div className="flex items-center text-gray-700 font-semibold mb-0.5">
@@ -277,7 +277,7 @@ export function FavoritesClient() {
                     </div>
                   </div>
 
-                  {/* Footer */}
+                  {}
                   <div className="flex items-center justify-between pt-4 mt-1">
                     <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${property.status === 'Available' ? 'bg-emerald-100 text-emerald-700' :
                       property.status === 'Sold' ? 'bg-red-100 text-red-700' :

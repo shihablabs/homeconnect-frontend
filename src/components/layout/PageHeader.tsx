@@ -13,7 +13,7 @@ export function PageHeader({ title, description, badge, className }: PageHeaderP
 
   return (
     <div className={cn("relative overflow-hidden pt-5 pb-16", className)}>
-      {/* Brand Gradient Background - Uses System Primary (Blue-600) */}
+      {}
       <div className="absolute inset-0 -z-10 bg-gradient-to-r from-primary/5 via-blue-900/5 to-slate-900/5 dark:from-primary/10 dark:via-blue-800/10 dark:to-slate-900/10 opacity-50" />
       <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-background via-transparent to-transparent opacity-80" />
 

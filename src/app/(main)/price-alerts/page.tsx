@@ -15,7 +15,7 @@ export default function PriceAlertsPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // In a real app, this would submit to an API
+    
     setSubmitted(true);
     toast.success("Price alert set successfully!");
   };
@@ -89,7 +89,7 @@ export default function PriceAlertsPage() {
                         <SelectValue placeholder="Select area" />
                       </SelectTrigger>
                       <SelectContent>
-                        {/* Simplify for UI demo */}
+                        {}
                         <SelectItem value="gulshan">Gulshan</SelectItem>
                         <SelectItem value="banani">Banani</SelectItem>
                         <SelectItem value="dhanmondi">Dhanmondi</SelectItem>

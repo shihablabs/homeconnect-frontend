@@ -1,7 +1,4 @@
-/**
- * Polls API Client
- * Frontend API functions for community polling system
- */
+
 
 import { api } from './api';
 
@@ -92,17 +89,13 @@ export interface PollsFilters {
 }
 
 export const pollsApi = {
-  /**
-   * Create a new poll
-   */
+  
   createPoll: async (data: CreatePollData): Promise<Poll> => {
     const response = await api.post('/polls', data);
     return response.data.data;
   },
 
-  /**
-   * Get polls with filters
-   */
+  
   getPolls: async (filters?: PollsFilters): Promise<PollsResponse> => {
     const response = await api.get('/polls', { params: filters });
     return {
@@ -114,40 +107,30 @@ export const pollsApi = {
     };
   },
 
-  /**
-   * Get poll by ID
-   */
+  
   getPollById: async (pollId: string): Promise<Poll> => {
     const response = await api.get(`/polls/${pollId}`);
     return response.data.data;
   },
 
-  /**
-   * Update poll
-   */
+  
   updatePoll: async (pollId: string, data: UpdatePollData): Promise<Poll> => {
     const response = await api.patch(`/polls/${pollId}`, data);
     return response.data.data;
   },
 
-  /**
-   * Delete poll
-   */
+  
   deletePoll: async (pollId: string): Promise<void> => {
     await api.delete(`/polls/${pollId}`);
   },
 
-  /**
-   * Vote on a poll
-   */
+  
   voteOnPoll: async (pollId: string, data: VoteData): Promise<{ message: string; pollId: string; optionId: string; totalVotes: number }> => {
     const response = await api.post(`/polls/${pollId}/vote`, data);
     return response.data.data;
   },
 
-  /**
-   * Close a poll
-   */
+  
   closePoll: async (pollId: string): Promise<Poll> => {
     const response = await api.post(`/polls/${pollId}/close`);
     return response.data.data;

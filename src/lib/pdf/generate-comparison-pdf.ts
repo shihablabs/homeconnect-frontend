@@ -13,29 +13,29 @@ export const generateComparisonPDF = async (data: AIComparisonData, elementId: s
   const toastId = toast.loading("Generating PDF report...");
 
   try {
-    // 1. Capture the element as PNG using html-to-image
-    // This library handles modern CSS (like oklch/lab) better than html2canvas
+    
+    
     const imgData = await toPng(element, {
       cacheBust: true,
       backgroundColor: "#ffffff",
-      pixelRatio: 2, // High resolution
+      pixelRatio: 2, 
     });
 
-    // 2. Initialize PDF
-    // A4 size: 210mm x 297mm
+    
+    
     const pdf = new jsPDF("p", "mm", "a4");
     const pdfWidth = pdf.internal.pageSize.getWidth();
     const pdfHeight = pdf.internal.pageSize.getHeight();
 
-    // 3. Calculate Dimensions to fit width
+    
     const imgProps = pdf.getImageProperties(imgData);
-    const imgWidth = pdfWidth - 20; // 10mm margin each side
+    const imgWidth = pdfWidth - 20; 
     const imgHeight = (imgProps.height * imgWidth) / imgProps.width;
 
-    // 4. Header Branding
-    const primaryColor = "#7c3aed"; // Violet-600
+    
+    const primaryColor = "#7c3aed"; 
 
-    pdf.setFillColor(245, 243, 255); // Violet-50
+    pdf.setFillColor(245, 243, 255); 
     pdf.rect(0, 0, 210, 30, "F");
 
     pdf.setFontSize(22);
@@ -48,13 +48,13 @@ export const generateComparisonPDF = async (data: AIComparisonData, elementId: s
     pdf.setFont("helvetica", "normal");
     pdf.text(`Smart Comparison Report • ${new Date().toLocaleDateString()}`, 10, 25);
 
-    // 5. Add Image (The Table)
-    let position = 35; // Start below header
+    
+    let position = 35; 
 
-    // Add image to PDF
+    
     pdf.addImage(imgData, "PNG", 10, position, imgWidth, imgHeight);
 
-    // 6. Filename Sanitization (Robust)
+    
     const prop1 = data.properties[0]?.replace(/\s+/g, '_') || "Property1";
     const prop2 = data.properties[1]?.replace(/\s+/g, '_') || "Property2";
 

@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -7,9 +7,9 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { z } from "zod"; // Zod import
+import { z } from "zod"; 
 
-// Amader notun Redux hooks ebong slice-er jinishpotro
+
 import type { AuthUser } from "@/redux/features/auth/authSlice";
 import {
   logout,
@@ -18,9 +18,9 @@ import {
 } from "@/redux/features/auth/authSlice";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 
-// Amader notun User API
 
-// ShadCN UI Components
+
+
 import { ProtectedRoute } from "@/components/protected-route";
 import {
   AlertDialog,
@@ -59,9 +59,9 @@ interface IUpdateProfileRequest {
   name?: string;
   avatar?: string;
 }
-// -----------------------------------------------------------------
-// VALIDATION SCHEMAS (Ei file-ei define kora holo)
-// -----------------------------------------------------------------
+
+
+
 
 const updateProfileSchema = z.object({
   name: z.string().min(3, "Name must be at least 3 characters"),
@@ -73,7 +73,7 @@ const updateProfileSchema = z.object({
 });
 type UpdateProfileFormData = z.infer<typeof updateProfileSchema>;
 
-// 2. Change Password Schema
+
 const changePasswordSchema = z
   .object({
     currentPassword: z.string().min(1, "Current password is required"),
@@ -84,13 +84,13 @@ const changePasswordSchema = z
   })
   .refine((data) => data.newPassword === data.confirmPassword, {
     message: "New passwords don't match",
-    path: ["confirmPassword"], // Kon field-e error dekhabe
+    path: ["confirmPassword"], 
   });
 type ChangePasswordFormData = z.infer<typeof changePasswordSchema>;
 
-// -----------------------------------------------------------------
-// SUB-COMPONENT 1: General Information
-// -----------------------------------------------------------------
+
+
+
 function GeneralSettings({ user }: { user: AuthUser }) {
   const dispatch = useAppDispatch();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -120,7 +120,7 @@ function GeneralSettings({ user }: { user: AuthUser }) {
     const toastId = toast.loading("Updating profile...");
 
     try {
-      // Shudhu poribortito data pathano
+      
       const changedData: IUpdateProfileRequest = {};
       if (data.name !== user.name) changedData.name = data.name;
       if (data.avatar !== user.avatar) changedData.avatar = data.avatar;
@@ -192,7 +192,7 @@ function GeneralSettings({ user }: { user: AuthUser }) {
                       className="bg-gray-100 cursor-not-allowed"
                     />
                   </FormControl>
-                  {/* <FormDescription>Email poriborton kora jabe na.</FormDescription> */}
+                  {}
                 </FormItem>
               )}
             />
@@ -209,7 +209,7 @@ function GeneralSettings({ user }: { user: AuthUser }) {
                       className="bg-gray-100 cursor-not-allowed"
                     />
                   </FormControl>
-                  {/* <FormDescription>Phone Number poriborton kora jabe na.</FormDescription> */}
+                  {}
                 </FormItem>
               )}
             />
@@ -242,9 +242,9 @@ function GeneralSettings({ user }: { user: AuthUser }) {
   );
 }
 
-// -----------------------------------------------------------------
-// SUB-COMPONENT 2: Security Settings
-// -----------------------------------------------------------------
+
+
+
 function SecuritySettings() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -268,7 +268,7 @@ function SecuritySettings() {
       });
 
       toast.success(response.message, { id: toastId });
-      form.reset(); // Form reset
+      form.reset(); 
     } catch (error: any) {
       console.error("Change password error:", error);
       toast.error(
@@ -343,9 +343,9 @@ function SecuritySettings() {
   );
 }
 
-// -----------------------------------------------------------------
-// SUB-COMPONENT 3: Danger Zone (Bonus)
-// -----------------------------------------------------------------
+
+
+
 function DangerZone() {
   const [isDeleting, setIsDeleting] = useState(false);
   const dispatch = useAppDispatch();
@@ -360,10 +360,10 @@ function DangerZone() {
         id: toastId,
       });
 
-      // Delay dispatch and redirect to allow toast to be seen
+      
       setTimeout(() => {
-        dispatch(logout()); // Redux theke logout
-        router.push("/"); // Home page a redirect
+        dispatch(logout()); 
+        router.push("/"); 
       }, 1500);
     } catch (error: any) {
       toast.error(error.response?.data?.message || "Failed to delete account", {
@@ -432,13 +432,13 @@ function DangerZone() {
   );
 }
 
-// -----------------------------------------------------------------
-// MAIN COMPONENT: Profile Page
-// -----------------------------------------------------------------
+
+
+
 export default function ProfilePage() {
   const user = useAppSelector(selectCurrentUser);
 
-  // ProtectedRoute eta handle korbe, kintu extra safety valo
+  
   if (!user) {
     return (
       <ProtectedRoute>
@@ -454,7 +454,7 @@ export default function ProfilePage() {
     <ProtectedRoute>
       <div className="min-h-screen bg-gray-50/50 p-4 md:p-8">
         <div className="max-w-4xl mx-auto">
-          {/* Header */}
+          {}
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-gray-900">
               Account Settings
@@ -468,7 +468,7 @@ export default function ProfilePage() {
             </p>
           </div>
 
-          {/* Tabs Navigation */}
+          {}
           <Tabs defaultValue="general" className="w-full">
             <TabsList className={`grid w-full mb-6 ${user.role === 'admin' ? 'grid-cols-3' : 'grid-cols-2'}`}>
               <TabsTrigger value="general">
@@ -487,17 +487,17 @@ export default function ProfilePage() {
               )}
             </TabsList>
 
-            {/* Tab 1: General Settings */}
+            {}
             <TabsContent value="general">
               <GeneralSettings user={user} />
             </TabsContent>
 
-            {/* Tab 2: Security Settings */}
+            {}
             <TabsContent value="security">
               <SecuritySettings />
             </TabsContent>
 
-            {/* Tab 3: Danger Zone - Only for Admin */}
+            {}
             {user.role === 'admin' && (
               <TabsContent value="danger">
                 <DangerZone />

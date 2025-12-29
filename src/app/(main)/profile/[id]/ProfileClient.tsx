@@ -14,7 +14,7 @@ import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
 interface ProfileClientProps {
-  id: string; // This can be an ID or a Slug
+  id: string; 
 }
 
 export function ProfileClient({ id }: ProfileClientProps) {
@@ -31,7 +31,7 @@ export function ProfileClient({ id }: ProfileClientProps) {
         setLoading(true);
         setError(null);
 
-        // Step 1: Fetch User Profile
+        
         const userData = await usersApi.getUserById(id);
 
         if (!userData) {
@@ -41,7 +41,7 @@ export function ProfileClient({ id }: ProfileClientProps) {
 
         setProfile(userData);
 
-        // Step 2: Fetch Properties
+        
         if (userData.id) {
           const propertiesData = await propertiesApi.getProperties({
             ownerId: userData.id,
@@ -101,9 +101,9 @@ export function ProfileClient({ id }: ProfileClientProps) {
 
   return (
     <div className="min-h-screen bg-gray-50/30 pb-20">
-      {/* Hero Banner with Blurry Real Estate Vibe - Cleaner Look */}
+      {}
       <div className="relative h-48 md:h-64 overflow-hidden">
-        {/* Background Image with Blur */}
+        {}
         <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1600596542815-2007293dd965?q=80&w=2600&auto=format&fit=crop')] bg-cover bg-center blur-md scale-110 opacity-50" />
         <div className="absolute inset-0 bg-gray-900/10" />
       </div>
@@ -111,7 +111,7 @@ export function ProfileClient({ id }: ProfileClientProps) {
       <div className="container mx-auto px-4 -mt-20 relative z-10 max-w-6xl">
         <div className="flex flex-col md:flex-row gap-6 md:gap-8 items-start">
 
-          {/* Left Column: Profile Info (Sticky-ish) */}
+          {}
           <div className="w-full md:w-80 shrink-0 space-y-6">
             <div className="bg-white rounded-2xl p-6 shadow-xl shadow-gray-200/50 border border-gray-100 backdrop-blur-sm">
               <div className="flex flex-col items-center text-center">
@@ -170,7 +170,7 @@ export function ProfileClient({ id }: ProfileClientProps) {
               </div>
             </div>
 
-            {/* Verification Badges Small Card */}
+            {}
             {(profile.isVerified || profile.isEmailVerified) && (
               <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100/50">
                 <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Verifications</h3>
@@ -192,7 +192,7 @@ export function ProfileClient({ id }: ProfileClientProps) {
             )}
           </div>
 
-          {/* Right Column: Listings & Content */}
+          {}
           <div className="flex-1 min-w-0 mt-8 md:mt-0">
             <Tabs defaultValue="listings" className="w-full">
               <div className="flex items-center justify-between mb-6">

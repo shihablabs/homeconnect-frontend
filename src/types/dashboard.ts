@@ -1,4 +1,4 @@
-// types/dashboard.ts
+
 export interface PropertyStats {
   total: number;
   available: number;

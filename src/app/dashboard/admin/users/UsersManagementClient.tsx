@@ -254,7 +254,7 @@ export function UsersManagementClient() {
           )}
         </div>
 
-        {/* Filters */}
+        {}
         <Card>
           <CardHeader>
             <CardTitle>Filters & Search</CardTitle>
@@ -269,7 +269,7 @@ export function UsersManagementClient() {
                     value={searchQuery}
                     onChange={(e) => {
                       setSearchQuery(e.target.value);
-                      setPage(1); // Reset to first page on search
+                      setPage(1); 
                     }}
                     className="pl-10"
                   />
@@ -318,7 +318,7 @@ export function UsersManagementClient() {
           </CardContent>
         </Card>
 
-        {/* Users Table */}
+        {}
         <Card>
           <CardHeader>
             <CardTitle>Users</CardTitle>
@@ -410,7 +410,7 @@ export function UsersManagementClient() {
                                   View
                                 </Button>
                               </Link>
-                              {/* Only admins can block/activate staff (admin/support), support can only manage tenants/landlords */}
+                              {}
                               {((isAdmin) || (isSupport && user.role !== 'admin' && user.role !== 'support')) && (
                                 <Button
                                   variant="outline"
@@ -431,7 +431,7 @@ export function UsersManagementClient() {
                                   )}
                                 </Button>
                               )}
-                              {/* Only admins can delete users, and cannot delete admin/support staff */}
+                              {}
                               {isAdmin && user.role !== 'admin' && user.role !== 'support' && (
                                 <Button
                                   variant="outline"
@@ -450,7 +450,7 @@ export function UsersManagementClient() {
                     </TableBody>
                   </Table>
                 </div>
-                {/* Pagination */}
+                {}
                 {pagination.totalPages > 1 && (
                   <div className="flex items-center justify-between mt-4">
                     <div className="text-sm text-muted-foreground">
@@ -482,7 +482,7 @@ export function UsersManagementClient() {
         </Card>
       </div>
 
-      {/* Status Toggle Confirmation Dialog */}
+      {}
       <ConfirmDialog
         open={confirmDialog.open && confirmDialog.type === 'status'}
         onOpenChange={(open) => setConfirmDialog({ ...confirmDialog, open })}
@@ -499,7 +499,7 @@ export function UsersManagementClient() {
         isLoading={isUpdatingStatus}
       />
 
-      {/* Delete Confirmation Dialog */}
+      {}
       <ConfirmDialog
         open={confirmDialog.open && confirmDialog.type === 'delete'}
         onOpenChange={(open) => setConfirmDialog({ ...confirmDialog, open })}
@@ -516,7 +516,7 @@ export function UsersManagementClient() {
         isLoading={isDeleting}
       />
 
-      {/* Create Staff Dialog */}
+      {}
       <Dialog
         open={createStaffDialog.open}
         onOpenChange={(open) => setCreateStaffDialog({ ...createStaffDialog, open })}

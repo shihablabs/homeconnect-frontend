@@ -22,14 +22,14 @@ export function useChatSocket(options: UseChatSocketOptions = {}) {
   const [loading, setLoading] = useState(false);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Join chat room when partner is selected
+  
   useEffect(() => {
     if (!socket || !isConnected || !partnerId) return;
 
 
     socket.emit('join_chat', { recipientId: partnerId });
 
-    // Listen for chat history
+    
     const handleChatHistory = (data: { messages: ChatMessage[]; roomName: string }) => {
       setMessages(data.messages);
     };
@@ -41,7 +41,7 @@ export function useChatSocket(options: UseChatSocketOptions = {}) {
     };
   }, [socket, isConnected, partnerId]);
 
-  // Fetch conversations list
+  
   const fetchConversations = useCallback(async () => {
     try {
       setLoading(true);
@@ -55,19 +55,19 @@ export function useChatSocket(options: UseChatSocketOptions = {}) {
     }
   }, []);
 
-  // Listen for new messages
+  
   useEffect(() => {
     if (!socket || !isConnected) return;
 
     const handleReceiveMessage = (data: { message: ChatMessage; roomName: string }) => {
 
-      // Only add message if it's for the current chat
+      
       if (partnerId && (
         data.message.sender.id === partnerId ||
         data.message.receiver.id === partnerId
       )) {
         setMessages((prev) => {
-          // Check if message already exists
+          
           if (prev.some((m) => m.id === data.message.id)) {
             return prev;
           }
@@ -79,13 +79,13 @@ export function useChatSocket(options: UseChatSocketOptions = {}) {
         }
       }
 
-      // Update conversations list
+      
       fetchConversations();
     };
 
     const handleMessagesRead = (data: { readBy: string; senderId: string }) => {
 
-      // Update message read status
+      
       setMessages((prev) =>
         prev.map((msg) =>
           msg.sender.id === data.senderId && msg.receiver.id === data.readBy
@@ -115,7 +115,7 @@ export function useChatSocket(options: UseChatSocketOptions = {}) {
     };
   }, [socket, isConnected, partnerId, onNewMessage, onMessagesRead, fetchConversations]);
 
-  // Listen for typing indicators
+  
   useEffect(() => {
     if (!socket || !isConnected || !partnerId) return;
 
@@ -134,7 +134,7 @@ export function useChatSocket(options: UseChatSocketOptions = {}) {
     };
   }, [socket, isConnected, partnerId, onTyping]);
 
-  // Stop typing indicator
+  
   const stopTyping = useCallback(() => {
     if (!socket || !isConnected || !partnerId) return;
 
@@ -146,7 +146,7 @@ export function useChatSocket(options: UseChatSocketOptions = {}) {
     }
   }, [socket, isConnected, partnerId]);
 
-  // Send message via socket
+  
   const sendMessage = useCallback(
     async (message: string, propertyId?: string, messageType: "text" | "image" | "system" | "offer" = "text", metadata?: any) => {
       if (!socket || !isConnected || !partnerId || !message.trim()) {
@@ -162,10 +162,10 @@ export function useChatSocket(options: UseChatSocketOptions = {}) {
           metadata
         };
 
-        // Optimistic UI update could happen here, but we'll wait for ack/echo for now
+        
         socket.emit('send_message', payload);
 
-        // Stop typing indicator
+        
         stopTyping();
       } catch (error) {
         console.error('[ChatSocket] Error sending message:', error);
@@ -175,7 +175,7 @@ export function useChatSocket(options: UseChatSocketOptions = {}) {
     [socket, isConnected, partnerId, stopTyping]
   );
 
-  // Mark messages as read
+  
   const markAsRead = useCallback(
     async (senderId: string) => {
       if (!socket || !isConnected) return;
@@ -189,24 +189,24 @@ export function useChatSocket(options: UseChatSocketOptions = {}) {
     [socket, isConnected]
   );
 
-  // Start typing indicator
+  
   const startTyping = useCallback(() => {
     if (!socket || !isConnected || !partnerId) return;
 
     socket.emit('typing_start', { recipientId: partnerId });
 
-    // Clear existing timeout
+    
     if (typingTimeoutRef.current) {
       clearTimeout(typingTimeoutRef.current);
     }
 
-    // Auto-stop typing after 3 seconds
+    
     typingTimeoutRef.current = setTimeout(() => {
       stopTyping();
     }, 3000);
   }, [socket, isConnected, partnerId, stopTyping]);
 
-  // Fetch messages (fallback to REST API)
+  
   const fetchMessages = useCallback(
     async (partnerId: string) => {
       try {
@@ -223,10 +223,10 @@ export function useChatSocket(options: UseChatSocketOptions = {}) {
     []
   );
 
-  // Check if partner is online
+  
   const isPartnerOnline = partnerId ? onlineUsers.has(partnerId) : false;
 
-  // Check if partner is typing
+  
   const isPartnerTyping = partnerId ? typingUsers.get(partnerId) || false : false;
 
   return {

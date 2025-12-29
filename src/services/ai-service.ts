@@ -1,7 +1,7 @@
 import { PropertyResponse, isRentalResponse } from "@/types/property.types";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-// Initialize Gemini API
+
 const genAI = new GoogleGenerativeAI(process.env.NEXT_PUBLIC_GEMINI_API_KEY || "");
 const model = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
 
@@ -18,9 +18,7 @@ export interface AIComparisonData {
 }
 
 export const aiService = {
-  /**
-   * Generates a comparison checklist/insight based on properties
-   */
+  
   async generateComparisonInsight(
     properties: PropertyResponse[],
     instruction: string,
@@ -55,7 +53,7 @@ export const aiService = {
       ? "Answer in Bangla (Bengali)."
       : "Answer in English.";
 
-    // Style instruction impact the tone of the strings inside JSON
+    
     const styleInstruction = style === 'concise'
       ? "Keep values short and punchy."
       : style === 'detailed'
@@ -105,7 +103,7 @@ export const aiService = {
       const response = await result.response;
       const text = response.text();
 
-      // Clean up potential markdown formatting if Gemini adds it despite instruction
+      
       const jsonStr = text.replace(/```json\n?|\n?```/g, "").trim();
 
       const data: AIComparisonData = JSON.parse(jsonStr);

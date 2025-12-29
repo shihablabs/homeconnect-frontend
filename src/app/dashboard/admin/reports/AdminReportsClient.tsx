@@ -22,12 +22,12 @@ export function AdminReportsClient() {
   const [endDate, setEndDate] = useState('');
   const [reportType, setReportType] = useState('overview');
   const { stats, isLoading: loading, isFetching, refetch } = useAdminStats({
-    refetchInterval: undefined, // Disable auto-refetch for reports
+    refetchInterval: undefined, 
   });
 
   const handleGenerateReport = async () => {
     try {
-      // TODO: Implement report generation API
+      
       toast.info('Report generation feature coming soon');
     } catch {
       toast.error('Failed to generate report');
@@ -36,7 +36,7 @@ export function AdminReportsClient() {
 
   const handleExport = async (format: 'pdf' | 'excel') => {
     try {
-      // TODO: Implement export API
+      
       toast.info(`${format.toUpperCase()} export feature coming soon`);
     } catch {
       toast.error(`Failed to export ${format}`);
@@ -99,7 +99,7 @@ export function AdminReportsClient() {
 
       {stats && (
         <>
-          {/* Summary Cards */}
+          {}
           <div className="grid gap-4 md:grid-cols-4">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">

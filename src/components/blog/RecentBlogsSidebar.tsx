@@ -22,7 +22,7 @@ export function RecentBlogsSidebar({ blogs }: RecentBlogsSidebarProps) {
     if (!email) return;
 
     setLoading(true);
-    // Simulate API call
+    
     setTimeout(() => {
       toast.success("Thanks for subscribing! Welcome to the community.");
       setEmail("");
@@ -32,7 +32,7 @@ export function RecentBlogsSidebar({ blogs }: RecentBlogsSidebarProps) {
 
   return (
     <div className="space-y-8 sticky top-24">
-      {/* Search Input (Optional, for visual completeness) */}
+      {}
       <div className="relative">
         <Input
           placeholder="Search articles..."
@@ -43,7 +43,7 @@ export function RecentBlogsSidebar({ blogs }: RecentBlogsSidebarProps) {
         </div>
       </div>
 
-      {/* Newsletter CTA */}
+      {}
       <div className="rounded-2xl p-6 bg-gradient-to-br from-primary to-primary/80 text-white shadow-xl relative overflow-hidden group">
         <div className="absolute -top-12 -right-12 w-32 h-32 bg-white/10 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700" />
         <div className="absolute -bottom-12 -left-12 w-32 h-32 bg-black/10 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700" />
@@ -81,7 +81,7 @@ export function RecentBlogsSidebar({ blogs }: RecentBlogsSidebarProps) {
         </div>
       </div>
 
-      {/* Recent Posts */}
+      {}
       <div className="space-y-6">
         <div className="flex items-center gap-2 pb-2 border-b border-gray-100">
           <TrendingUp className="h-4 w-4 text-primary" />
@@ -127,6 +127,6 @@ export function RecentBlogsSidebar({ blogs }: RecentBlogsSidebarProps) {
   );
 }
 
-// Helper to avoid circular dependency if Badge is not available (it is in UI folder)
+
 import { Badge } from "@/components/ui/badge";
 

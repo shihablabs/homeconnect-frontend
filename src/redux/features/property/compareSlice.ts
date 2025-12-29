@@ -1,7 +1,7 @@
 import { PropertyResponse } from '@/types/property.types';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
-// Store a minimal version of the property to avoid bloated state
+
 interface CompareItem {
   id: string;
   title: string;
@@ -34,11 +34,11 @@ const compareSlice = createSlice({
         return;
       }
 
-      // Check if listingType matches existing items
+      
       if (state.items.length > 0) {
         const currentListingType = state.items[0].listingType;
         if (action.payload.listingType !== currentListingType) {
-          // We'll handle the notification in the component
+          
           return;
         }
       }

@@ -45,7 +45,7 @@ export function ApplicationDetailsStep({
       {currentStep === 2 && (
         <CardContent className="p-6 space-y-8">
 
-          {/* Dates & Duration */}
+          {}
           <div className="space-y-4">
             <h3 className="text-sm font-semibold text-gray-900 border-b pb-2">Requested Dates</h3>
             <div className="grid gap-4 md:grid-cols-2">
@@ -86,7 +86,7 @@ export function ApplicationDetailsStep({
             )}
           </div>
 
-          {/* Special Requests */}
+          {}
           <div className="space-y-2">
             <Label>Message to Landlord (Optional)</Label>
             <Textarea
@@ -97,7 +97,7 @@ export function ApplicationDetailsStep({
             />
           </div>
 
-          {/* Document Upload */}
+          {}
           <div className="space-y-4">
             <h3 className="text-sm font-semibold text-gray-900 border-b pb-2 flex items-center justify-between">
               Required Documents

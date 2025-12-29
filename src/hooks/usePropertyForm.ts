@@ -1,11 +1,11 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+
 'use client';
 
 import { useCreateProperty } from '@/hooks/useProperties';
 import { CreatePropertyData, FormErrors, initialFormData, PropertyFormData } from '@/types/property.types';
-// Remove the properties-api import if it's no longer used, or keep other named imports
-// Checking line 5: import { CreatePropertyData } from '@/lib/api/properties-api';
-// It only imports CreatePropertyData. So I can remove it.
+
+
+
 import { useState } from 'react';
 import { toast } from 'sonner';
 import Swal from 'sweetalert2';
@@ -28,7 +28,7 @@ export const usePropertyForm = () => {
   const handleInputChange = (field: string, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
 
-    // Clear error when user starts typing
+    
     if (formErrors[field]) {
       setFormErrors(prev => {
         const newErrors = { ...prev };
@@ -50,7 +50,7 @@ export const usePropertyForm = () => {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
 
-    // Validate file size and type
+    
     const validFiles = files.filter(file => {
       if (file.size > 5 * 1024 * 1024) {
         alert(`File ${file.name} is too large. Maximum size is 5MB.`);
@@ -63,7 +63,7 @@ export const usePropertyForm = () => {
       return true;
     });
 
-    setImages(validFiles.slice(0, 10)); // Limit to 10 files
+    setImages(validFiles.slice(0, 10)); 
   };
 
   const validateField = (field: string, value: any): string => {
@@ -136,7 +136,7 @@ export const usePropertyForm = () => {
       }
     });
 
-    // Price validation based on listing type
+    
     if (formData.listingType === 'rent') {
       if (!formData.pricePerMonth || formData.pricePerMonth <= 0) {
         errors.pricePerMonth = 'Rent price is required';
@@ -151,26 +151,26 @@ export const usePropertyForm = () => {
   };
   const { handleMutationError } = useErrorHandler();
 
-  // Add this function to your usePropertyForm.ts file
+  
   const transformFormDataForSubmission = (formData: PropertyFormData): CreatePropertyData => {
     const baseData: any = {
-      // Basic Information
+      
       title: formData.title.trim(),
       description: formData.description.trim(),
       listingType: formData.listingType,
       propertyType: formData.propertyType,
 
-      // Location
+      
       address: formData.address.trim(),
       city: formData.city,
       neighborhood: formData.neighborhood.trim(),
       state: formData.state,
       country: formData.country || 'Bangladesh',
-      latitude: formData.latitude || 23.8103, // Default Dhaka coordinates
-      longitude: formData.longitude || 90.4125, // Default Dhaka coordinates
+      latitude: formData.latitude || 23.8103, 
+      longitude: formData.longitude || 90.4125, 
       zipCode: formData.zipCode?.trim() || undefined,
 
-      // Specifications
+      
       bedrooms: Number(formData.bedrooms) || 0,
       bathrooms: Number(formData.bathrooms) || 0,
       areaSize: Number(formData.areaSize) || 0,
@@ -181,16 +181,16 @@ export const usePropertyForm = () => {
       lotSize: formData.lotSize ? Number(formData.lotSize) : undefined,
       lotUnit: formData.lotUnit,
 
-      // Features
+      
       amenities: formData.amenities || [],
       tags: formData.tags || [],
-      images: [], // We'll handle images separately via file upload
+      images: [], 
       videos: [],
       floorPlans: [],
       managementCompany: undefined,
     };
 
-    // Add rental-specific fields
+    
     if (formData.listingType === 'rent') {
       baseData.pricePerMonth = Number(formData.pricePerMonth) || 0;
       baseData.currency = 'BDT';
@@ -207,7 +207,7 @@ export const usePropertyForm = () => {
       baseData.smokingPolicy = formData.smokingPolicy || 'not-allowed';
       baseData.isAvailable = true;
     }
-    // Add sale-specific fields
+    
     else {
       baseData.totalPrice = Number(formData.totalPrice) || 0;
       baseData.currency = 'BDT';

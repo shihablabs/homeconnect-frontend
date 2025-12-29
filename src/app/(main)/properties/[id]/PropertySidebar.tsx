@@ -65,8 +65,8 @@ export function PropertySidebar({
 
       setIsBookingLoading(true);
       try {
-        // Create a booking
-        // For simplicity, we assume a standard 12-month lease from today
+        
+        
         const checkIn = new Date();
         const checkOut = new Date();
         checkOut.setFullYear(checkOut.getFullYear() + 1);
@@ -78,7 +78,7 @@ export function PropertySidebar({
           leaseDurationInMonths: 12,
         });
 
-        // Create Stripe checkout session
+        
         const session = await bookingsApi.createPaymentSession({
           bookingId: booking.id,
           returnUrl: `${window.location.origin}/dashboard/bookings/${booking.id}/complete`,
@@ -127,7 +127,7 @@ export function PropertySidebar({
 
   return (
     <Card className="p-8 sticky top-24 shadow-2xl border-gray-100 rounded-2xl overflow-hidden group">
-      {/* Price Header Section */}
+      {}
       <div className="mb-8">
         <span className="text-xs font-bold text-primary uppercase tracking-[0.2em] mb-1 block">
           {listingType === "rent" ? "Monthly Rent" : "Asking Price"}
@@ -139,7 +139,7 @@ export function PropertySidebar({
 
       <Separator className="mb-8 bg-gray-100" />
 
-      {/* Author Section */}
+      {}
       <div className="mb-8 space-y-6">
         <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest">
           {agent ? "Listing Representative" : "Property Owner"}
@@ -147,7 +147,7 @@ export function PropertySidebar({
         <div
           onClick={() => {
             checkAuth(() => {
-              // Prioritize username -> slug -> id
+              
               const profileIdentifier = contactPerson.username || contactPerson.slug || contactPerson.id;
               router.push(`/profile/${profileIdentifier}`);
             });
@@ -178,7 +178,7 @@ export function PropertySidebar({
         </div>
       </div>
 
-      {/* Primary Actions */}
+      {}
       <div className="space-y-3.5">
         {(!user || user.role === 'tenant') && (
           <>
@@ -204,7 +204,7 @@ export function PropertySidebar({
               <MessageSquare className="mr-2.5 h-5 w-5" />
               Message {agent ? "Agent" : "Owner"}
             </Button>
-            {/* Secondary Actions */}
+            {}
             <div className="space-y-3 pt-4 border-t border-gray-100">
               {listingType === "rent" ? (
                 <Button
@@ -247,7 +247,7 @@ export function PropertySidebar({
         )}
 
         <div className="space-y-3.5 mt-4">
-          {/* Share Button (moved down) */}
+          {}
           <Button
             variant="ghost"
             size="lg"

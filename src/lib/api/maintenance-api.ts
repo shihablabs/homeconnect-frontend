@@ -1,7 +1,7 @@
 import { api } from './api';
 import { uploadApi } from './upload-api';
 
-// --- Interfaces & Types ---
+
 
 export type MaintenanceStatus = 'reported' | 'in_progress' | 'completed' | 'cancelled';
 export type MaintenancePriority = 'urgent' | 'medium' | 'low';
@@ -72,7 +72,7 @@ export interface UpdateMaintenanceRequestData {
   status?: MaintenanceStatus;
   estimatedCost?: number;
   completionDate?: string;
-  assignedVendorId?: string | null; // null or empty string to unassign
+  assignedVendorId?: string | null; 
 }
 
 export interface MaintenanceFilters {
@@ -96,12 +96,10 @@ export interface MaintenanceListResponse {
   limit: number;
 }
 
-// --- API Implementation ---
+
 
 export const maintenanceApi = {
-  /**
-   * Upload images for maintenance request
-   */
+  
   uploadImages: async (files: File[]): Promise<string[]> => {
     const formData = new FormData();
     files.forEach((file) => {
@@ -115,9 +113,7 @@ export const maintenanceApi = {
     return response.data.data.map((img: { url: string }) => img.url);
   },
 
-  /**
-   * Create a new maintenance request
-   */
+  
   createMaintenanceRequest: async (
     data: CreateMaintenanceRequestData
   ): Promise<MaintenanceRequest> => {
@@ -125,9 +121,7 @@ export const maintenanceApi = {
     return response.data.data;
   },
 
-  /**
-   * Get maintenance requests with filters
-   */
+  
   getMaintenanceRequests: async (
     filters?: MaintenanceFilters
   ): Promise<MaintenanceListResponse> => {
@@ -141,17 +135,13 @@ export const maintenanceApi = {
     };
   },
 
-  /**
-   * Get a single maintenance request by ID
-   */
+  
   getMaintenanceRequest: async (id: string): Promise<MaintenanceRequest> => {
     const response = await api.get(`/maintenance/${id}`);
     return response.data.data;
   },
 
-  /**
-   * Update maintenance request status and cost (Landlord/Admin only)
-   */
+  
   updateMaintenanceRequest: async (
     id: string,
     data: UpdateMaintenanceRequestData

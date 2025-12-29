@@ -1,4 +1,4 @@
-// This is our simple data type for the Combobox
+
 export interface LocationItem {
   value: string;
   name: string;
@@ -6,7 +6,7 @@ export interface LocationItem {
   longitude: number;
 }
 
-// This is the main data structure with all 64 districts
+
 export const bangladeshData = {
   country: {
     value: "BD",
@@ -446,9 +446,9 @@ export const bangladeshData = {
   ],
 };
 
-// --- Helper Functions ---
 
-// Get all divisions for the "State / Division" dropdown
+
+
 export const getDivisionOptions = (): LocationItem[] => {
   return bangladeshData.divisions.map((division) => ({
     value: division.value,
@@ -458,7 +458,7 @@ export const getDivisionOptions = (): LocationItem[] => {
   }));
 };
 
-// Get districts for a selected division
+
 export const getDistrictOptions = (divisionValue: string): LocationItem[] => {
   const division = bangladeshData.divisions.find(
     (d) => d.value === divisionValue
@@ -466,12 +466,12 @@ export const getDistrictOptions = (divisionValue: string): LocationItem[] => {
   return division ? division.districts : [];
 };
 
-// Get all districts (flattened array)
+
 export const getAllDistricts = (): LocationItem[] => {
   return bangladeshData.divisions.flatMap((division) => division.districts);
 };
 
-// Search locations by name (for autocomplete)
+
 export const searchLocations = (query: string): LocationItem[] => {
   const allDistricts = getAllDistricts();
   const divisions = getDivisionOptions();
@@ -482,7 +482,7 @@ export const searchLocations = (query: string): LocationItem[] => {
   );
 };
 
-// Get location by value
+
 export const getLocationByValue = (value: string): LocationItem | undefined => {
   const allDistricts = getAllDistricts();
   const divisions = getDivisionOptions();

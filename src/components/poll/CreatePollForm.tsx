@@ -1,7 +1,4 @@
-/**
- * CreatePollForm Component
- * Form for creating new community polls (Landlord/Admin only)
- */
+
 
 'use client';
 
@@ -42,7 +39,7 @@ export function CreatePollForm() {
     title: '',
     description: '',
     pollType: 'maintenance_priority',
-    options: [{ text: '' }, { text: '' }], // Minimum 2 options
+    options: [{ text: '' }, { text: '' }], 
     allowedVoters: 'property_tenants',
     maxVotesPerUser: 1,
     allowMultipleSelections: false,
@@ -53,7 +50,7 @@ export function CreatePollForm() {
   const [endDate, setEndDate] = useState('');
   const [startDate, setStartDate] = useState('');
 
-  // Load properties for selection
+  
   const loadProperties = async () => {
     try {
       setLoadingProperties(true);
@@ -95,7 +92,7 @@ export function CreatePollForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Validation
+    
     if (!formData.title || formData.title.length < 10) {
       toast.error('Title must be at least 10 characters');
       return;
@@ -134,7 +131,7 @@ export function CreatePollForm() {
       router.push(`/dashboard/polls/${poll.id}`);
     } catch (error: unknown) {
       console.error('Failed to create poll:', error);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      
       const errorMessage = (error as any)?.response?.data?.message || 'Failed to create poll';
       toast.error(errorMessage);
     } finally {
@@ -153,7 +150,7 @@ export function CreatePollForm() {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Title */}
+            {}
             <div className="space-y-2">
               <Label htmlFor="title">Poll Title *</Label>
               <Input
@@ -170,7 +167,7 @@ export function CreatePollForm() {
               </p>
             </div>
 
-            {/* Description */}
+            {}
             <div className="space-y-2">
               <Label htmlFor="description">Description (Optional)</Label>
               <Textarea
@@ -186,7 +183,7 @@ export function CreatePollForm() {
               </p>
             </div>
 
-            {/* Poll Type */}
+            {}
             <div className="space-y-2">
               <Label htmlFor="pollType">Poll Type *</Label>
               <Select
@@ -207,7 +204,7 @@ export function CreatePollForm() {
               </Select>
             </div>
 
-            {/* Property Selection (Optional) */}
+            {}
             <div className="space-y-2">
               <Label htmlFor="propertyId">Property (Optional)</Label>
               <Select
@@ -216,7 +213,7 @@ export function CreatePollForm() {
                   if (value) {
                     setFormData({ ...formData, propertyId: value });
                   } else {
-                    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                    
                     const { propertyId: _unused, ...rest } = formData;
                     setFormData(rest);
                   }
@@ -247,7 +244,7 @@ export function CreatePollForm() {
               </Select>
             </div>
 
-            {/* Allowed Voters */}
+            {}
             <div className="space-y-2">
               <Label htmlFor="allowedVoters">Who Can Vote? *</Label>
               <Select
@@ -267,7 +264,7 @@ export function CreatePollForm() {
               </Select>
             </div>
 
-            {/* Options */}
+            {}
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <Label>Poll Options *</Label>
@@ -316,7 +313,7 @@ export function CreatePollForm() {
               </p>
             </div>
 
-            {/* Voting Settings */}
+            {}
             <div className="space-y-4 border-t pt-4">
               <h3 className="font-semibold">Voting Settings</h3>
 
@@ -383,7 +380,7 @@ export function CreatePollForm() {
               </div>
             </div>
 
-            {/* Dates */}
+            {}
             <div className="grid grid-cols-2 gap-4 border-t pt-4">
               <div className="space-y-2">
                 <Label htmlFor="startDate">
@@ -412,7 +409,7 @@ export function CreatePollForm() {
               </div>
             </div>
 
-            {/* Submit */}
+            {}
             <div className="flex gap-4 pt-4">
               <Button
                 type="button"

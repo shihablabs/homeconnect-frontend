@@ -30,7 +30,7 @@ import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
 
-// Form Schema
+
 const maintenanceRequestSchema = z.object({
   propertyId: z.string().min(1, 'Property is required'),
   title: z
@@ -71,7 +71,7 @@ export function MaintenanceRequestForm({
   const [isUploadingImages, setIsUploadingImages] = useState(false);
 
   const form = useForm<MaintenanceRequestFormData>({
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    
     resolver: zodResolver(maintenanceRequestSchema) as any,
     defaultValues: {
       propertyId: propertyId || '',
@@ -113,7 +113,7 @@ export function MaintenanceRequestForm({
       return response.data.data.map((img: { url: string }) => img.url);
     } catch (error: unknown) {
       console.error('Image upload error:', error);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      
       throw new Error((error as any).response?.data?.message || 'Failed to upload images');
     }
   };
@@ -122,14 +122,14 @@ export function MaintenanceRequestForm({
     try {
       setIsSubmitting(true);
 
-      // Upload images first
+      
       let imageUrls: string[] = [];
       if (imageFiles.length > 0) {
         setIsUploadingImages(true);
         try {
           imageUrls = await uploadImages(imageFiles);
         } catch (error: unknown) {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          
           toast.error((error as any).message || 'Failed to upload images');
           setIsSubmitting(false);
           setIsUploadingImages(false);
@@ -139,7 +139,7 @@ export function MaintenanceRequestForm({
         }
       }
 
-      // Create maintenance request
+      
       const requestData = {
         ...data,
         images: imageUrls,
@@ -159,7 +159,7 @@ export function MaintenanceRequestForm({
     } catch (error: unknown) {
       console.error('Error creating maintenance request:', error);
       toast.error(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        
         (error as any).response?.data?.message ||
         'Failed to submit maintenance request. Please try again.'
       );
@@ -173,7 +173,7 @@ export function MaintenanceRequestForm({
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        {/* Property ID - Only show if not provided */}
+        {}
         {!propertyId && (
           <FormField
             control={form.control}
@@ -196,7 +196,7 @@ export function MaintenanceRequestForm({
           />
         )}
 
-        {/* Title */}
+        {}
         <FormField
           control={form.control}
           name="title"
@@ -217,7 +217,7 @@ export function MaintenanceRequestForm({
           )}
         />
 
-        {/* Description */}
+        {}
         <FormField
           control={form.control}
           name="description"
@@ -239,7 +239,7 @@ export function MaintenanceRequestForm({
           )}
         />
 
-        {/* Category and Priority */}
+        {}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormField
             control={form.control}
@@ -302,14 +302,14 @@ export function MaintenanceRequestForm({
           />
         </div>
 
-        {/* Image Upload */}
+        {}
         <div className="space-y-2">
           <FormLabel>Images (Optional)</FormLabel>
           <FormDescription>
             Upload up to 10 images to help describe the issue
           </FormDescription>
 
-          {/* Image Previews */}
+          {}
           {imageFiles.length > 0 && (
             <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-4 mt-4">
               {imagePreviews.map((preview, index) => (
@@ -335,7 +335,7 @@ export function MaintenanceRequestForm({
             </div>
           )}
 
-          {/* Upload Button */}
+          {}
           {imageFiles.length < 10 && (
             <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-blue-500 hover:bg-gray-50 transition-colors">
               <div className="flex flex-col items-center justify-center pt-5 pb-6">
@@ -355,7 +355,7 @@ export function MaintenanceRequestForm({
           )}
         </div>
 
-        {/* Submit Button */}
+        {}
         <div className="flex justify-end gap-4">
           <Button
             type="button"

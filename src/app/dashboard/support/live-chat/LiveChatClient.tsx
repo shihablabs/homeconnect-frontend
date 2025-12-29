@@ -9,7 +9,7 @@ import { useChatSocket } from '@/hooks/useChatSocket';
 import { AlertCircle, Loader2, MessageSquare, RefreshCw, Search, Send } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
-// TODO: Create support chat API when backend is ready
+
 
 
 export function LiveChatClient() {
@@ -17,7 +17,7 @@ export function LiveChatClient() {
   const [newMessage, setNewMessage] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Use the chat socket hook
+  
   const {
     conversations,
     messages,
@@ -34,16 +34,16 @@ export function LiveChatClient() {
   } = useChatSocket({
     partnerId: selectedSessionId || undefined,
     onNewMessage: () => {
-      // Optional: scroll to bottom
+      
     }
   });
 
-  // Initial fetch
+  
   useEffect(() => {
     fetchConversations();
   }, [fetchConversations]);
 
-  // Fetch messages when session changes
+  
   useEffect(() => {
     if (selectedSessionId) {
       fetchMessages(selectedSessionId);
@@ -51,7 +51,7 @@ export function LiveChatClient() {
     }
   }, [selectedSessionId, fetchMessages, markAsRead]);
 
-  // Helper to get current session object
+  
   const selectedSession = conversations.find(c => c.partner.id === selectedSessionId) || null;
 
   const handleSendMessage = async () => {
@@ -70,7 +70,7 @@ export function LiveChatClient() {
     if (!dateString) return 'Offline';
     const date = new Date(dateString);
     const now = new Date();
-    const diff = (now.getTime() - date.getTime()) / 1000 / 60; // minutes
+    const diff = (now.getTime() - date.getTime()) / 1000 / 60; 
 
     if (diff < 1) return 'Active just now';
     if (diff < 60) return `Active ${Math.floor(diff)}m ago`;
@@ -119,7 +119,7 @@ export function LiveChatClient() {
         </div>
 
         <div className="grid gap-4 md:grid-cols-3 h-[calc(100vh-200px)]">
-          {/* Sessions List */}
+          {}
           <Card className="md:col-span-1 flex flex-col">
             <CardHeader className="p-4">
               <div className="relative">
@@ -157,10 +157,7 @@ export function LiveChatClient() {
                               {session.partner.name.charAt(0).toUpperCase()}
                             </AvatarFallback>
                           </Avatar>
-                          {/* We need to check socket onlineUsers here, but useChatSocket only returns isPartnerOnline for the SELECTED partner. 
-                            Ideally we'd expose the whole set or a helper function. 
-                            For now, we can rely on the 'isOnline' property from the API which is static until refresh. 
-                            TODO: Expose checkOnlineStatus(id) from useChatSocket */}
+                          {}
                           {session.partner.isOnline && (
                             <div className="absolute bottom-0 right-0 h-3 w-3 bg-green-500 rounded-full border-2 border-white ring-1 ring-white" />
                           )}
@@ -193,7 +190,7 @@ export function LiveChatClient() {
             </CardContent>
           </Card>
 
-          {/* Chat Area */}
+          {}
           <Card className="md:col-span-2 flex flex-col">
             {selectedSession ? (
               <>
@@ -224,13 +221,7 @@ export function LiveChatClient() {
                 </CardHeader>
                 <CardContent className="flex-1 flex flex-col p-0 min-h-0 bg-slate-50 dark:bg-slate-900/50">
                   <div className="flex-1 overflow-y-auto p-4 space-y-4 flex flex-col-reverse">
-                    {/* Messages are reversed in hook, but we display column-reverse usually for chat? 
-                      Actually hook fetches reverse() from backend (oldest first). 
-                      Let's check useChatSocket. fetchMessages sets them reversed? 
-                      "setMessages(response.messages.reverse())" -> oldest first.
-                      So we should render normally top-down and scroll to bottom. 
-                      Or use flex-col-reverse and reverse array. 
-                      Let's stick to standard flex-col and scroll to bottom. */}
+                    {}
                     <div className="flex flex-col space-y-4 justify-end min-h-full">
                       {messages.length === 0 ? (
                         <div className="flex flex-col items-center justify-center py-20 text-center opacity-50">
@@ -239,11 +230,11 @@ export function LiveChatClient() {
                         </div>
                       ) : (
                         messages.map((message) => {
-                          const isMe = message.sender.id !== selectedSession.partner.id; // OR verify with my ID if available
-                          // Rely on message structure. Backend fills sender/receiver.
-                          // We need current user ID to know who is 'me'. 
-                          // Typically accessible via auth context or similar. 
-                          // Hack: assume if sender.id !== partner.id, it is me (since chat is 1-on-1).
+                          const isMe = message.sender.id !== selectedSession.partner.id; 
+                          
+                          
+                          
+                          
 
                           return (
                             <div key={message.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>

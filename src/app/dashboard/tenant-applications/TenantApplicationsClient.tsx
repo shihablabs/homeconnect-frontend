@@ -43,7 +43,7 @@ export function TenantApplicationsClient() {
     try {
       setLoading(true);
       const response = await bookingsApi.getUserBookings('landlord');
-      // Filter only pending bookings (applications)
+      
       const applications = (response?.bookings || []).filter((b) => b.status === 'pending');
       setBookings(applications);
     } catch (error: unknown) {
@@ -69,7 +69,7 @@ export function TenantApplicationsClient() {
       await bookingsApi.approveBooking(selectedBooking.id);
       toast.success('Application approved successfully');
       setIsDialogOpen(false);
-      fetchApplications(); // Refresh list
+      fetchApplications(); 
     } catch (error: unknown) {
       console.error('Failed to approve application:', error);
       toast.error('Failed to approve application');
@@ -94,7 +94,7 @@ export function TenantApplicationsClient() {
       await bookingsApi.rejectBooking(selectedBooking.id, rejectReason);
       toast.success('Application rejected');
       setIsDialogOpen(false);
-      fetchApplications(); // Refresh list
+      fetchApplications(); 
     } catch (error: unknown) {
       console.error('Failed to reject application:', error);
       toast.error('Failed to reject application');
@@ -230,7 +230,7 @@ export function TenantApplicationsClient() {
           </CardContent>
         </Card>
 
-        {/* Application Details Dialog */}
+        {}
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
@@ -242,7 +242,7 @@ export function TenantApplicationsClient() {
             {selectedBooking && (
               <div className="space-y-6">
 
-                {/* 1. Property & Dates */}
+                {}
                 <div className="grid md:grid-cols-2 gap-4 p-4 bg-gray-50 rounded-lg">
                   <div>
                     <h4 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-2">Property</h4>
@@ -259,7 +259,7 @@ export function TenantApplicationsClient() {
                   </div>
                 </div>
 
-                {/* 2. Tenant Info */}
+                {}
                 <div>
                   <h4 className="text-lg font-semibold mb-3 flex items-center gap-2">
                     Tenant Information
@@ -281,7 +281,7 @@ export function TenantApplicationsClient() {
                   )}
                 </div>
 
-                {/* 3. Documents */}
+                {}
                 <div>
                   <h4 className="text-lg font-semibold mb-3 flex items-center gap-2">
                     Submitted Documents
@@ -317,7 +317,7 @@ export function TenantApplicationsClient() {
                   )}
                 </div>
 
-                {/* Rejection Input */}
+                {}
                 {showRejectInput && (
                   <div className="space-y-2 animate-in slide-in-from-top-2">
                     <label className="text-sm font-medium text-red-600">Reason for Rejection</label>

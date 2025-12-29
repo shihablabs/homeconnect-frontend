@@ -31,7 +31,7 @@ export function RentalHistoryClient() {
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['bookings', 'tenant', 'history'],
     queryFn: () => bookingsApi.getUserBookings('tenant'),
-    staleTime: 60000, // 1 minute
+    staleTime: 60000, 
     refetchOnWindowFocus: false,
     retry: (failureCount, error: unknown) => {
       if (error && typeof error === 'object' && 'response' in error) {
@@ -44,14 +44,14 @@ export function RentalHistoryClient() {
     },
   });
 
-  // Filter and sort bookings based on status filter
+  
   const filteredBookings = useMemo(() => {
     if (!data?.bookings) return [];
     let filtered = data.bookings;
     if (statusFilter !== 'all') {
       filtered = data.bookings.filter((b: Booking) => b.status === statusFilter);
     }
-    // Sort by date (newest first)
+    
     return filtered.sort(
       (a: Booking, b: Booking) =>
         new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()

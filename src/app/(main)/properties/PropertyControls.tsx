@@ -37,33 +37,33 @@ export function PropertyControls({
   const lastSyncedURLRef = useRef<string>(filters.search || "");
   const skipNextSyncRef = useRef(false);
 
-  // Sync searchInput with filters.search from URL (browser navigation/back button)
-  // This handles when URL changes independently (browser back/forward, direct URL entry)
+  
+  
   useEffect(() => {
     const urlSearchValue = filters.search || "";
     const lastSynced = lastSyncedURLRef.current;
 
-    // If URL value changed from external source (browser nav), sync input
+    
     if (urlSearchValue !== lastSynced && !skipNextSyncRef.current) {
       if (urlSearchValue !== searchInput) {
         setSearchInput(urlSearchValue);
       }
     }
 
-    // Always update ref to track current URL state
+    
     lastSyncedURLRef.current = urlSearchValue;
     skipNextSyncRef.current = false;
   }, [filters.search, searchInput]);
 
-  // Update URL when debounced search changes (user typing)
+  
   useEffect(() => {
     const trimmedSearch = debouncedSearch.trim();
     const currentURLSearch = filters.search || "";
 
-    // Only update URL if debounced value differs from current URL value
-    // This prevents unnecessary API calls and rate limit issues
+    
+    
     if (trimmedSearch !== currentURLSearch) {
-      // Mark that we're updating from user input to skip sync on next render
+      
       skipNextSyncRef.current = true;
       onFilterChange({ q: trimmedSearch || undefined });
     }
@@ -71,7 +71,7 @@ export function PropertyControls({
 
   const handleSortChange = (value: string) => {
     const [sortBy, sortOrder] = value.split(":");
-    // If "Most Popular" is selected, clear sort to use backend default (score)
+    
     if (value === "score:desc") {
       onFilterChange({ sortBy: undefined, sortOrder: undefined });
     } else {
@@ -82,7 +82,7 @@ export function PropertyControls({
     }
   };
 
-  // Default to score if no sort is specified
+  
   const defaultSortBy = filters.sortBy || "score";
   const defaultSortOrder = filters.sortOrder || "desc";
   const sortValue = `${defaultSortBy}:${defaultSortOrder}`;

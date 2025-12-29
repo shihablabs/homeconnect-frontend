@@ -44,7 +44,7 @@ export default function Newsletter() {
 
   return (
     <section className="relative py-16 md:py-24 overflow-hidden">
-      {/* Background Elements */}
+      {}
       <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-white to-purple-50" />
       <div className="absolute top-10 left-10 w-20 h-20 bg-blue-200/30 rounded-full blur-xl" />
       <div className="absolute bottom-10 right-10 w-24 h-24 bg-purple-200/30 rounded-full blur-xl" />
@@ -52,14 +52,14 @@ export default function Newsletter() {
       <div className="container mx-auto px-4 relative z-10">
         <div className="max-w-6xl mx-auto">
           <div className="relative">
-            {/* Main Card */}
+            {}
             <div className="relative bg-gradient-to-br from-white to-gray-50/80 backdrop-blur-sm rounded-2xl border border-gray-200/60 shadow-lg shadow-blue-500/5 overflow-hidden">
-              {/* Decorative Top Border */}
+              {}
               <div className="h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500" />
 
               <div className="p-8 md:p-12">
                 <div className="flex flex-col lg:flex-row items-center justify-between gap-8">
-                  {/* Content Section */}
+                  {}
                   <div className="flex-1 text-center lg:text-left">
                     <div className="flex items-center justify-center lg:justify-start gap-2 mb-4">
                       <div className="flex items-center gap-2">
@@ -87,7 +87,7 @@ export default function Newsletter() {
                       Be the first to know about new opportunities.
                     </p>
 
-                    {/* Trust Badges */}
+                    {}
                     <div className="flex items-center justify-center lg:justify-start gap-6 text-sm text-gray-500">
                       <div className="flex items-center gap-2">
                         <Shield className="w-4 h-4 text-green-500" />
@@ -100,7 +100,7 @@ export default function Newsletter() {
                     </div>
                   </div>
 
-                  {/* Form Section */}
+                  {}
                   <div className="flex-1 w-full max-w-md">
                     <form
                       onSubmit={handleSubmit(onSubmit)}
@@ -146,7 +146,7 @@ export default function Newsletter() {
                       </div>
                     </form>
 
-                    {/* Social Proof */}
+                    {}
                     <div className="mt-4 text-center">
                       <p className="text-xs text-gray-500">
                         Join <span className="font-semibold text-gray-700">5,000+</span> landlords already using Home Connect
@@ -157,7 +157,7 @@ export default function Newsletter() {
               </div>
             </div>
 
-            {/* Floating Elements */}
+            {}
             <div className="absolute -top-3 -left-3 w-6 h-6 bg-yellow-400 rounded-full opacity-80 animate-pulse" />
             <div className="absolute -bottom-2 -right-2 w-4 h-4 bg-green-400 rounded-full opacity-70" />
           </div>

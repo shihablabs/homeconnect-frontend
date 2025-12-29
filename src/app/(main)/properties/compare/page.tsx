@@ -31,7 +31,7 @@ export default function ComparePage() {
   const [fullProperties, setFullProperties] = useState<PropertyResponse[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // AI State
+  
   const [selectedPrompt, setSelectedPrompt] = useState("");
   const [customPrompt, setCustomPrompt] = useState("");
   const [isCustom, setIsCustom] = useState(false);
@@ -40,7 +40,7 @@ export default function ComparePage() {
   const [aiInsight, setAiInsight] = useState<AIComparisonData | string | null>(null);
   const [aiLoading, setAiLoading] = useState(false);
 
-  // Define Preset Prompts
+  
   const RENT_PROMPTS = [
     "Identify the best value for money (Price vs Amenities)",
     "Analyze suitability for a small family",
@@ -81,7 +81,7 @@ export default function ComparePage() {
   useEffect(() => {
     const fetchFullDetails = async () => {
       if (items.length === 0) {
-        setFullProperties([]); // Clear properties if no items
+        setFullProperties([]); 
         setLoading(false);
         return;
       }
@@ -91,11 +91,11 @@ export default function ComparePage() {
         const ids = items.map((item) => item.id);
         const data = await propertiesApi.compareProperties(ids);
 
-        // Robust check for array data
+        
         const validProperties = Array.isArray(data) ? (data as PropertyResponse[]) : [];
         setFullProperties(validProperties);
 
-        // Sync check: If we have fewer properties than requested, some might have been deleted
+        
         if (validProperties.length < ids.length) {
           const returnedIds = new Set(validProperties.map(p => p.id));
           const missingIds = ids.filter(id => !returnedIds.has(id));
@@ -103,7 +103,7 @@ export default function ComparePage() {
           if (missingIds.length > 0) {
             console.log("Removing stale properties from comparison:", missingIds);
             missingIds.forEach(id => dispatch(removeFromCompare(id)));
-            // Toast removed items notification if needed, or just silently clean up
+            
             if (missingIds.length > 0) {
               toast.info(`${missingIds.length} property(s) were no longer available and removed from comparison.`);
             }
@@ -112,7 +112,7 @@ export default function ComparePage() {
       } catch (err) {
         console.error("Failed to fetch comparison details:", err);
         toast.error("Failed to load property details");
-        // Optional: clear specific items if error implies 404, but API generalized error handling is tricky here
+        
       } finally {
         setLoading(false);
       }
@@ -152,7 +152,7 @@ export default function ComparePage() {
     { label: "Verified", getValue: (p: PropertyResponse) => p.isVerified ? <ShieldCheck className="h-5 w-5 text-emerald-500" /> : <X className="h-5 w-5 text-gray-300" /> },
   ];
 
-  // Unique amenities across all properties
+  
   const allAmenities = Array.from(new Set(fullProperties.flatMap(p => p.amenities || [])));
 
   return (
@@ -176,7 +176,7 @@ export default function ComparePage() {
         </Button>
       </div>
 
-      {/* Comparison Table */}
+      {}
       <div className="overflow-x-auto rounded-3xl border shadow-xl bg-card">
         <table className="w-full border-collapse min-w-[800px]">
           <thead>
@@ -252,7 +252,7 @@ export default function ComparePage() {
               </tr>
             ))}
 
-            {/* Amenities Row */}
+            {}
             <tr>
               <td className="p-6 font-bold text-sm text-gray-500 bg-muted/30 border-r sticky left-0 bg-background/95 backdrop-blur z-10 align-top">
                 Amenities
@@ -282,7 +282,7 @@ export default function ComparePage() {
         </table>
       </div>
 
-      {/* AI Analysis Section - Bottom Placement */}
+      {}
       <div className="rounded-3xl border shadow-2xl bg-white overflow-hidden">
         <div className="bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 p-8 text-white relative overflow-hidden">
           <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none" />
@@ -298,7 +298,7 @@ export default function ComparePage() {
         </div>
 
         <div className="p-8 grid lg:grid-cols-12 gap-10">
-          {/* Controls */}
+          {}
           <div className="lg:col-span-4 space-y-6">
             <div className="space-y-4">
               <label className="text-sm font-bold text-gray-700 uppercase tracking-widest">
@@ -386,7 +386,7 @@ export default function ComparePage() {
             </Button>
           </div>
 
-          {/* Result Area */}
+          {}
           <div className="lg:col-span-8">
             {aiInsight && !aiLoading && typeof aiInsight === 'string' && (
               <div className="p-8 text-center text-red-500 font-bold bg-red-50 rounded-2xl">
@@ -398,7 +398,7 @@ export default function ComparePage() {
               <AIComparisonTable data={aiInsight as any} isLoading={false} />
             )}
 
-            {/* Loading skeleton handled by table component or custom here if needed */}
+            {}
             {aiLoading && <AIComparisonTable data={null} isLoading={true} />}
 
             {!aiInsight && !aiLoading && (
@@ -417,12 +417,12 @@ export default function ComparePage() {
 }
 
 function CompareCardImage({ property }: { property: PropertyResponse }) {
-  // Use state but sync with property change or just rely on key/prop updates
-  // Better approach here: use a simple effect or just standard handling
-  // If property changes, we want src to reset to property.images[0]
+  
+  
+  
   const [src, setSrc] = useState(property.images?.[0] || "/placeholder-property.jpg");
 
-  // Reset src when property.id or images change
+  
   useEffect(() => {
     setSrc(property.images?.[0] || "/placeholder-property.jpg");
   }, [property.id, property.images]);

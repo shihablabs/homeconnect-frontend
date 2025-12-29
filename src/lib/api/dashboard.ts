@@ -44,7 +44,7 @@ export interface IDashboardStats {
   totalLandlords: number;
   pendingMaintenance: number;
   totalRevenue: number;
-  // Landlord-specific optional fields
+  
   totalBookings?: number;
   pendingBookings?: number;
   activeTenants?: number;
@@ -64,20 +64,16 @@ export interface IUser {
   phone?: string;
 }
 export type TUserRole = 'tenant' | 'landlord' | 'admin' | 'support';
-// --- Dashboard API Service ---
+
 
 export const dashboardApi = {
-  /**
-   * Get dashboard overview data based on user role
-   */
+  
   getDashboard: async (): Promise<IDashboardOverviewResponse> => {
     const response = await api.get('/dashboard/overview');
-    return response.data.data; // Matches the backend structure
+    return response.data.data; 
   },
 
-  /**
-   * Create a new maintenance request (Tenant Only)
-   */
+  
   createMaintenanceRequest: async (data: {
     property: string;
     title: string;
@@ -88,9 +84,7 @@ export const dashboardApi = {
     return response.data.data;
   },
 
-  /**
-   * Get all maintenance requests (can be filtered)
-   */
+  
   getMaintenanceRequests: async (params?: {
     status?: string;
     priority?: string;
@@ -107,9 +101,7 @@ export const dashboardApi = {
     return response.data.data;
   },
 
-  /**
-   * Update a maintenance request
-   */
+  
   updateMaintenanceRequest: async (
     maintenanceId: string,
     data: { status?: string; priority?: string }
@@ -118,9 +110,7 @@ export const dashboardApi = {
     return response.data.data;
   },
 
-  /**
-   * Get all activities (can be filtered)
-   */
+  
   getActivities: async (params?: {
     action?: string;
     userId?: string;
@@ -135,25 +125,19 @@ export const dashboardApi = {
     return response.data.data;
   },
 
-  /**
-   * Mark a single activity as read
-   */
+  
   markActivityAsRead: async (activityId: string): Promise<IActivityResponse> => {
     const response = await api.patch(`/dashboard/activity/${activityId}/read`);
     return response.data.data;
   },
 
-  /**
-   * Mark all activities as read for the current user
-   */
+  
   markAllActivitiesAsRead: async (): Promise<{ count: number }> => {
     const response = await api.patch('/dashboard/activity/read-all');
     return response.data.data;
   },
 
-  /**
-   * Get dashboard counts (messages, notifications, maintenance)
-   */
+  
   getDashboardCounts: async (): Promise<{
     unreadMessages: number;
     unreadNotifications: number;

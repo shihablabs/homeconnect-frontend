@@ -110,7 +110,7 @@ export function PropertySelectionStep({
                   className="h-8 px-3 shadow-sm opacity-0 group-hover:opacity-100 transition-opacity"
                   onClick={() => {
                     setSelectedProperty(null);
-                    handleSelectProperty(null as any); // Ideally clear propertyId too
+                    handleSelectProperty(null as any); 
                     setCurrentStep(1);
                   }}
                 >

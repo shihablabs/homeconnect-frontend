@@ -1,6 +1,6 @@
-// import { Types } from 'mongoose';
 
-// type ObjectId = string | Types.ObjectId;
+
+
 
 export const listingTypes = ['rent', 'sale'] as const;
 export const propertyTypes = [

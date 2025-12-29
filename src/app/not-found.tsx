@@ -38,7 +38,7 @@ export default function NotFound() {
       </style>
 
       <main className="flex min-h-screen w-full flex-col items-center justify-center bg-gradient-to-r from-cyan-600 to-blue-600 p-4 pt-36 pb-16 font-inter relative overflow-hidden">
-        {/* Background Elements */}
+        {}
         <div className="absolute inset-0 overflow-hidden">
           <div className="absolute -top-40 -right-40 w-80 h-80 bg-white/10 rounded-full blur-3xl"></div>
           <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-purple-400/20 rounded-full blur-3xl"></div>
@@ -47,18 +47,18 @@ export default function NotFound() {
 
         <div className="relative w-full max-w-2xl rounded-3xl border border-white/20 bg-white/10 backdrop-blur-xl p-8 text-center shadow-2xl md:p-12 z-10">
 
-          {/* Animated Icon Container */}
+          {}
           <div className="relative mb-8 flex justify-center">
             <div className="relative h-40 w-40">
-              {/* Outer Glow Ring */}
+              {}
               <div className="absolute inset-0 rounded-full bg-white/20 animate-pulse-glow"></div>
 
-              {/* Main Icon with Floating Animation */}
+              {}
               <div className="relative z-10 flex h-40 w-40 items-center justify-center rounded-full bg-gradient-to-br from-white/20 to-white/5 backdrop-blur-md border border-white/30 animate-float">
                 <Home size={60} className="text-white drop-shadow-lg" />
               </div>
 
-              {/* Floating Decorative Icons */}
+              {}
               <div className="absolute -top-2 -right-2 z-20 rounded-full bg-white/20 backdrop-blur-md p-3 text-white shadow-lg border border-white/30">
                 <Search size={20} />
               </div>
@@ -66,15 +66,15 @@ export default function NotFound() {
                 <Building size={20} />
               </div>
 
-              {/* Animated Rings */}
+              {}
               <div className="absolute -inset-4 rounded-full border-2 border-white/20 animate-ping"></div>
               <div className="absolute -inset-6 rounded-full border-2 border-white/10 animate-ping" style={{ animationDelay: '1s' }}></div>
             </div>
           </div>
 
-          {/* Content */}
+          {}
           <div className="space-y-6">
-            {/* Error Code with Shimmer Effect */}
+            {}
             <div className="relative inline-block">
               <h1 className="text-9xl font-black text-white drop-shadow-2xl relative">
                 404
@@ -82,26 +82,20 @@ export default function NotFound() {
               </h1>
             </div>
 
-            {/* Heading */}
-            {/* <h2 className="text-4xl font-bold text-white drop-shadow-lg mt-4">
-              Property Not Found
-            </h2> */}
+            {}
+            {}
 
-            {/* Message */}
-            {/* <p className="text-xl text-white/90 leading-relaxed max-w-md mx-auto drop-shadow">
-              We couldn&apos;t locate the property you&apos;re searching for. It may be off-market
-              or the listing has been updated. Let us guide you back to discover more
-              amazing properties.
-            </p> */}
+            {}
+            {}
 
-            {/* Action Button */}
+            {}
             <div className="pt-6">
               <Link href="/">
                 <button className="group relative inline-flex items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md px-10 py-4 text-lg font-semibold text-white transition-all duration-300 hover:bg-white/30 hover:scale-105 hover:shadow-2xl border border-white/30 focus:outline-none focus:ring-4 focus:ring-white/50 min-w-[200px] w-full md:w-auto overflow-hidden cursor-pointer">
-                  {/* Button Shimmer Effect */}
+                  {}
                   <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-transparent via-white/30 to-transparent -skew-x-12 transform translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
 
-                  {/* Button Content */}
+                  {}
                   <Home className="mr-3 h-5 w-5 transition-transform group-hover:scale-110" />
                   <span className="relative drop-shadow-sm">Back to HomeConnect</span>
                   <ArrowRight className="ml-3 h-5 w-5 transition-transform group-hover:translate-x-1" />
@@ -110,7 +104,7 @@ export default function NotFound() {
             </div>
           </div>
 
-          {/* Footer Note */}
+          {}
           <p className="text-white/60 text-sm mt-8 pt-6 border-t border-white/20">
             Can&apos;t find what you&apos;re looking for?{' '}
             <Link
@@ -122,7 +116,7 @@ export default function NotFound() {
           </p>
         </div>
 
-        {/* Floating Particles */}
+        {}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           {[...Array(20)].map((_, i) => (
             <div

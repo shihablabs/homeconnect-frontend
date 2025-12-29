@@ -46,7 +46,7 @@ export default function ServiceRequisitionClient() {
 
     try {
       const orderData: CreateOrderRequest = {
-        packageId: selectedPackage.packageId as 'basic' | 'premium' | 'elite', // Assuming packageIds match these
+        packageId: selectedPackage.packageId as 'basic' | 'premium' | 'elite', 
         listingType,
         preferences: {
           city,

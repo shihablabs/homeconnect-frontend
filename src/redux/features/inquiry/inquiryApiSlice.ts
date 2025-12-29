@@ -1,7 +1,7 @@
 import { apiSlice } from '@/redux/api/apiSlice';
 
 export interface CreateInquiryData {
-  property: string; // Property ID
+  property: string; 
   offeredPrice?: number;
   message: string;
   type?: 'general' | 'offer';
@@ -9,9 +9,9 @@ export interface CreateInquiryData {
 
 export interface InquiryResponse {
   id: string;
-  property: any; // Expanded property object
-  buyer: any;    // Expanded buyer object
-  seller: any;   // Expanded seller object
+  property: any; 
+  buyer: any;    
+  seller: any;   
   offeredPrice: number;
   message: string;
   status: 'pending' | 'responded' | 'accepted' | 'rejected' | 'countered';

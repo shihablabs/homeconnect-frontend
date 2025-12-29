@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { apiSlice } from '@/redux/api/apiSlice';
 import {
   CreatePropertyData,

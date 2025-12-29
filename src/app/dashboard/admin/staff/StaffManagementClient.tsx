@@ -52,7 +52,7 @@ export function StaffManagementClient() {
   });
   const queryClient = useQueryClient();
 
-  // Fetch both admin and support staff
+  
   const { data: adminsData, isLoading: loadingAdmins, error: adminsError } = useQuery({
     queryKey: ['admin', 'users', 'admin'],
     queryFn: async () => {
@@ -117,7 +117,7 @@ export function StaffManagementClient() {
       setIsDialogOpen(false);
       setStaffForm({ name: '', email: '', password: '', role: 'support', phone: '' });
       
-      // Invalidate all user-related queries to refresh all pages
+      
       queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
       queryClient.invalidateQueries({ queryKey: ['admin', 'users', 'admin'] });
       queryClient.invalidateQueries({ queryKey: ['admin', 'users', 'support'] });
@@ -157,7 +157,7 @@ export function StaffManagementClient() {
         reason: !confirmDialog.currentStatus ? 'Activated by admin' : 'Blocked by admin',
       });
       toast.success(`Staff ${!confirmDialog.currentStatus ? 'activated' : 'blocked'} successfully`);
-      // Invalidate all user-related queries
+      
       queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
       queryClient.invalidateQueries({ queryKey: ['admin', 'users', 'admin'] });
       queryClient.invalidateQueries({ queryKey: ['admin', 'users', 'support'] });
@@ -172,7 +172,7 @@ export function StaffManagementClient() {
   };
 
   const refetch = () => {
-    // Invalidate all user-related queries
+    
     queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
     queryClient.invalidateQueries({ queryKey: ['admin', 'users', 'admin'] });
     queryClient.invalidateQueries({ queryKey: ['admin', 'users', 'support'] });
@@ -406,7 +406,7 @@ export function StaffManagementClient() {
                               View
                             </Button>
                           </Link>
-                          {/* Only admins can block/activate staff members */}
+                          {}
                           {isAdmin && (
                             <Button
                               variant={member.isActive ? 'destructive' : 'default'}
@@ -439,7 +439,7 @@ export function StaffManagementClient() {
       </Card>
       </div>
 
-      {/* Status Toggle Confirmation Dialog */}
+      {}
       <ConfirmDialog
         open={confirmDialog.open}
         onOpenChange={(open) => setConfirmDialog({ ...confirmDialog, open })}

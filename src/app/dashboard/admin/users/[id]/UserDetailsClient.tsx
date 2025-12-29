@@ -68,7 +68,7 @@ export function UserDetailsClient() {
         </Button>
         <div className="flex gap-2">
           <Button
-            variant={user.isActive ? "destructive" : "default"} // Destructive for Block, Default for Activate
+            variant={user.isActive ? "destructive" : "default"} 
             onClick={() => setConfirmDialog({ open: true, type: 'status' })}
             disabled={isUpdatingStatus}
           >
@@ -88,7 +88,7 @@ export function UserDetailsClient() {
       </div>
 
       <div className="grid gap-6 md:grid-cols-3">
-        {/* User Profile Card */}
+        {}
         <Card className="md:col-span-1">
           <CardHeader className="text-center">
             <div className="relative mx-auto h-24 w-24 rounded-full bg-primary/10 flex items-center justify-center mb-4 overflow-hidden">
@@ -126,7 +126,7 @@ export function UserDetailsClient() {
           </CardContent>
         </Card>
 
-        {/* Details & Activity */}
+        {}
         <div className="md:col-span-2 space-y-6">
           <Card>
             <CardHeader>

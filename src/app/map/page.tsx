@@ -1,4 +1,4 @@
-// app/map/page.tsx
+
 "use client";
 
 import { Suspense } from "react";
@@ -11,12 +11,12 @@ export default function MapPage() {
         <Suspense
           fallback={
             <div className="grid gap-6 md:grid-cols-12 mt-20">
-              {/* Map skeleton */}
+              {}
               <section className="md:col-span-7 lg:col-span-8">
                 <div className="h-[70vh] md:h-[80vh] rounded-xl border bg-muted animate-pulse"></div>
               </section>
 
-              {/* Sidebar skeleton */}
+              {}
               <aside className="md:col-span-5 lg:col-span-4">
                 <div className="rounded-xl border bg-background p-6 space-y-6 h-[80vh]">
                   <div className="space-y-4">

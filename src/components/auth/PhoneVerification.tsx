@@ -49,7 +49,7 @@ export const PhoneVerification: React.FC<PhoneVerificationProps> = ({
       window.recaptchaVerifier = new RecaptchaVerifier(auth, "recaptcha-container", {
         size: "invisible",
         callback: () => {
-          // reCAPTCHA solved, allow signInWithPhoneNumber.
+          
         },
       });
     }
@@ -75,7 +75,7 @@ export const PhoneVerification: React.FC<PhoneVerificationProps> = ({
     } catch (error: any) {
       console.error("Error sending OTP:", error);
       toast.error(error.message || "Failed to send OTP. Please try again.");
-      // Reset reCAPTCHA on error
+      
       if (window.recaptchaVerifier) {
         window.recaptchaVerifier.clear();
         window.recaptchaVerifier = new RecaptchaVerifier(auth, "recaptcha-container", {
@@ -100,7 +100,7 @@ export const PhoneVerification: React.FC<PhoneVerificationProps> = ({
       const result = await confirmationResult.confirm(otp);
       const idToken = await result.user.getIdToken();
 
-      // Verify with our backend
+      
       const response = await axios.post(
         `${process.env.NEXT_PUBLIC_API_URL}/users/verify-phone`,
         { idToken },
@@ -112,7 +112,7 @@ export const PhoneVerification: React.FC<PhoneVerificationProps> = ({
       if (response.data.success) {
         toast.success("Phone verified successfully! ✅");
 
-        // Update local user state
+        
         if (user && token) {
           dispatch(setCredentials({
             token,
@@ -195,7 +195,7 @@ export const PhoneVerification: React.FC<PhoneVerificationProps> = ({
   );
 };
 
-// Add type for window.recaptchaVerifier
+
 declare global {
   interface Window {
     recaptchaVerifier: any;

@@ -31,7 +31,7 @@ import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
 
-// Form Schema
+
 const expenseFormSchema = z.object({
   propertyId: z.string().min(1, 'Property is required'),
   title: z
@@ -85,14 +85,14 @@ export function ExpenseForm({
   const isEditMode = !!expense;
 
   const form = useForm<ExpenseFormData>({
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    
     resolver: zodResolver(expenseFormSchema) as any,
     defaultValues: {
       propertyId: expense?.propertyId || propertyId || '',
       title: expense?.title || '',
       description: expense?.description || '',
       amount: expense?.amount || 0,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      
       currency: (expense?.currency as any) || 'BDT',
       category: expense?.category || 'other',
       dateIncurred: expense?.dateIncurred
@@ -103,7 +103,7 @@ export function ExpenseForm({
     },
   });
 
-  // Load user's properties for selection
+  
   useEffect(() => {
     if (!propertyId && !expense) {
       loadProperties();
@@ -132,7 +132,7 @@ export function ExpenseForm({
       toast.success('Receipt/invoice uploaded successfully');
     } catch (error: unknown) {
       console.error('File upload error:', error);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      
       toast.error((error as any).response?.data?.message || 'Failed to upload file');
     } finally {
       setIsUploading(false);
@@ -166,7 +166,7 @@ export function ExpenseForm({
     } catch (error: unknown) {
       console.error('Error saving expense:', error);
       toast.error(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        
         (error as any).response?.data?.message ||
         `Failed to ${isEditMode ? 'update' : 'create'} expense. Please try again.`
       );
@@ -180,7 +180,7 @@ export function ExpenseForm({
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        {/* Property Selection */}
+        {}
         {!propertyId && !expense && (
           <FormField
             control={form.control}
@@ -215,7 +215,7 @@ export function ExpenseForm({
           />
         )}
 
-        {/* Title and Category */}
+        {}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormField
             control={form.control}
@@ -270,7 +270,7 @@ export function ExpenseForm({
           />
         </div>
 
-        {/* Amount, Currency, and Date */}
+        {}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <FormField
             control={form.control}
@@ -335,7 +335,7 @@ export function ExpenseForm({
           />
         </div>
 
-        {/* Description */}
+        {}
         <FormField
           control={form.control}
           name="description"
@@ -357,7 +357,7 @@ export function ExpenseForm({
           )}
         />
 
-        {/* Recurring Expense */}
+        {}
         <FormField
           control={form.control}
           name="isRecurring"
@@ -379,7 +379,7 @@ export function ExpenseForm({
           )}
         />
 
-        {/* Attachment Upload */}
+        {}
         <div className="space-y-2">
           <FormLabel>Receipt/Invoice (Optional)</FormLabel>
           <FormDescription>
@@ -449,7 +449,7 @@ export function ExpenseForm({
           )}
         </div>
 
-        {/* Submit Button */}
+        {}
         <div className="flex justify-end gap-4">
           <Button
             type="button"

@@ -48,15 +48,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   const [logoutUser, { isLoading: isLoggingOut }] = useLogoutMutation();
 
-  /* --- NOTIFICATION & CHAT LOGIC --- */
+  
   const isAuthenticated = useAppSelector(selectIsAuthenticated);
 
-  // Notification State
+  
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const [selectedNotification, setSelectedNotification] = useState<Notification | null>(null);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
 
-  // Chat/Messages State
+  
   const [isMessageOpen, setIsMessageOpen] = useState(false);
   const [recentConversations, setRecentConversations] = useState<Conversation[]>([]);
   const [unreadMsgCount, setUnreadMsgCount] = useState(0);
@@ -78,7 +78,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     markAllAsRead,
     deleteNotification,
   } = useNotificationsSocket({
-    autoFetch: false, // notifications disabled temporarily
+    autoFetch: false, 
   });
 
   const unreadCount = stats?.unread || 0;
@@ -131,7 +131,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   return (
     <div className="flex h-screen overflow-hidden bg-gray-50">
-      {/* Sidebar - Fixed 400px width */}
+      {}
       <div className="fixed inset-y-0 left-0 z-50 w-80 h-full">
         <DashboardSidebar
           isOpen={sidebarOpen}
@@ -140,9 +140,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         />
       </div>
 
-      {/* Main Content - Offset by sidebar width (320px = w-80) */}
+      {}
       <div className="flex-1 flex flex-col ml-0 lg:ml-80">
-        {/* Header - Perfectly aligned with 400px offset */}
+        {}
         <header className="flex-shrink-0 bg-white border-b border-gray-200 h-20 z-40 sticky top-0 w-full">
           <div className="flex items-center justify-between px-6 py-4 w-full">
             <div className="flex items-center">
@@ -420,7 +420,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </div>
         </header>
 
-        {/* Main Content - Perfect width calculation */}
+        {}
         <main className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 flex-1 overflow-y-auto scroll-smooth w-full">
           <div className="w-full h-full">
             <Breadcrumb />

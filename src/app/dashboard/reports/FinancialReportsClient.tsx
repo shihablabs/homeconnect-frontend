@@ -45,7 +45,7 @@ export function FinancialReportsClient() {
       try {
         setLoading(true);
 
-        // Fetch earnings data
+        
         const earningsData = await paymentsApi.getLandlordEarnings();
         setEarnings(earningsData || {
           totalEarnings: 0,
@@ -58,13 +58,13 @@ export function FinancialReportsClient() {
           },
         });
 
-        // Fetch financial summary (income + expenses)
+        
         const summary = await financialApi.getFinancialSummary({ months });
         setFinancialSummary(summary);
 
-        // TODO: Fetch detailed reports from API
-        // const reportsData = await reportsApi.getFinancialReports({ period, startDate, endDate });
-        // setReports(reportsData);
+        
+        
+        
         setReports([]);
       } catch (error: unknown) {
         console.error('Failed to fetch reports:', error);
@@ -91,7 +91,7 @@ export function FinancialReportsClient() {
 
   const handleGenerateReport = async () => {
     try {
-      // TODO: Implement report generation API
+      
       toast.info('Report generation feature coming soon');
     } catch {
       toast.error('Failed to generate report');
@@ -100,7 +100,7 @@ export function FinancialReportsClient() {
 
   const handleExportReport = async (format: 'pdf' | 'excel') => {
     try {
-      // TODO: Implement report export API
+      
       toast.info(`${format.toUpperCase()} export feature coming soon`);
     } catch {
       toast.error(`Failed to export ${format}`);
@@ -152,7 +152,7 @@ export function FinancialReportsClient() {
           </div>
         </div>
 
-        {/* KPI Summary Cards */}
+        {}
         {loading ? (
           <div className="grid gap-4 md:grid-cols-4">
             {[1, 2, 3, 4].map((i) => (
@@ -326,10 +326,10 @@ export function FinancialReportsClient() {
           </div>
 
           <TabsContent value="overview" className="space-y-6">
-            {/* Financial Overview Chart */}
+            {}
             <FinancialChart />
 
-            {/* Net Profit/Loss Chart */}
+            {}
             {financialSummary && financialSummary.monthlyBreakdown.length > 0 && (
               <NetProfitChart data={financialSummary.monthlyBreakdown} />
             )}
@@ -349,7 +349,7 @@ export function FinancialReportsClient() {
                   </div>
                 ) : financialSummary ? (
                   <div className="space-y-6">
-                    {/* Key Metrics */}
+                    {}
                     <div className="grid gap-4 md:grid-cols-3">
                       <div className="border rounded-lg p-4">
                         <div className="text-sm text-muted-foreground mb-1">Average Monthly Income</div>
@@ -371,7 +371,7 @@ export function FinancialReportsClient() {
                       </div>
                     </div>
 
-                    {/* Income Breakdown */}
+                    {}
                     <div className="border rounded-lg p-4">
                       <div className="text-sm font-medium text-muted-foreground mb-3">Income by Source</div>
                       <div className="space-y-2">
@@ -396,7 +396,7 @@ export function FinancialReportsClient() {
                       </div>
                     </div>
 
-                    {/* Expenses by Category */}
+                    {}
                     {Object.keys(financialSummary.expensesByCategory).length > 0 && (
                       <div className="border rounded-lg p-4">
                         <div className="text-sm font-medium text-muted-foreground mb-3">Expenses by Category</div>

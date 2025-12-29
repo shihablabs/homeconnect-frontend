@@ -20,17 +20,17 @@ export function CreateBookingClient() {
   const searchParams = useSearchParams();
   const preSelectedPropertyId = searchParams.get('propertyId');
 
-  // Wizard State
+  
   const [currentStep, setCurrentStep] = useState(1);
   const [searchQuery, setSearchQuery] = useState('');
   const [properties, setProperties] = useState<PropertyResponse[]>([]);
   const [selectedProperty, setSelectedProperty] = useState<PropertyResponse | null>(null);
 
-  // Loading States
+  
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
-  // Form Data
+  
   const [formData, setFormData] = useState<BookingFormData>({
     propertyId: '',
     checkIn: '',
@@ -39,13 +39,13 @@ export function CreateBookingClient() {
     leaseDurationInMonths: '12',
   });
 
-  // Documents State
+  
   const [documents, setDocuments] = useState<DocumentFile[]>([
     { id: 'id_proof', name: 'Identity Proof', type: 'id_proof', url: '' },
     { id: 'income_proof', name: 'Income Proof', type: 'income_proof', url: '' },
   ]);
 
-  // Handle pre-selected property
+  
   useEffect(() => {
     const fetchPreSelectedProperty = async () => {
       if (!preSelectedPropertyId) return;
@@ -63,7 +63,7 @@ export function CreateBookingClient() {
       }
     };
     fetchPreSelectedProperty();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    
   }, [preSelectedPropertyId]);
 
   const searchProperties = async () => {
@@ -102,7 +102,7 @@ export function CreateBookingClient() {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    // Validate size (5MB)
+    
     if (file.size > 5 * 1024 * 1024) {
       toast.error('File size must be less than 5MB');
       return;
@@ -172,7 +172,7 @@ export function CreateBookingClient() {
         checkOut: formData.checkOut,
         specialRequests: formData.specialRequests || undefined,
         leaseDurationInMonths: leaseDuration,
-        setupRecurringPayment: false, // Removed as requested
+        setupRecurringPayment: false, 
         documents: uploadedDocs,
       });
 
@@ -192,7 +192,7 @@ export function CreateBookingClient() {
   return (
     <div className="max-w-6xl mx-auto space-y-8 animate-in fade-in duration-500 pb-20">
 
-      {/* Header */}
+      {}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="space-y-1">
           <div className="flex items-center gap-2 text-muted-foreground mb-1">
@@ -204,7 +204,7 @@ export function CreateBookingClient() {
           <p className="text-gray-500">Apply for your dream home in 3 simple steps.</p>
         </div>
 
-        {/* Step Indicator */}
+        {}
         <div className="flex items-center gap-2 bg-gray-100 p-1 rounded-full">
           {[1, 2, 3].map((step) => (
             <div
@@ -220,7 +220,7 @@ export function CreateBookingClient() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
-        {/* Left Column: Wizard Steps */}
+        {}
         <div className="lg:col-span-2 space-y-6">
           <PropertySelectionStep
             currentStep={currentStep}
@@ -258,7 +258,7 @@ export function CreateBookingClient() {
           />
         </div>
 
-        {/* Right Column: Sticky Summary */}
+        {}
         <div className="lg:col-span-1 hidden lg:block">
           <BookingSummary
             selectedProperty={selectedProperty}

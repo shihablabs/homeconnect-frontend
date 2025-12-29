@@ -55,7 +55,7 @@ export default function TrustBadges({
         Trust badges
       </h2>
       <div className="container mx-auto max-w-6xl px-4">
-        {/* Header */}
+        {}
         <div className="text-center mb-12">
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-cyan-50 rounded-full text-cyan-600 text-sm font-medium mb-4">
             <Sparkles className="w-4 h-4" />
@@ -69,9 +69,9 @@ export default function TrustBadges({
           </p>
         </div>
 
-        {/* Trust Badges Grid */}
+        {}
         <div className="relative">
-          {/* Background Elements */}
+          {}
           <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/5 via-blue-500/5 to-indigo-500/5 rounded-3xl blur-xl" />
 
           <div className="relative bg-white/80 backdrop-blur-sm rounded-2xl border border-gray-200/60 shadow-lg shadow-blue-500/5 p-8">
@@ -83,7 +83,7 @@ export default function TrustBadges({
                     key={idx}
                     className="group relative flex flex-col items-center text-center p-6 rounded-2xl transition-all duration-500 hover:bg-white hover:shadow-lg hover:shadow-cyan-500/10 hover:border-cyan-200/50 border border-transparent"
                   >
-                    {/* Icon Container */}
+                    {}
                     <div className="relative mb-4">
                       <div className="absolute inset-0 bg-gradient-to-br from-cyan-500 to-blue-500 rounded-2xl blur-md opacity-20 group-hover:opacity-30 transition-opacity duration-500" />
                       <div className="relative w-16 h-16 bg-gradient-to-br from-cyan-500 to-blue-500 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-cyan-500/25 group-hover:shadow-cyan-500/40 transition-all duration-500 group-hover:scale-110">
@@ -91,7 +91,7 @@ export default function TrustBadges({
                       </div>
                     </div>
 
-                    {/* Content */}
+                    {}
                     <h4 className="text-lg font-semibold text-gray-900 mb-2 group-hover:text-cyan-700 transition-colors duration-300">
                       {item.label}
                     </h4>
@@ -99,7 +99,7 @@ export default function TrustBadges({
                       {item.description}
                     </p>
 
-                    {/* Hover Effect Line */}
+                    {}
                     <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-0 h-0.5 bg-gradient-to-r from-cyan-500 to-blue-500 group-hover:w-12 transition-all duration-500" />
                   </div>
                 );
@@ -108,7 +108,7 @@ export default function TrustBadges({
           </div>
         </div>
 
-        {/* Bottom Trust Indicator */}
+        {}
         <div className="text-center mt-8">
           <div className="inline-flex items-center gap-4 text-sm text-gray-500">
             <div className="flex items-center gap-2">

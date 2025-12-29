@@ -1,7 +1,7 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-// import { adminApi } from '@/lib/api/admin-api';
+
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -15,7 +15,7 @@ import {
 } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Calendar, DollarSign, Download, Loader2, Percent, RefreshCw, TrendingUp } from 'lucide-react';
-// import { toast } from 'sonner';
+
 
 interface Commission {
   id: string;
@@ -33,37 +33,37 @@ interface Commission {
 }
 
 export function CommissionsClient() {
-  // TODO: Replace with actual API call when endpoint is implemented
-  // const { data, isLoading, isFetching, error, refetch } = useQuery({
-  //   queryKey: ['admin', 'commissions'],
-  //   queryFn: async () => {
-  //     const response = await adminApi.getCommissions();
-  //     return {
-  //       commissions: response.commissions || [],
-  //       stats: response.stats || {
-  //         totalCommissions: 0,
-  //         paidCommissions: 0,
-  //         pendingCommissions: 0,
-  //         totalAmount: 0,
-  //       },
-  //     };
-  //   },
-  //   staleTime: 30000,
-  //   refetchOnWindowFocus: true,
-  //   refetchInterval: 60000,
-  //   retry: (failureCount, error: any) => {
-  //     if (error?.response?.status === 429) {
-  //       return false;
-  //     }
-  //     return failureCount < 2;
-  //   },
-  // });
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
 
-  // Temporary mock data until API is implemented
+  
   const { data, isLoading: loading, isFetching, error, refetch } = useQuery({
     queryKey: ['admin', 'commissions'],
     queryFn: async () => {
-      // Simulate API delay
+      
       await new Promise(resolve => setTimeout(resolve, 500));
       return {
         commissions: [] as Commission[],
@@ -171,7 +171,7 @@ export function CommissionsClient() {
         </div>
       </div>
 
-      {/* Summary Cards */}
+      {}
       <div className="grid gap-4 md:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">

@@ -33,9 +33,9 @@ export default function PropertiesPageClient() {
     const bedrooms = sp.get("beds") ? Number(sp.get("beds")) : undefined;
     const minPrice = sp.get("min") ? Number(sp.get("min")) : undefined;
     const maxPrice = sp.get("max") ? Number(sp.get("max")) : undefined;
-    // Default to sorting by vote score (popularity), then by createdAt
-    // Default to sorting by vote score (popularity), then by createdAt
-    // If no sortBy is specified, backend will default to score sorting
+    
+    
+    
     const sortBy = sp.get("sortBy") || (sp.get("sort")?.split(":")[0]) || undefined;
     const sortOrder =
       (sp.get("sortOrder") as "asc" | "desc") || 
@@ -50,7 +50,7 @@ export default function PropertiesPageClient() {
       city,
       propertyType,
       bedrooms,
-      sortBy: sortBy === "score" ? undefined : sortBy, // Let backend handle default score sorting
+      sortBy: sortBy === "score" ? undefined : sortBy, 
       sortOrder: sortBy === "score" ? undefined : sortOrder,
       page,
       limit,
