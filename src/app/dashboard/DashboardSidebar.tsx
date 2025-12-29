@@ -39,29 +39,29 @@ export default function DashboardSidebar({ isOpen, onClose, role }: DashboardSid
     }
   };
 
-  // Initialize with empty Set to prevent hydration mismatch
-  // Load from localStorage only on client after mount
+  
+  
   const [openDropdowns, setOpenDropdowns] = useState<Set<string>>(new Set());
   const [isMounted, setIsMounted] = useState(false);
 
-  // Helper to determine if a path is active (exact match or sub-path)
-  // Modified to be more robust for nested routes
+  
+  
   const isPathActive = useCallback((targetPath: string) => {
     if (!pathname || !targetPath) return false;
 
-    // Exact match
+    
     if (pathname === targetPath) return true;
 
-    // Dashboard home exception - only exact match
+    
     if (targetPath === '/dashboard' && pathname !== '/dashboard') return false;
 
-    // Sub-path match (e.g. /dashboard/users matching /dashboard/users/123)
-    // The target path must be the prefix, followed by a slash or end of string
+    
+    
     return pathname.startsWith(targetPath + '/');
   }, [pathname]);
 
-  // Load dropdown state from localStorage after mount (client-side only)
-  // AND automatically expand nested menus based on current route
+  
+  
   useEffect(() => {
     setIsMounted(true);
     if (typeof window !== 'undefined') {
@@ -74,17 +74,22 @@ export default function DashboardSidebar({ isOpen, onClose, role }: DashboardSid
           initialDropdowns = new Set(Array.isArray(parsed) ? parsed : []);
         }
 
-        // Auto-expand logic
+        
         const currentMenu = navigationConfig[role] || navigationConfig['tenant'];
         if (currentMenu) {
-          currentMenu.forEach(item => {
-            if (item.type === 'dropdown' && item.items) {
-              const hasActiveChild = item.items.some(subItem => isPathActive(subItem.href));
-              if (hasActiveChild) {
-                initialDropdowns.add(item.label);
+          const findActiveDropdowns = (items: any[]) => {
+            items.forEach(item => {
+              if (item.type === 'dropdown' && item.items) {
+                
+                if (checkActiveRecursive(item.items, isPathActive)) {
+                  initialDropdowns.add(item.label);
+                  
+                  findActiveDropdowns(item.items);
+                }
               }
-            }
-          });
+            });
+          };
+          findActiveDropdowns(currentMenu);
         }
 
         setOpenDropdowns(initialDropdowns);
@@ -93,9 +98,9 @@ export default function DashboardSidebar({ isOpen, onClose, role }: DashboardSid
         console.error('Failed to load dropdown state:', error);
       }
     }
-  }, [role, pathname, isPathActive]); // Re-run when pathname changes to auto-expand
+  }, [role, pathname, isPathActive]); 
 
-  // Save dropdown state to localStorage whenever it changes
+  
   useEffect(() => {
     if (typeof window !== 'undefined') {
       try {
@@ -119,17 +124,17 @@ export default function DashboardSidebar({ isOpen, onClose, role }: DashboardSid
     setOpenDropdowns(newDropdowns);
   };
 
-  // Get menu items with dynamic badge counts
+  
   const getMenuItemsWithBadges = () => {
-    // Fallback to 'tenant' if role is undefined or not in navigationConfig
+    
     const items = navigationConfig[role] || navigationConfig['tenant'];
 
-    if (!items) return []; // Safety check
+    if (!items) return []; 
 
     return items.map(item => {
       if (item.type === 'link') {
         const itemHref = item.href || '';
-        // Update badges based on href
+        
         if (itemHref === '/dashboard/messages') {
           return { ...item, badge: unreadMessages > 0 ? unreadMessages.toString() : null };
         }
@@ -139,20 +144,20 @@ export default function DashboardSidebar({ isOpen, onClose, role }: DashboardSid
         if (itemHref === '/dashboard/maintenance') {
           return { ...item, badge: pendingMaintenance > 0 ? pendingMaintenance.toString() : null };
         }
-        // Support-specific badges
+        
         if (role === 'support') {
           if (itemHref === '/dashboard/support/tickets') {
-            // Could be enhanced with actual support ticket count
+            
             return item;
           }
           if (itemHref === '/dashboard/support/escalations') {
-            // Could be enhanced with actual escalation count
+            
             return item;
           }
         }
-        // Admin-specific badges
+        
         if (role === 'admin' && itemHref === '/dashboard/admin/support') {
-          // Could be enhanced with actual support ticket count
+          
           return item;
         }
       }
@@ -164,7 +169,7 @@ export default function DashboardSidebar({ isOpen, onClose, role }: DashboardSid
 
   return (
     <>
-      {/* Mobile overlay */}
+      {}
       {isOpen && (
         <div
           className="fixed h-full inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
@@ -172,12 +177,12 @@ export default function DashboardSidebar({ isOpen, onClose, role }: DashboardSid
         />
       )}
 
-      {/* Sidebar */}
+      {}
       <div className={clsx(
         "fixed h-full inset-y-0 left-0 z-50 w-80 bg-gradient-to-b from-white to-gray-50/80 border-r border-gray-200/60 backdrop-blur-lg transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0 flex flex-col",
         isOpen ? "translate-x-0" : "-translate-x-full"
       )}>
-        {/* Enhanced Logo Section */}
+        {}
         <div className="flex items-center justify-between h-24 p-6 border-b border-gray-200/40 bg-white/50 backdrop-blur-sm flex-shrink-0">
           <Link
             href="/"
@@ -202,116 +207,24 @@ export default function DashboardSidebar({ isOpen, onClose, role }: DashboardSid
           </button>
         </div>
 
-        {/* Enhanced Navigation - Scrollable */}
+        {}
         <nav className="flex-1 overflow-y-auto mt-8 px-4 pb-24">
-          <div className="space-y-2">
-            {menuItems.map((item, idx) => {
-              if (item.type === 'section') {
-                return (
-                  <div key={`${item.label}-${idx}`} className="px-4 py-2 mt-4 mb-2">
-                    <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                      {item.label}
-                    </p>
-                  </div>
-                );
-              }
-
-              const IconComponent = item.icon;
-              const isActive = item.href ? isPathActive(item.href) : false;
-              const isDropdownOpen = openDropdowns.has(item.label);
-
-              // Type guard for items with icons
-              if (!IconComponent) return null;
-
-              if (item.type === 'dropdown') {
-                // Check if any child is active to highlight the parent dropdown button
-                const isChildActive = item.items?.some(subItem => isPathActive(subItem.href));
-
-                return (
-                  <div key={item.label} className="rounded-xl transition-all duration-200 hover:bg-white/50">
-                    <button
-                      onClick={() => toggleDropdown(item.label)}
-                      className={clsx(
-                        "flex items-center justify-between w-full px-4 py-4 text-sm font-semibold rounded-xl transition-all duration-200",
-                        isChildActive
-                          ? "text-blue-600 bg-blue-50/50" // Highlight parent if child is active
-                          : "text-gray-700 hover:text-gray-900"
-                      )}
-                    >
-                      <div className="flex items-center">
-                        <IconComponent className={clsx("w-5 h-5 mr-3", isChildActive ? "text-blue-600" : "text-blue-600")} />
-                        {item.label}
-                      </div>
-                      {isDropdownOpen ? (
-                        <TbChevronDown className="w-4 h-4 text-gray-400 transition-transform duration-200" />
-                      ) : (
-                        <TbChevronRight className="w-4 h-4 text-gray-400 transition-transform duration-200" />
-                      )}
-                    </button>
-
-                    {isMounted && isDropdownOpen && (
-                      <div className="ml-4 pl-8 border-l-2 border-gray-200/40 space-y-1 py-2">
-                        {item.items?.map((subItem, index) => {
-                          const isSubItemActive = isPathActive(subItem.href);
-                          return (
-                            <Link
-                              key={`${subItem.href}-${subItem.label}-${index}`}
-                              href={subItem.href}
-                              className={clsx(
-                                "flex items-center px-3 py-2 text-sm rounded-lg transition-all duration-200",
-                                isSubItemActive
-                                  ? "text-blue-600 bg-blue-50/50 font-medium"
-                                  : "text-gray-600 hover:text-blue-600 hover:bg-blue-50/50"
-                              )}
-                              onClick={() => window.innerWidth < 1024 && onClose()}
-                            >
-                              <TbChevronRight className="w-3 h-3 mr-2" />
-                              {subItem.label}
-                            </Link>
-                          )
-                        })}
-                      </div>
-                    )}
-                  </div>
-                );
-              }
-
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href || '#'}
-                  className={clsx(
-                    "flex items-center justify-between px-4 py-4 text-sm font-semibold rounded-xl transition-all duration-200 group",
-                    isActive
-                      ? "bg-gradient-to-r from-blue-50 to-blue-100/50 text-blue-600 border-r-4 border-blue-600 shadow-sm"
-                      : "text-gray-700 hover:bg-white/80 hover:text-gray-900 hover:shadow-md"
-                  )}
-                  onClick={() => window.innerWidth < 1024 && onClose()}
-                >
-                  <div className="flex items-center">
-                    <IconComponent className={clsx(
-                      "w-5 h-5 mr-3 transition-colors duration-200",
-                      isActive ? "text-blue-600" : "text-gray-500 group-hover:text-blue-500"
-                    )} />
-                    {item.label}
-                  </div>
-                  {item.badge && (
-                    <span className={clsx(
-                      "px-2 py-1 text-xs font-bold rounded-full min-w-6 text-center",
-                      isActive
-                        ? "bg-blue-600 text-white"
-                        : "bg-gray-200 text-gray-700 group-hover:bg-blue-100 group-hover:text-blue-600"
-                    )}>
-                      {item.badge}
-                    </span>
-                  )}
-                </Link>
-              );
-            })}
+          <div className="space-y-1">
+            {menuItems.map((item, idx) => (
+              <SidebarItem
+                key={`${item.label}-${idx}`}
+                item={item}
+                depth={0}
+                openDropdowns={openDropdowns}
+                toggleDropdown={toggleDropdown}
+                isPathActive={isPathActive}
+                onClose={onClose}
+              />
+            ))}
           </div>
         </nav>
 
-        {/* Enhanced Footer Section */}
+        {}
         <div className="absolute bottom-0 left-0 right-0 p-6 border-t border-gray-200/40 bg-white/50 backdrop-blur-sm">
           <div className="space-y-3">
             <button
@@ -327,4 +240,131 @@ export default function DashboardSidebar({ isOpen, onClose, role }: DashboardSid
       </div>
     </>
   );
+}
+
+
+function SidebarItem({
+  item,
+  depth,
+  openDropdowns,
+  toggleDropdown,
+  isPathActive,
+  onClose
+}: {
+  item: any;
+  depth: number;
+  openDropdowns: Set<string>;
+  toggleDropdown: (label: string) => void;
+  isPathActive: (path: string) => boolean;
+  onClose: () => void;
+}) {
+  if (item.type === 'section') {
+    return (
+      <div className="px-4 py-2 mt-4 mb-2">
+        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+          {item.label}
+        </p>
+      </div>
+    );
+  }
+
+  const IconComponent = item.icon;
+  const isActive = item.href ? isPathActive(item.href) : false;
+  const isDropdownOpen = openDropdowns.has(item.label);
+
+  
+  const paddingLeft = depth > 0 ? `${depth * 1 + 1}rem` : '1rem';
+
+  if (item.type === 'dropdown') {
+    
+    const isChildActive = checkActiveRecursive(item.items, isPathActive);
+
+    return (
+      <div className="rounded-xl transition-all duration-200">
+        <button
+          onClick={() => toggleDropdown(item.label)}
+          className={clsx(
+            "flex items-center justify-between w-full py-3 text-sm font-semibold rounded-xl transition-all duration-200 hover:bg-white/50",
+            isChildActive
+              ? "text-blue-600"
+              : "text-gray-700 hover:text-gray-900",
+            depth === 0 ? "px-4" : "pr-4" 
+          )}
+          style={{ paddingLeft: depth === 0 ? undefined : paddingLeft }}
+        >
+          <div className="flex items-center">
+            {IconComponent && <IconComponent className={clsx("w-5 h-5 mr-3", isChildActive ? "text-blue-600" : "text-gray-500")} />}
+            {!IconComponent && depth > 0 && <span className="w-5 h-5 mr-3 flex items-center justify-center">•</span>}
+            {item.label}
+          </div>
+          {isDropdownOpen ? (
+            <TbChevronDown className="w-4 h-4 text-gray-400 transition-transform duration-200" />
+          ) : (
+            <TbChevronRight className="w-4 h-4 text-gray-400 transition-transform duration-200" />
+          )}
+        </button>
+
+        {isDropdownOpen && item.items && (
+          <div className="space-y-1 py-1">
+            {item.items.map((subItem: any, index: number) => (
+              <SidebarItem
+                key={`${subItem.label}-${index}`}
+                item={subItem}
+                depth={depth + 1}
+                openDropdowns={openDropdowns}
+                toggleDropdown={toggleDropdown}
+                isPathActive={isPathActive}
+                onClose={onClose}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <Link
+      href={item.href || '#'}
+      onClick={() => window.innerWidth < 1024 && onClose()}
+      className={clsx(
+        "flex items-center justify-between py-3 text-sm font-semibold rounded-xl transition-all duration-200 group",
+        isActive
+          ? "bg-gradient-to-r from-blue-50 to-blue-100/50 text-blue-600 border-r-4 border-blue-600 shadow-sm"
+          : "text-gray-700 hover:bg-white/80 hover:text-gray-900 hover:shadow-md",
+        depth === 0 ? "px-4" : "pr-4"
+      )}
+      style={{ paddingLeft: depth === 0 ? undefined : paddingLeft }}
+    >
+      <div className="flex items-center">
+        {IconComponent && (
+          <IconComponent className={clsx(
+            "w-5 h-5 mr-3 transition-colors duration-200",
+            isActive ? "text-blue-600" : "text-gray-500 group-hover:text-blue-500"
+          )} />
+        )}
+        {!IconComponent && depth > 0 && <span className="w-5 h-5 mr-3 flex items-center justify-center">•</span>}
+        {item.label}
+      </div>
+      {item.badge && (
+        <span className={clsx(
+          "px-2 py-1 text-xs font-bold rounded-full min-w-6 text-center",
+          isActive
+            ? "bg-blue-600 text-white"
+            : "bg-gray-200 text-gray-700 group-hover:bg-blue-100 group-hover:text-blue-600"
+        )}>
+          {item.badge}
+        </span>
+      )}
+    </Link>
+  );
+}
+
+function checkActiveRecursive(items: any[], isPathActive: (path: string) => boolean): boolean {
+  if (!items) return false;
+  return items.some(subItem => {
+    if (subItem.href && isPathActive(subItem.href)) return true;
+    if (subItem.items) return checkActiveRecursive(subItem.items, isPathActive);
+    return false;
+  });
 }

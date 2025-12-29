@@ -19,7 +19,7 @@ export function BookingSummary({ selectedProperty, calculateTotalDays }: Booking
         <CardContent className="p-0">
           {selectedProperty ? (
             <div className="divide-y">
-              {/* Property */}
+              {}
               <div className="p-4 flex gap-3">
                 <div className="h-16 w-16 relative rounded bg-gray-100 shrink-0 overflow-hidden">
                   {selectedProperty.images?.[0] && (
@@ -35,7 +35,7 @@ export function BookingSummary({ selectedProperty, calculateTotalDays }: Booking
                 </div>
               </div>
 
-              {/* Cost Estimation */}
+              {}
               {calculateTotalDays() > 0 && selectedProperty.listingType === 'rent' && (
                 <div className="p-4 bg-primary/5">
                   <div className="flex justify-between items-end">

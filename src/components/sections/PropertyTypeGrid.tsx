@@ -58,7 +58,7 @@ const types = [
 export default function PropertyTypeGrid() {
   return (
     <section className="py-20 bg-white relative overflow-hidden">
-      {/* Background Decor */}
+      {}
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
         <div className="absolute -top-[20%] -left-[10%] w-[50%] h-[50%] bg-gradient-to-br from-blue-50/50 to-purple-50/50 rounded-full blur-3xl opacity-60" />
         <div className="absolute top-[20%] -right-[10%] w-[40%] h-[60%] bg-gradient-to-bl from-cyan-50/50 to-emerald-50/50 rounded-full blur-3xl opacity-60" />
@@ -89,7 +89,7 @@ export default function PropertyTypeGrid() {
                 "hover:-translate-y-2 hover:shadow-xl hover:shadow-slate-300/60",
                 border
               )}>
-                {/* Icon Circle */}
+                {}
                 <div className={cn(
                   "w-14 h-14 rounded-2xl flex items-center justify-center mb-6 transition-transform duration-300 group-hover:scale-110 shadow-sm",
                   bg
@@ -97,7 +97,7 @@ export default function PropertyTypeGrid() {
                   <Icon className={cn("w-7 h-7", text)} />
                 </div>
 
-                {/* Content */}
+                {}
                 <h3 className="text-xl font-bold text-slate-900 mb-2 group-hover:text-blue-600 transition-colors">
                   {label}
                 </h3>
@@ -105,13 +105,13 @@ export default function PropertyTypeGrid() {
                   {desc}
                 </p>
 
-                {/* Arrow */}
+                {}
                 <div className="flex items-center text-sm font-semibold text-slate-400 group-hover:text-blue-600 transition-colors">
                   <span>Explore</span>
                   <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
                 </div>
 
-                {/* Gradient Line Bottom */}
+                {}
                 <div className={cn(
                   "absolute bottom-0 left-0 w-full h-1 rounded-b-2xl bg-gradient-to-r opacity-0 group-hover:opacity-100 transition-opacity duration-300",
                   color

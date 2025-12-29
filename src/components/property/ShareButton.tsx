@@ -44,7 +44,7 @@ export function ShareButton({
 }: ShareButtonProps) {
   const [copied, setCopied] = useState(false);
 
-  // Get current URL or construct property URL
+  
   const getPropertyUrl = () => {
     if (propertyUrl) return propertyUrl;
     if (typeof window !== 'undefined') {
@@ -106,7 +106,7 @@ export function ShareButton({
         });
         toast.success('Shared successfully!');
       } catch (error: unknown) {
-        // User cancelled or error occurred
+        
         console.error('Share error:', error);
         if (error && typeof error === 'object' && 'name' in error) {
           const err = error as { name?: string };
@@ -118,7 +118,7 @@ export function ShareButton({
         }
       }
     } else {
-      // Fallback to copy link
+      
       handleCopyLink();
     }
   };
@@ -139,7 +139,7 @@ export function ShareButton({
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
-        {/* Native Share (Mobile) */}
+        {}
         {typeof navigator !== 'undefined' && typeof navigator.share === 'function' && (
           <>
             <DropdownMenuItem onClick={handleNativeShare}>
@@ -150,7 +150,7 @@ export function ShareButton({
           </>
         )}
 
-        {/* Copy Link */}
+        {}
         <DropdownMenuItem onClick={handleCopyLink}>
           {copied ? (
             <>
@@ -167,7 +167,7 @@ export function ShareButton({
 
         <DropdownMenuSeparator />
 
-        {/* Social Media Options */}
+        {}
         <DropdownMenuItem onClick={() => handleShare('facebook')}>
           <Facebook className="mr-2 h-4 w-4 text-blue-600" />
           Share on Facebook

@@ -6,7 +6,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 export function DashboardSkeleton() {
   return (
     <div className="space-y-6">
-      {/* Header Skeleton */}
+      {}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
         <div className="space-y-2">
           <Skeleton className="h-9 w-64" />
@@ -18,7 +18,7 @@ export function DashboardSkeleton() {
         </div>
       </div>
 
-      {/* Stat Cards Skeleton */}
+      {}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {Array.from({ length: 4 }).map((_, i) => (
           <Card key={i}>
@@ -34,7 +34,7 @@ export function DashboardSkeleton() {
         ))}
       </div>
 
-      {/* Performance Overview & User Info Skeleton */}
+      {}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <Card className="lg:col-span-2">
           <CardHeader>
@@ -69,9 +69,9 @@ export function DashboardSkeleton() {
         </Card>
       </div>
 
-      {/* Recent Activities & Pending Maintenance Skeleton */}
+      {}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Recent Activities Skeleton */}
+        {}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
             <div className="space-y-2">
@@ -97,7 +97,7 @@ export function DashboardSkeleton() {
           </CardContent>
         </Card>
 
-        {/* Pending Maintenance Skeleton */}
+        {}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
             <div className="space-y-2">
@@ -126,7 +126,7 @@ export function DashboardSkeleton() {
         </Card>
       </div>
 
-      {/* Quick Actions Skeleton */}
+      {}
       <Card>
         <CardHeader>
           <Skeleton className="h-6 w-32 mb-2" />

@@ -1,5 +1,5 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable @typescript-eslint/no-explicit-any */
+
+
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -77,7 +77,7 @@ export default function RegisterPage() {
       console.log('🔐 User already logged in, redirecting from register...');
       handleRedirect();
     }
-  }, [isAuthenticated, user, router]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [isAuthenticated, user, router]); 
 
   useEffect(() => {
     if (isSuccess && isAuthenticated && user) {
@@ -86,7 +86,7 @@ export default function RegisterPage() {
         handleRedirect();
       }, 1500);
     }
-  }, [isSuccess, isAuthenticated, user, router]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [isSuccess, isAuthenticated, user, router]); 
 
   useEffect(() => {
     if (error) {

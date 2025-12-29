@@ -1,6 +1,6 @@
-// app/about/page.tsx
+
 import { PageHeader } from "@/components/layout/PageHeader";
-import { Button } from "@/components/ui/button"; // Assuming you have this
+import { Button } from "@/components/ui/button"; 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Code2,
@@ -23,14 +23,14 @@ export const metadata = {
 export default function AboutPage() {
   return (
     <main className="min-h-screen w-full bg-background pb-20">
-      {/* 1. Hero Section Standardized */}
+      {}
       <PageHeader
         title="Building the Future of Smart Living"
         description="HomeConnect is a comprehensive ecosystem designed to bridge property owners and tenants through secure, transparent technology."
         badge="University Final Year Project"
       />
 
-      {/* 2. Mission & Values Grid */}
+      {}
       <section className="container mx-auto px-4 py-12">
         <div className="grid gap-8 md:grid-cols-3">
           <Card className="border-t-4 border-t-cyan-400 shadow-sm transition-all hover:shadow-md">
@@ -65,7 +65,7 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* 3. The "MERN" Architecture Section */}
+      {}
       <section className="bg-muted py-16">
         <div className="container mx-auto px-4">
           <div className="mb-12 text-center">
@@ -76,7 +76,7 @@ export default function AboutPage() {
           </div>
 
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {/* Frontend */}
+            {}
             <div className="group rounded-xl border bg-card p-6 transition-colors hover:border-primary/50">
               <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
                 <LayoutDashboard className="h-6 w-6 text-primary" />
@@ -87,7 +87,7 @@ export default function AboutPage() {
               </p>
             </div>
 
-            {/* Backend */}
+            {}
             <div className="group rounded-xl border bg-card p-6 transition-colors hover:border-blue-800/50">
               <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-blue-800/10">
                 <Code2 className="h-6 w-6 text-blue-800" />
@@ -98,7 +98,7 @@ export default function AboutPage() {
               </p>
             </div>
 
-            {/* Database */}
+            {}
             <div className="group rounded-xl border bg-card p-6 transition-colors hover:border-slate-500/50">
               <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-slate-500/10">
                 <Database className="h-6 w-6 text-slate-500" />
@@ -109,7 +109,7 @@ export default function AboutPage() {
               </p>
             </div>
 
-            {/* Features */}
+            {}
             <div className="group rounded-xl border bg-card p-6 transition-colors hover:border-primary/50">
               <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-blue-500/10">
                 <Map className="h-6 w-6 text-blue-600" />
@@ -123,7 +123,7 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* 4. Developer / Creator Section */}
+      {}
       <section className="container mx-auto px-4 py-20">
         <div className="flex flex-col items-center gap-8 rounded-3xl border bg-gradient-to-br from-slate-50 to-slate-100 p-8 text-center dark:from-slate-900 dark:to-slate-800/50 md:p-12">
           <div className="space-y-4">

@@ -27,7 +27,7 @@ export default function Hero() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isLiked, setIsLiked] = useState(false);
 
-  // Auto slide transition
+  
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % heroImages.length);
@@ -37,7 +37,7 @@ export default function Hero() {
 
   return (
     <section className="relative w-full overflow-hidden">
-      {/* Background Slides with Smooth Transitions */}
+      {}
       <div className="absolute inset-0 -z-10">
         {heroImages.map((image, index) => (
           <div
@@ -54,25 +54,25 @@ export default function Hero() {
               sizes="100vw"
               quality={100}
             />
-            {/* Enhanced Gradient Overlay for Better Text Readability */}
+            {}
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/20" />
             <div className="absolute inset-0 bg-gradient-to-r from-black/50 to-transparent" />
           </div>
         ))}
       </div>
 
-      {/* Subtle Floating Elements */}
+      {}
       <div className="absolute top-1/4 left-10 w-3 h-3 bg-cyan-400 rounded-full opacity-60 animate-pulse" />
       <div className="absolute bottom-1/3 right-16 w-4 h-4 bg-blue-400 rounded-full opacity-40 animate-bounce" />
       <div className="absolute top-1/2 left-20 w-2 h-2 bg-white rounded-full opacity-30 animate-ping" />
 
-      {/* Main Content */}
+      {}
       <div className="relative z-10 flex items-center py-12 md:py-20 lg:py-28">
         <div className="container mx-auto px-4 w-full">
           <div className="grid lg:grid-cols-12 gap-6 lg:gap-8 items-center">
-            {/* Left: Hero Content - More Width */}
+            {}
             <div className="lg:col-span-7 text-white space-y-6 md:space-y-8">
-              {/* Trust Badge */}
+              {}
               <div className="inline-flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 bg-white/15 backdrop-blur-md border border-white/30 rounded-2xl px-4 sm:px-6 py-3 sm:py-4 shadow-2xl">
                 <div className="flex items-center gap-2 sm:gap-3">
                   <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 bg-green-400 rounded-full animate-pulse" />
@@ -86,7 +86,7 @@ export default function Hero() {
                 </div>
               </div>
 
-              {/* Dynamic Text Content */}
+              {}
               <div className="space-y-4 md:space-y-6">
                 <div className="overflow-hidden">
                   <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-6xl xl:text-7xl 2xl:text-8xl font-black leading-none transform transition-all duration-700">
@@ -104,7 +104,7 @@ export default function Hero() {
                 </div>
               </div>
 
-              {/* Stats Section */}
+              {}
               <div className="flex flex-wrap gap-4 md:gap-6 lg:gap-8 pt-2 md:pt-4">
                 <div className="text-center transform hover:scale-110 transition-transform duration-300">
                   <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-cyan-400">1,000+</div>
@@ -120,7 +120,7 @@ export default function Hero() {
                 </div>
               </div>
 
-              {/* Features */}
+              {}
               <div className="flex flex-wrap gap-3 md:gap-4 lg:gap-6 pt-2 md:pt-4">
                 <div className="flex items-center gap-2 md:gap-3 text-white/95 bg-white/10 backdrop-blur-sm px-3 md:px-4 py-2 md:py-3 rounded-xl">
                   <Shield className="w-5 h-5 md:w-6 md:h-6 text-cyan-400" />
@@ -133,7 +133,7 @@ export default function Hero() {
               </div>
             </div>
 
-            {/* Right: Search Card Component */}
+            {}
             <div className="lg:col-span-5 w-full">
               <PropertySearchCard />
             </div>
@@ -141,7 +141,7 @@ export default function Hero() {
         </div>
       </div>
 
-      {/* Slide Indicators */}
+      {}
       <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex items-center gap-4">
         {heroImages.map((_, index) => (
           <button
@@ -155,7 +155,7 @@ export default function Hero() {
         ))}
       </div>
 
-      {/* Perfect Scroll Indicator */}
+      {}
       <div className="absolute bottom-16 right-8 z-20">
         <div className="flex flex-col items-center space-y-4">
           <button
@@ -171,7 +171,7 @@ export default function Hero() {
             />
           </button>
 
-          {/* Scroll Indicator */}
+          {}
           <div className="flex flex-col gap-2 items-center text-white/80 pt-3">
             <span className="text-sm mb-3 font-medium tracking-wider rotate-90 origin-center whitespace-nowrap">
               SCROLL

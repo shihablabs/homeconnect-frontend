@@ -20,7 +20,7 @@ interface NetProfitChartProps {
 }
 
 export function NetProfitChart({ data, className }: NetProfitChartProps) {
-  // Format currency for display
+  
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('en-BD', {
       style: 'currency',
@@ -30,14 +30,14 @@ export function NetProfitChart({ data, className }: NetProfitChartProps) {
     }).format(value);
   };
 
-  // Custom tooltip component
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  
+  
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       return (
         <div className="bg-white p-4 border border-gray-200 rounded-lg shadow-lg">
           <p className="font-semibold text-gray-900 mb-2">{label}</p>
-          {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+          {}
           {payload.map((entry: any, index: number) => (
             <p key={index} className="text-sm" style={{ color: entry.color }}>
               <span className="font-medium">{entry.name}:</span>{' '}

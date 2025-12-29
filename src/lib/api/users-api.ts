@@ -1,6 +1,6 @@
 import { api } from './api';
 
-// --- Interfaces & Types ---
+
 
 export interface User {
   id: string;
@@ -38,29 +38,22 @@ export interface UsersResponse {
   totalPages: number;
 }
 
-// --- API Implementation ---
+
 
 export const usersApi = {
-  /**
-   * Get all users (typically used by admins)
-   */
+  
   getUsers: async (params?: GetUsersParams): Promise<UsersResponse> => {
     const response = await api.get('/users', { params });
     return response.data.data;
   },
 
-  /**
-   * Get user by ID
-   */
+  
   getUserById: async (id: string): Promise<User> => {
     const response = await api.get(`/users/${id}`);
     return response.data.data;
   },
 
-  /**
-   * Update user profile
-   * Users can only update their own profile unless they are an admin
-   */
+  
   updateUser: async (
     id: string,
     data: UpdateUserRequest

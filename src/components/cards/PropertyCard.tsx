@@ -112,7 +112,7 @@ export function PropertyCard({ property }: PropertyCardProps) {
         return;
       }
 
-      // Check for type mismatch (Rent vs Sale)
+      
       if (compareItems.length > 0) {
         const currentType = compareItems[0].listingType;
         if (property.listingType !== currentType) {
@@ -142,7 +142,7 @@ export function PropertyCard({ property }: PropertyCardProps) {
     }
 
     checkAuth(() => {
-      // Use username if available, fallback to id
+      
       const profileIdentifier = author.username || author.id;
       router.push(`/profile/${profileIdentifier}`);
     });
@@ -171,7 +171,7 @@ export function PropertyCard({ property }: PropertyCardProps) {
       if (!price || price === 0) return `${currency} 00 /mo`;
       return `${currency} ${price.toLocaleString()} /mo`;
     }
-    // Handle sale property
+    
     if ('totalPrice' in property) {
       const price = property.totalPrice;
       if (!price || price === 0) return `${currency} 00`;
@@ -212,7 +212,7 @@ export function PropertyCard({ property }: PropertyCardProps) {
             getThemeColor()
           )}
         >
-          {/* Image Section */}
+          {}
           <div className="relative aspect-[4/3] w-full overflow-hidden rounded-t-xl bg-gray-50">
             <Image
               src={imgSrc}
@@ -224,7 +224,7 @@ export function PropertyCard({ property }: PropertyCardProps) {
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60" />
 
-            {/* Badges */}
+            {}
             <div className="absolute left-3 top-3 z-10">
               <PropertyBadge
                 listingType={listingType}
@@ -233,7 +233,7 @@ export function PropertyCard({ property }: PropertyCardProps) {
               />
             </div>
 
-            {/* Grouped Actions (Top Right) */}
+            {}
             <div className="absolute right-3 top-3 z-30 flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
               <TooltipProvider>
                 <Tooltip>
@@ -338,7 +338,7 @@ export function PropertyCard({ property }: PropertyCardProps) {
               )}
             </div>
 
-            {/* Price Overlay */}
+            {}
             <div className="absolute bottom-3 left-3 z-10">
               <div className="px-2.5 py-1 rounded-lg bg-black/40 backdrop-blur-md border border-white/20">
                 <h4 className="text-lg font-bold text-white leading-tight">
@@ -348,7 +348,7 @@ export function PropertyCard({ property }: PropertyCardProps) {
             </div>
           </div>
 
-          {/* Content Body */}
+          {}
           <div className="p-4 space-y-3.5">
             <div className="flex items-start justify-between gap-2 h-11">
               <h3 className="line-clamp-2 text-[15px] md:text-[17px] lg:text-lg font-bold text-gray-900 group-hover:text-primary transition-colors leading-snug">
@@ -371,9 +371,9 @@ export function PropertyCard({ property }: PropertyCardProps) {
               )}
             </div>
 
-            {/* Author & Actions Section */}
+            {}
             <div className="pt-1 flex flex-col gap-3">
-              {/* Author & Location Info Row */}
+              {}
               <div className="flex items-center justify-between gap-4">
                 <button
                   onClick={handleAuthorClick}

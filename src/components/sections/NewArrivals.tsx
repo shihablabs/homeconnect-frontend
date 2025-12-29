@@ -107,7 +107,7 @@ export function NewArrivals() {
               </CarouselItem>
             ))}
           </CarouselContent>
-          {/* Mobile Navigation controls below */}
+          {}
           <div className="flex justify-center gap-4 mt-4 md:hidden">
             <CarouselPrevious className="static translate-y-0" />
             <CarouselNext className="static translate-y-0" />

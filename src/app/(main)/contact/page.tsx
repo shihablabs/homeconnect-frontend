@@ -10,12 +10,13 @@ export const metadata = {
 };
 
 type PageProps = {
-  searchParams?: { propertyId?: string; type?: "rent" | "buy" | "sell" | "support" | "landlord" | "partnership" | "other" };
+  searchParams?: Promise<{ propertyId?: string; type?: "rent" | "buy" | "sell" | "support" | "landlord" | "partnership" | "other" }>;
 };
 
-export default function ContactPage({ searchParams }: PageProps) {
-  const prefillPropertyId = searchParams?.propertyId;
-  const prefillType = searchParams?.type;
+export default async function ContactPage({ searchParams }: PageProps) {
+  const resolvedParams = await searchParams;
+  const prefillPropertyId = resolvedParams?.propertyId;
+  const prefillType = resolvedParams?.type;
 
   return (
     <main className="min-h-screen bg-background pb-20">
@@ -27,7 +28,7 @@ export default function ContactPage({ searchParams }: PageProps) {
 
       <div className="container mx-auto px-4 -mt-8 relative z-10">
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-5 max-w-7xl mx-auto">
-          {/* Left: Form */}
+          {}
           <div className="lg:col-span-3">
             <Card className="shadow-lg h-full">
               <CardHeader>
@@ -39,7 +40,7 @@ export default function ContactPage({ searchParams }: PageProps) {
             </Card>
           </div>
 
-          {/* Right: Contact Info */}
+          {}
           <div className="lg:col-span-2">
             <Card className="shadow-lg h-full">
               <CardHeader>

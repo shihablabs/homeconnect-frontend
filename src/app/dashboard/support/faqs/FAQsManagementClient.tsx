@@ -75,9 +75,9 @@ export function FAQsManagementClient() {
       });
       return response.data;
     },
-    staleTime: 60000, // 1 minute
+    staleTime: 60000, 
     refetchOnWindowFocus: false,
-    refetchInterval: false, // Disable auto-refetch by default
+    refetchInterval: false, 
     retry: (failureCount, error: unknown) => {
       if (error && typeof error === 'object' && 'response' in error) {
         const err = error as { response?: { status?: number } };

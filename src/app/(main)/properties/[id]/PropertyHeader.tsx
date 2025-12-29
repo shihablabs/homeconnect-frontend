@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
+
 "use client";
 
 import { Badge } from "@/components/ui/badge";
@@ -62,7 +62,7 @@ export function PropertyHeader({ property }: PropertyHeaderProps) {
   return (
     <Card className="p-0 border-none shadow-none bg-transparent">
       <div className="flex flex-col gap-6">
-        {/* Title and Badge Row */}
+        {}
         <div className="space-y-4">
           <div className="flex flex-wrap items-center gap-3">
             {isVerified ? (
@@ -109,7 +109,7 @@ export function PropertyHeader({ property }: PropertyHeaderProps) {
           </div>
         </div>
 
-        {/* Highlight Stats Grid */}
+        {}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 py-6 border-y border-gray-100">
           <div className="flex flex-col gap-1 p-3 rounded-xl bg-gray-50/50 border border-gray-100">
             <div className="flex items-center gap-2 text-primary">

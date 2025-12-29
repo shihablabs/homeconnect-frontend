@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
+
 "use client";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { pacifico } from "@/lib/fonts";
 import { useLogoutMutation } from "@/redux/features/auth/authApiSlice";
-// import { useGetContentQuery } from "@/redux/features/content/contentApi";
+
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -53,7 +53,7 @@ import { TbHomeSearch } from "react-icons/tb";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "sonner";
 
-// --- Time & Holiday Components ---
+
 
 function DateTimeDisplay() {
   const [time, setTime] = useState<Date | null>(null);
@@ -64,7 +64,7 @@ function DateTimeDisplay() {
     return () => clearInterval(timer);
   }, []);
 
-  if (!time) return null; // Avoid hydration mismatch
+  if (!time) return null; 
 
   return (
     <div className="flex items-center gap-2 text-white/90">
@@ -78,7 +78,7 @@ function DateTimeDisplay() {
   );
 }
 
-// Fallback dates in case API fails
+
 const FALLBACK_HOLIDAYS = [
   { date: "2025-12-25", name: "Christmas Day" },
   { date: "2026-02-21", name: "Intl. Mother Language Day" },
@@ -94,32 +94,47 @@ function NextHolidayDisplay() {
 
   useEffect(() => {
     async function fetchHoliday() {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      const allHolidays: { date: string; name: string; obj: Date }[] = [];
+
+      
+      const nextFriday = new Date(today);
+      nextFriday.setDate(today.getDate() + ((5 - today.getDay() + 7) % 7));
+      if (today.getDay() === 5) {
+        
+        allHolidays.push({ date: nextFriday.toISOString().split('T')[0], name: "Friday (Weekend)", obj: nextFriday });
+      } else {
+        allHolidays.push({ date: nextFriday.toISOString().split('T')[0], name: "Upcoming Friday", obj: nextFriday });
+      }
+
+      
       try {
-        // Free Public Holiday API
         const res = await fetch('https://date.nager.at/api/v3/NextPublicHolidays/BD');
         if (res.ok) {
-          const data = await res.json();
+          const data: { date: string; localName: string; name: string }[] = await res.json();
           if (data && data.length > 0) {
-            const next = data[0];
-            // data[0] is the immediate next holiday. e.g. { date: "2025-02-21", localName: "Language Day", ... }
-            processHoliday({ date: next.date, name: next.name || next.localName });
-            return;
+            data.forEach(h => {
+              allHolidays.push({ date: h.date, name: h.name || h.localName, obj: new Date(h.date) });
+            });
           }
         }
       } catch (error) {
-        console.warn("Failed to fetch holidays, using fallback.", error);
+        console.warn("Failed to fetch public holidays, adding fallbacks.", error);
+        FALLBACK_HOLIDAYS.forEach(h => {
+          allHolidays.push({ ...h, obj: new Date(h.date) });
+        });
       }
 
-      // Fallback logic
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      const upcoming = FALLBACK_HOLIDAYS
-        .map(h => ({ ...h, obj: new Date(h.date) }))
-        .filter(h => h.obj >= today)
-        .sort((a, b) => a.obj.getTime() - b.obj.getTime())[0];
+      
+      const upcoming = allHolidays
+        .filter(h => h.obj >= today) 
+        .sort((a, b) => a.obj.getTime() - b.obj.getTime());
 
-      if (upcoming) {
-        processHoliday({ date: upcoming.date, name: upcoming.name });
+      
+      if (upcoming.length > 0) {
+        processHoliday(upcoming[0]);
       }
     }
 
@@ -127,8 +142,12 @@ function NextHolidayDisplay() {
       const today = new Date();
       today.setHours(0, 0, 0, 0);
       const holidayDate = new Date(holiday.date);
+      
+      holidayDate.setHours(0, 0, 0, 0);
+
       const diffTime = Math.abs(holidayDate.getTime() - today.getTime());
       const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
       setNextHoliday({ ...holiday, daysLeft: diffDays });
     }
 
@@ -163,25 +182,25 @@ export default function Header() {
 
   const [logoutUser, { isLoading: isLoggingOut }] = useLogoutMutation();
 
-  // Notification State
+  
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const [selectedNotification, setSelectedNotification] = useState<Notification | null>(null);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
 
-  // Chat/Messages State
+  
   const [isMessageOpen, setIsMessageOpen] = useState(false);
   const [recentConversations, setRecentConversations] = useState<Conversation[]>([]);
   const [unreadMsgCount, setUnreadMsgCount] = useState(0);
 
   useEffect(() => {
     if (user) {
-      // Fetch recent conversations
-      // TODO: Temporarily disabled chat fetch to prevent errors while system logic is paused.
-      // chatApi.getConversations().then(data => {
-      //   setRecentConversations(data);
-      //   const unread = data.reduce((acc, curr) => acc + curr.unreadCount, 0);
-      //   setUnreadMsgCount(unread);
-      // }).catch(console.error);
+      
+      
+      
+      
+      
+      
+      
     }
   }, [user]);
 
@@ -192,9 +211,9 @@ export default function Header() {
     markAllAsRead,
     deleteNotification,
   } = useNotificationsSocket({
-    // TODO: Temporarily disabled notifications to prevent "Failed to fetch" errors while system logic is paused.
-    // Re-enable when notification system is active.
-    autoFetch: false, // was: isAuthenticated
+    
+    
+    autoFetch: false, 
   });
 
   const unreadCount = stats?.unread || 0;
@@ -263,34 +282,34 @@ export default function Header() {
     }
   };
 
-  // ... (inside component)
-  // const { data: contentData } = useGetContentQuery("main-header");
-  // const navContent = contentData?.data?.items;
+  
+  
+  
 
-  // Icon mapping helper
+  
   const getIcon = (iconName: string) => {
-    // @ts-expect-error - Lucide icons are dynamic
+    
     return LucideIcons[iconName] || LucideIcons.HelpCircle;
   };
 
   const mainNavItems = [
     {
       href: "/properties",
-      label: "Properties", // Renamed from Browse
+      label: "Properties", 
       icon: Home,
       showAlways: true,
       hasDropdown: true,
       dropdownType: "properties"
     },
     {
-      href: "/blogs", // Assuming /blogs based on prev conversations, verified existence in generic sense
+      href: "/blogs", 
       label: "Blogs",
       icon: BookOpen,
       showAlways: true,
       hasDropdown: false
     },
     {
-      href: "/about-us", // Standard route convention
+      href: "/about-us", 
       label: "About Us",
       icon: Building,
       showAlways: true,
@@ -306,7 +325,7 @@ export default function Header() {
   ];
 
 
-  // Property type dropdown items (no icons) - Combined for Sale and Rent
+  
   const propertyTypes = [
     { href: "/properties", label: "For Sale", query: "sale", listingType: "sale" },
     { href: "/properties", label: "For Rent", query: "rent", listingType: "rent" },
@@ -317,7 +336,7 @@ export default function Header() {
     { href: "/properties", label: "New Projects", query: "new-projects" },
   ];
 
-  // Resources dropdown items (no icons)
+  
   const resourceItems = [
     { href: "/blog", label: "Blog & Guides" },
     { href: "/calculator", label: "EMI Calculator" },
@@ -328,17 +347,17 @@ export default function Header() {
 
   return (
     <>
-      {/* Simple Top Bar with Branding Gradient - Clear UX */}
+      {}
       <div className="w-full bg-gradient-to-r from-cyan-600 to-blue-600 text-white text-sm py-2">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between">
-            {/* Left Side: Time & Holiday */}
+            {}
             <div className="flex items-center gap-6">
               <DateTimeDisplay />
               <NextHolidayDisplay />
             </div>
 
-            {/* Right Side: Links (Clearly Clickable with Visual Distinction) */}
+            {}
             <div className="flex items-center space-x-4 md:space-x-6">
               <Link
                 href="/calculator"
@@ -361,14 +380,14 @@ export default function Header() {
         </div>
       </div>
 
-      {/* Main Header - Compact */}
+      {}
       <header
         className={`sticky top-0 z-50 w-full bg-white border-b transition-shadow duration-200 ${isScrolled ? "shadow-md" : "shadow-sm"
           }`}
       >
         <div className="container mx-auto px-3 md:px-4">
           <div className="flex items-center justify-between h-14 md:h-[85px]">
-            {/* Logo - Compact */}
+            {}
             <Link
               href="/"
               className={`${pacifico.className} text-2xl lg:text-3xl font-bold bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent drop-shadow-lg hover:drop-shadow-xl inline-flex items-center space-x-3 hover:scale-105 transition-transform duration-300`}
@@ -382,9 +401,9 @@ export default function Header() {
               <span className="">HomeConnect</span>
             </Link>
 
-            {/* Desktop Navigation with Icons and Dropdowns - Compact */}
+            {}
             <nav className="hidden md:flex items-center space-x-1">
-              {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+              {}
               {mainNavItems.map((item: any) => {
                 const Icon = item.icon;
                 return (
@@ -407,7 +426,7 @@ export default function Header() {
                           <ChevronDown className="h-3.5 w-3.5" />
                         </div>
 
-                        {/* Mega Menu Dropdown */}
+                        {}
                         <div
                           className={`absolute left-0 top-full pt-4 transition-all duration-200 z-50 ${desktopActiveDropdown === item.label
                             ? "opacity-100 visible"
@@ -416,10 +435,10 @@ export default function Header() {
                         >
                           {item.dropdownType === "properties" ? (
                             <div className="bg-white rounded-2xl shadow-xl border border-gray-200 w-[800px] overflow-hidden flex">
-                              {/* Left Content - 2 Columns */}
+                              {}
                               <div className="flex-1 p-8 grid grid-cols-2 gap-8">
                                 <div className="space-y-6">
-                                  {/* All Properties Link */}
+                                  {}
                                   <Link href="/properties" className="block group/item" onClick={() => setDesktopActiveDropdown(null)}>
                                     <h4 className="text-base font-bold text-gray-900 group-hover/item:text-blue-600 transition-colors">All Properties</h4>
                                     <p className="mt-1 text-xs text-gray-500 line-clamp-2">
@@ -463,7 +482,7 @@ export default function Header() {
                                 </div>
                               </div>
 
-                              {/* Right Panel - Dynamic Gradient Card */}
+                              {}
                               <div className="w-[300px] bg-gradient-to-br from-cyan-600 via-blue-600 to-indigo-700 p-8 flex flex-col justify-between text-white relative overflow-hidden">
                                 <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
                                 <div className="absolute bottom-0 left-0 w-24 h-24 bg-cyan-400/20 rounded-full blur-2xl translate-y-1/2 -translate-x-1/2" />
@@ -473,7 +492,7 @@ export default function Header() {
                                     <Home className="w-6 h-6 text-white" />
                                   </div>
 
-                                  {/* Dynamic Content based on Auth & Role */}
+                                  {}
                                   {!isAuthenticated ? (
                                     <>
                                       <h3 className="text-xl font-bold mb-2 font-heading">Join HomeConnect</h3>
@@ -498,7 +517,7 @@ export default function Header() {
                                   )}
                                 </div>
 
-                                {/* Dynamic Action Button */}
+                                {}
                                 {!isAuthenticated ? (
                                   <Link
                                     href="/dashboard/add-property"
@@ -527,9 +546,9 @@ export default function Header() {
                               </div>
                             </div>
                           ) : (
-                            // Generic Dropdown for other items (if any)
+                            
                             <div className="bg-white rounded-lg shadow-xl border border-gray-200 min-w-[220px] py-2">
-                              {/* Placeholder logic for others */}
+                              {}
                             </div>
                           )}
                         </div>
@@ -551,13 +570,13 @@ export default function Header() {
               })}
             </nav>
 
-            {/* Desktop Actions - Compact */}
+            {}
             <div className="hidden md:flex items-center space-x-2">
               {isAuthenticated ? (
                 <>
-                  {/* Simplified Dynamic CTA Buttons */}
+                  {}
                   {pathname?.startsWith('/dashboard') ? (
-                    // IF on Dashboard: Show "Browse Homes" for ALL roles
+                    
                     <Link href="/properties">
                       <Button className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm font-medium shadow-lg shadow-blue-500/20 transition-all hover:scale-105">
                         <Home className="mr-1.5 md:mr-2 h-3.5 w-3.5 md:h-4 md:w-4" />
@@ -566,7 +585,7 @@ export default function Header() {
                       </Button>
                     </Link>
                   ) : (
-                    // IF on Public Site: Show Role-specific action
+                    
                     user?.role === 'landlord' ? (
                       <Link href="/dashboard/add-property">
                         <Button className="bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm font-medium shadow-lg shadow-cyan-500/20 transition-all hover:scale-105">
@@ -747,7 +766,7 @@ export default function Header() {
                     </DropdownMenuContent>
                   </DropdownMenu>
 
-                  {/* Detailed Notification Modal */}
+                  {}
                   <Dialog open={isDetailOpen} onOpenChange={setIsDetailOpen}>
                     <DialogContent className="sm:max-w-md">
                       {selectedNotification && (
@@ -770,7 +789,7 @@ export default function Header() {
                               </p>
                             </div>
 
-                            {/* Contextual Properties display based on data */}
+                            {}
                             {selectedNotification.data && (
                               <div className="text-sm space-y-2">
                                 {(selectedNotification.data as any).propertyName && (
@@ -824,111 +843,111 @@ export default function Header() {
                       </Avatar>
                     </DropdownMenuTrigger>
 
-                    <DropdownMenuContent align="end" className="w-[320px] p-0 overflow-hidden shadow-xl border-gray-100/50 mt-2">
-                      {/* Header Section */}
-                      <div className="flex flex-col items-center justify-center pt-5 pb-6 bg-white">
-                        <div className="relative mb-3">
-                          <Avatar className="h-20 w-20 border-[3px] border-white shadow-lg ring-1 ring-gray-100">
+                    <DropdownMenuContent align="end" className="w-64 p-0 overflow-hidden shadow-xl border-gray-100/50 mt-2">
+                      {}
+                      <div className="flex flex-col items-center justify-center py-4 bg-white">
+                        <div className="relative mb-2">
+                          <Avatar className="h-12 w-12 border-[2px] border-white shadow-md ring-1 ring-gray-100">
                             <AvatarImage src={user?.avatar} className="object-cover" />
-                            <AvatarFallback className="text-2xl bg-primary/10 text-primary font-bold">
+                            <AvatarFallback className="text-lg bg-primary/10 text-primary font-bold">
                               {initials}
                             </AvatarFallback>
                           </Avatar>
-                          <div className="absolute bottom-0 right-0 bg-white rounded-full p-1 shadow-sm border border-gray-100">
-                            <div className="bg-emerald-500 h-3.5 w-3.5 rounded-full border-2 border-white"></div>
+                          <div className="absolute bottom-0 right-0 bg-white rounded-full p-0.5 shadow-sm border border-gray-100">
+                            <div className="bg-emerald-500 h-2.5 w-2.5 rounded-full border-2 border-white"></div>
                           </div>
                         </div>
 
-                        <h3 className="font-bold text-lg text-gray-900 mb-0.5">{user?.name}</h3>
-                        <p className="text-sm text-muted-foreground mb-4">{user?.email}</p>
+                        <h3 className="font-bold text-sm text-gray-900 mb-0.5">{user?.name}</h3>
+                        <p className="text-xs text-muted-foreground mb-3 truncate max-w-[200px]">{user?.email}</p>
 
                         <Button
                           variant="outline"
-                          className="rounded-full px-6 h-9 text-xs font-semibold border-gray-200 hover:bg-gray-50 hover:text-gray-900 transition-colors"
+                          className="rounded-full px-4 h-7 text-[10px] font-semibold border-gray-200 hover:bg-gray-50 hover:text-gray-900 transition-colors"
                           onClick={() => router.push('/dashboard/profile')}
                         >
-                          Manage your HomeConnect Account
+                          Manage Account
                         </Button>
                       </div>
 
-                      <div className="h-px bg-gray-100 w-full mb-2" />
+                      <div className="h-px bg-gray-100 w-full" />
 
 
-                      <div className="grid gap-1 p-5">
-                        <DropdownMenuItem asChild className="cursor-pointer">
-                          <Link href="/dashboard" className="flex items-center w-full font-medium">
-                            <LayoutDashboard className="mr-2 h-4 w-4 text-blue-500" />
+                      <div className="grid gap-0.5 p-2">
+                        <DropdownMenuItem asChild className="cursor-pointer h-8">
+                          <Link href="/dashboard" className="flex items-center w-full font-medium text-xs">
+                            <LayoutDashboard className="mr-2 h-3.5 w-3.5 text-blue-500" />
                             Dashboard
                           </Link>
                         </DropdownMenuItem>
 
-                        <DropdownMenuItem asChild className="cursor-pointer">
-                          <Link href="/dashboard/profile" className="flex items-center w-full font-medium">
-                            <LucideIcons.User className="mr-2 h-4 w-4 text-purple-500" />
+                        <DropdownMenuItem asChild className="cursor-pointer h-8">
+                          <Link href="/dashboard/profile" className="flex items-center w-full font-medium text-xs">
+                            <LucideIcons.User className="mr-2 h-3.5 w-3.5 text-purple-500" />
                             My Profile
                           </Link>
                         </DropdownMenuItem>
 
-                        {/* ================= TENANT MENU ================= */}
+                        {}
                         {user?.role === 'tenant' && (
                           <>
-                            <DropdownMenuSeparator className="my-2" />
-                            <DropdownMenuItem asChild className="cursor-pointer focus:bg-blue-50">
-                              <Link href="/dashboard/my-rentals" className="flex items-center w-full text-gray-700">
-                                <LucideIcons.Key className="mr-3 h-4 w-4 text-blue-500" />
+                            <DropdownMenuSeparator className="my-1" />
+                            <DropdownMenuItem asChild className="cursor-pointer focus:bg-blue-50 h-8">
+                              <Link href="/dashboard/my-rentals" className="flex items-center w-full text-gray-700 text-xs">
+                                <LucideIcons.Key className="mr-2 h-3.5 w-3.5 text-blue-500" />
                                 Active Leases
                               </Link>
                             </DropdownMenuItem>
-                            <DropdownMenuItem asChild className="cursor-pointer focus:bg-rose-50">
-                              <Link href="/dashboard/favorites" className="flex items-center w-full text-gray-700">
-                                <Heart className="mr-3 h-4 w-4 text-rose-500" />
+                            <DropdownMenuItem asChild className="cursor-pointer focus:bg-rose-50 h-8">
+                              <Link href="/dashboard/favorites" className="flex items-center w-full text-gray-700 text-xs">
+                                <Heart className="mr-2 h-3.5 w-3.5 text-rose-500" />
                                 Saved Properties
                               </Link>
                             </DropdownMenuItem>
-                            <DropdownMenuItem asChild className="cursor-pointer focus:bg-emerald-50">
-                              <Link href="/dashboard/my-tours" className="flex items-center w-full text-gray-700">
-                                <LucideIcons.CalendarClock className="mr-3 h-4 w-4 text-emerald-500" />
+                            <DropdownMenuItem asChild className="cursor-pointer focus:bg-emerald-50 h-8">
+                              <Link href="/dashboard/my-tours" className="flex items-center w-full text-gray-700 text-xs">
+                                <LucideIcons.CalendarClock className="mr-2 h-3.5 w-3.5 text-emerald-500" />
                                 Scheduled Visits
                               </Link>
                             </DropdownMenuItem>
                           </>
                         )}
 
-                        {/* ================= LANDLORD MENU ================= */}
+                        {}
                         {user?.role === 'landlord' && (
                           <>
-                            <DropdownMenuSeparator className="my-2" />
-                            <DropdownMenuItem asChild className="cursor-pointer focus:bg-indigo-50">
-                              <Link href="/dashboard/properties" className="flex items-center w-full text-gray-700">
-                                <LucideIcons.Building2 className="mr-3 h-4 w-4 text-indigo-500" />
+                            <DropdownMenuSeparator className="my-1" />
+                            <DropdownMenuItem asChild className="cursor-pointer focus:bg-indigo-50 h-8">
+                              <Link href="/dashboard/properties" className="flex items-center w-full text-gray-700 text-xs">
+                                <LucideIcons.Building2 className="mr-2 h-3.5 w-3.5 text-indigo-500" />
                                 My Properties
                               </Link>
                             </DropdownMenuItem>
-                            <DropdownMenuItem asChild className="cursor-pointer focus:bg-blue-50">
-                              <Link href="/dashboard/add-property" className="flex items-center w-full text-gray-700">
-                                <PlusCircle className="mr-3 h-4 w-4 text-blue-600" />
+                            <DropdownMenuItem asChild className="cursor-pointer focus:bg-blue-50 h-8">
+                              <Link href="/dashboard/add-property" className="flex items-center w-full text-gray-700 text-xs">
+                                <PlusCircle className="mr-2 h-3.5 w-3.5 text-blue-600" />
                                 List New Property
                               </Link>
                             </DropdownMenuItem>
                           </>
                         )}
 
-                        <DropdownMenuSeparator className="my-2" />
+                        <DropdownMenuSeparator className="my-1" />
 
-                        <DropdownMenuItem asChild className="cursor-pointer group">
-                          <Link href="/dashboard/settings" className="flex items-center w-full text-gray-600 group-hover:text-gray-900">
-                            <Settings className="mr-3 h-4 w-4 group-hover:text-gray-900 transition-colors" />
-                            Settings & Privacy
+                        <DropdownMenuItem asChild className="cursor-pointer group h-8">
+                          <Link href="/dashboard/settings" className="flex items-center w-full text-gray-600 group-hover:text-gray-900 text-xs">
+                            <Settings className="mr-2 h-3.5 w-3.5 group-hover:text-gray-900 transition-colors" />
+                            Settings
                           </Link>
                         </DropdownMenuItem>
 
-                        <DropdownMenuSeparator className="my-2" />
+                        <DropdownMenuSeparator className="my-1" />
                         <DropdownMenuItem
                           onClick={handleSignOut}
                           disabled={isLoggingOut}
-                          className="text-red-600 cursor-pointer focus:text-red-700 focus:bg-red-50 py-2.5 font-medium"
+                          className="text-red-600 cursor-pointer focus:text-red-700 focus:bg-red-50 py-1.5 font-medium h-8 text-xs"
                         >
-                          <LogOut className="mr-3 h-4 w-4" />
+                          <LogOut className="mr-2 h-3.5 w-3.5" />
                           {isLoggingOut ? "Logging out..." : "Sign Out"}
                         </DropdownMenuItem>
                       </div>
@@ -955,7 +974,7 @@ export default function Header() {
               )}
             </div>
 
-            {/* Mobile Menu Toggle */}
+            {}
             <button
               onClick={() => {
                 setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -972,13 +991,13 @@ export default function Header() {
           </div>
         </div>
 
-        {/* Mobile Menu */}
+        {}
         {isMobileMenuOpen && (
           <div className="md:hidden absolute top-full left-0 right-0 bg-white shadow-lg border-t animate-slideDown">
             <div className="container mx-auto px-3 py-4">
-              {/* Mobile Navigation with Icons and Dropdowns */}
+              {}
               <div className="space-y-1 mb-6">
-                {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                {}
                 {mainNavItems.map((item: any) => {
                   const Icon = item.icon;
                   const isDropdownOpen = openDropdown === item.label;
@@ -1001,7 +1020,7 @@ export default function Header() {
                             <ChevronDown className={`h-4 w-4 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} />
                           </button>
 
-                          {/* Mobile Dropdown Content */}
+                          {}
                           {isDropdownOpen && (
                             <div className="ml-4 pl-4 border-l-2 border-blue-200 space-y-1 mt-1">
                               {item.dropdownType === "properties"
@@ -1042,7 +1061,7 @@ export default function Header() {
                 })}
               </div>
 
-              {/* Mobile Auth Section */}
+              {}
               {isAuthenticated ? (
                 <div className="space-y-4">
                   <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
@@ -1071,8 +1090,8 @@ export default function Header() {
                       <LayoutDashboard className="h-4 w-4" />
                       <span className="text-sm">Dashboard</span>
                     </Link>
-                    {/* Example: Mobile List Property - শুধু Landlord এর জন্য */}
-                    {/* Dynamic Logic for Mobile - List Property for Landlords, Browse for Tenants */}
+                    {}
+                    {}
                     {user?.role === 'landlord' || user?.role === 'admin' ? (
                       <Link
                         href="/dashboard/add-property"
@@ -1125,7 +1144,7 @@ export default function Header() {
         )}
       </header >
 
-      {/* Add CSS for animation */}
+      {}
       < style jsx > {`
         @keyframes slideDown {
           from {

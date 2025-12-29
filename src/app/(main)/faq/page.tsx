@@ -1,4 +1,4 @@
-// app/faq/page.tsx
+
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Card, CardContent } from "@/components/ui/card";
@@ -51,7 +51,7 @@ const faqs = [
 ];
 
 export default function FAQPage() {
-  // JSON-LD for FAQ rich results
+  
   const faqLd = {
     "@context": "https://schema.org",
     "@type": "FAQPage",
@@ -101,7 +101,7 @@ export default function FAQPage() {
         </Card>
       </section>
 
-      {/* SEO: FAQ Schema */}
+      {}
       <script
         type="application/ld+json"
 

@@ -19,17 +19,17 @@ import { Search, SlidersHorizontal, X } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
-// Adapter function to convert API response to PropertyCard expected type
+
 const adaptProperty = (apiProperty: ApiPropertyResponse): PropertyResponse => {
-  // Calculate if property is new (created within last 7 days)
+  
   const createdAt = new Date(apiProperty.createdAt);
   const daysSinceCreation = (Date.now() - createdAt.getTime()) / (1000 * 60 * 60 * 24);
   const isNew = daysSinceCreation <= 7;
 
-  // Create base property object
+  
   const baseProperty = {
     id: apiProperty.id,
-    slug: apiProperty.id, // Placeholder slug
+    slug: apiProperty.id, 
     title: apiProperty.title,
     description: apiProperty.description,
     listingType: apiProperty.listingType,
@@ -67,7 +67,7 @@ const adaptProperty = (apiProperty: ApiPropertyResponse): PropertyResponse => {
     currency: apiProperty.currency || 'BDT',
   };
 
-  // Add rental-specific or sale-specific fields
+  
   if (apiProperty.listingType === 'rent') {
     return {
       ...baseProperty,
@@ -106,8 +106,8 @@ export function PropertySearchClient() {
     listingType: 'rent',
     page: 1,
     limit: 12,
-    // Default to score sorting (most popular first)
-    sortBy: undefined, // Backend will default to score
+    
+    sortBy: undefined, 
     sortOrder: undefined,
   });
 
@@ -124,7 +124,7 @@ export function PropertySearchClient() {
     try {
       setLoading(true);
       const result = await propertiesApi.getProperties(filters);
-      // Adapt API properties to PropertyCard expected format
+      
       const adaptedProperties = (result?.properties || []).map(adaptProperty);
       setProperties(adaptedProperties);
       setSearchResult(result);
@@ -133,7 +133,7 @@ export function PropertySearchClient() {
         ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
         : undefined;
       toast.error(errorMessage || 'Failed to search properties');
-      setProperties([]); // Ensure properties is always an array on error
+      setProperties([]); 
       setSearchResult(null);
     } finally {
       setLoading(false);
@@ -149,7 +149,7 @@ export function PropertySearchClient() {
     setFilters((prev) => ({
       ...prev,
       [key]: value,
-      page: 1, // Reset to first page on filter change
+      page: 1, 
     }));
   };
 
@@ -186,7 +186,7 @@ export function PropertySearchClient() {
           </p>
         </div>
 
-        {/* Search Bar */}
+        {}
         <Card>
           <CardContent className="pt-6">
             <div className="flex gap-4">
@@ -219,7 +219,7 @@ export function PropertySearchClient() {
           </CardContent>
         </Card>
 
-        {/* Filters Panel */}
+        {}
         {showFilters && (
           <Card>
             <CardHeader>
@@ -361,7 +361,7 @@ export function PropertySearchClient() {
           </Card>
         )}
 
-        {/* Results */}
+        {}
         <div>
           <div className="flex items-center justify-between mb-4">
             <div className="text-sm text-muted-foreground">
@@ -412,7 +412,7 @@ export function PropertySearchClient() {
                 ))}
               </div>
 
-              {/* Pagination */}
+              {}
               {searchResult && searchResult.totalPages > 1 && (
                 <div className="flex items-center justify-center gap-2 mt-8">
                   <Button

@@ -47,7 +47,7 @@ const initialState: AuthState = {
   user: null,
   token: null,
   isAuthenticated: false,
-  isInitialized: false, // Start uninitialized for SSR
+  isInitialized: false, 
 };
 
 const authSlice = createSlice({
@@ -83,7 +83,7 @@ const authSlice = createSlice({
       state.user = hydratedState.user;
       state.token = hydratedState.token;
       state.isAuthenticated = hydratedState.isAuthenticated;
-      state.isInitialized = true; // Mark as initialized after hydration check
+      state.isInitialized = true; 
     },
     updateUserProfile: (state, action: PayloadAction<Partial<AuthUser>>) => {
       if (state.user) {

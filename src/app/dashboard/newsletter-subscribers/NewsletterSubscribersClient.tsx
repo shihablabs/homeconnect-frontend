@@ -97,7 +97,7 @@ export default function NewsletterSubscribersClient() {
           </Button>
         </div>
 
-        {/* Search */}
+        {}
         <Card>
           <CardHeader>
             <CardTitle>Search Subscribers</CardTitle>
@@ -115,7 +115,7 @@ export default function NewsletterSubscribersClient() {
           </CardContent>
         </Card>
 
-        {/* Subscribers Table */}
+        {}
         <Card>
           <CardHeader>
             <CardTitle>Subscribers List</CardTitle>
@@ -170,7 +170,7 @@ export default function NewsletterSubscribersClient() {
                   </Table>
                 </div>
 
-                {/* Pagination */}
+                {}
                 {pagination.totalPages > 1 && (
                   <div className="flex items-center justify-between mt-4">
                     <div className="text-sm text-muted-foreground">

@@ -17,7 +17,7 @@ import { useSearchParams } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
-// Date formatting utility
+
 const formatTimeAgo = (date: string) => {
   const now = new Date();
   const past = new Date(date);
@@ -63,21 +63,21 @@ export function MessagesDashboardClient() {
   } = useChatSocket({
     partnerId: selectedPartnerId || undefined,
     onNewMessage: () => {
-      // Auto-scroll to bottom when new message arrives
+      
       scrollToBottom();
     },
   });
 
-  // Initialize audio
+  
   useEffect(() => {
     audioRef.current = new Audio('/sounds/message-tone.mp3');
   }, []);
 
-  // Play sound on new message
+  
   useEffect(() => {
     if (messages.length > 0) {
       const lastMessage = messages[messages.length - 1];
-      // Only play if message is not from me and created recently (not history load)
+      
       const isRecent = new Date(lastMessage.createdAt).getTime() > Date.now() - 10000;
       if (lastMessage.sender.id !== user?.id && isRecent) {
         audioRef.current?.play().catch(e => console.log('Audio play failed:', e));
@@ -85,7 +85,7 @@ export function MessagesDashboardClient() {
     }
   }, [messages, user?.id]);
 
-  // Initialize from URL params
+  
   useEffect(() => {
     const partnerId = searchParams.get('partner');
     const propertyId = searchParams.get('property');
@@ -100,21 +100,21 @@ export function MessagesDashboardClient() {
 
 
 
-  // Fetch conversations on mount
+  
   useEffect(() => {
     fetchConversations();
   }, [fetchConversations]);
 
-  // Fetch messages when partner is selected
+  
   useEffect(() => {
     if (selectedPartnerId) {
       fetchMessages(selectedPartnerId);
-      // Mark messages as read when opening chat
+      
       markAsRead(selectedPartnerId);
     }
   }, [selectedPartnerId, fetchMessages, markAsRead]);
 
-  // Auto-scroll to bottom when messages change
+  
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
@@ -125,16 +125,16 @@ export function MessagesDashboardClient() {
     if (!selectedPartnerId || !newMessage.trim()) return;
 
     try {
-      // Send message with active property context if set
+      
       await sendMessage(newMessage, activePropertyId || undefined);
 
-      // Clear property context after first message sent in this session
+      
       if (activePropertyId) setActivePropertyId(null);
 
       setNewMessage('');
-      // Mark as read after sending
+      
       markAsRead(selectedPartnerId);
-      // Refresh conversations to update last message
+      
       fetchConversations();
     } catch (error: unknown) {
       const errorMessage = error && typeof error === 'object' && 'message' in error
@@ -201,7 +201,7 @@ export function MessagesDashboardClient() {
       </div>
 
       <div className="grid gap-4 md:grid-cols-3 h-[calc(100vh-200px)]">
-        {/* Conversations List */}
+        {}
         <Card className={`md:col-span-1 flex-col ${showMobileChat ? 'hidden md:flex' : 'flex'}`}>
           <CardHeader>
             <CardTitle>Conversations</CardTitle>
@@ -282,13 +282,13 @@ export function MessagesDashboardClient() {
           </CardContent>
         </Card>
 
-        {/* Chat Area */}
+        {}
         <Card className={`md:col-span-2 flex-col ${showMobileChat ? 'flex' : 'hidden md:flex'}`}>
           {selectedConversation ? (
             <>
               <CardHeader className="border-b">
                 <div className="flex items-center gap-3">
-                  {/* Mobile Back Button */}
+                  {}
                   <Button
                     variant="ghost"
                     size="icon"
@@ -351,7 +351,7 @@ export function MessagesDashboardClient() {
                                 </div>
                               )}
 
-                              {/* Property Context Card */}
+                              {}
                               {message.property && (
                                 <div className={`mb-2 rounded overflow-hidden border ${isOwn ? 'border-primary-foreground/20' : 'border-border/50'} bg-black/10`}>
                                   <div className="flex gap-2 p-2 items-center">

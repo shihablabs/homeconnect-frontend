@@ -6,15 +6,15 @@ import { TbHomeSearch } from 'react-icons/tb';
 
 export const AuthLoginBrand = () => (
   <div className="lg:w-1/2 bg-gradient-to-br from-blue-600 via-purple-600 to-indigo-700 relative overflow-hidden">
-    {/* Animated Background Elements */}
+    {}
     <div className="absolute inset-0 bg-black/10"></div>
 
-    {/* Floating Shapes */}
+    {}
     <div className="absolute top-10 left-10 w-20 h-20 bg-white/10 rounded-full blur-xl"></div>
     <div className="absolute bottom-20 right-16 w-16 h-16 bg-white/10 rounded-full blur-lg"></div>
     <div className="absolute top-1/2 left-1/4 w-12 h-12 bg-white/5 rounded-full blur-md"></div>
 
-    {/* Grid Pattern */}
+    {}
     <div className="absolute inset-0 opacity-10"
       style={{
         backgroundImage: `linear-gradient(#fff 1px, transparent 1px),
@@ -25,7 +25,7 @@ export const AuthLoginBrand = () => (
 
     <div className="relative z-10 h-full flex flex-col justify-center p-12 text-white">
 
-      {/* Enhanced Logo Section */}
+      {}
       <div className="mb-12 text-center lg:text-left">
         <Link
           href="/"
@@ -47,9 +47,9 @@ export const AuthLoginBrand = () => (
         </div>
       </div>
 
-      {/* Main Content */}
+      {}
       <div className="max-w-md">
-        {/* Main Heading */}
+        {}
         <h2 className="text-3xl lg:text-4xl font-bold mb-6 leading-tight">
           Your Dream Home
           <span className="block text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-orange-300">
@@ -57,14 +57,14 @@ export const AuthLoginBrand = () => (
           </span>
         </h2>
 
-        {/* Description */}
+        {}
         <p className="text-xl text-blue-100 mb-8 leading-relaxed font-light">
           Join <span className="font-semibold text-white">10,000+</span> satisfied customers who found their perfect home through our verified property listings.
         </p>
 
-        {/* Features List */}
+        {}
         <div className="flex gap-3 mb-8 justify-center">
-          {/* Card 1 */}
+          {}
           <div className="flex flex-col items-center justify-center text-center gap-2 p-3 rounded-2xl bg-white/10 backdrop-blur-sm border border-white/20 hover:bg-white/15 transition-all duration-300 group">
             <div className="w-12 h-12 bg-gradient-to-br from-green-400 to-emerald-500 rounded-xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
               <span className="text-white text-lg">✓</span>
@@ -74,7 +74,7 @@ export const AuthLoginBrand = () => (
             </div>
           </div>
 
-          {/* Card 2 */}
+          {}
           <div className="flex flex-col items-center justify-center text-center gap-2 p-3 rounded-2xl bg-white/10 backdrop-blur-sm border border-white/20 hover:bg-white/15 transition-all duration-300 group">
             <div className="w-12 h-12 bg-gradient-to-br from-blue-400 to-cyan-500 rounded-xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
               <span className="text-white text-lg">🛡️</span>
@@ -84,7 +84,7 @@ export const AuthLoginBrand = () => (
             </div>
           </div>
 
-          {/* Card 3 */}
+          {}
           <div className="flex flex-col items-center justify-center text-center gap-2 p-3 rounded-2xl bg-white/10 backdrop-blur-sm border border-white/20 hover:bg-white/15 transition-all duration-300 group">
             <div className="w-12 h-12 bg-gradient-to-br from-purple-400 to-pink-500 rounded-xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
               <span className="text-white text-lg">🔒</span>
@@ -95,7 +95,7 @@ export const AuthLoginBrand = () => (
           </div>
         </div>
 
-        {/* Stats Section */}
+        {}
         <div className="grid grid-cols-3 gap-4 pt-6 border-t border-white/20">
           <div className="text-center">
             <div className="text-2xl font-bold text-white">5K+</div>
@@ -111,7 +111,7 @@ export const AuthLoginBrand = () => (
           </div>
         </div>
 
-        {/* Trust Badge */}
+        {}
         <div className="mt-8 flex items-center justify-center lg:justify-start space-x-3 p-4 bg-white/5 rounded-2xl border border-white/10">
           <div className="flex -space-x-2">
             {[1, 2, 3, 4].map((i) => (
@@ -127,7 +127,7 @@ export const AuthLoginBrand = () => (
       </div>
     </div>
 
-    {/* Bottom Gradient */}
+    {}
     <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black/20 to-transparent"></div>
   </div>
 );

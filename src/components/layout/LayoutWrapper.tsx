@@ -9,11 +9,11 @@ import Breadcrumb from './Breadcrumb';
 export default function LayoutWrapper({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
-  // Check if current route is dashboard or auth pages
+  
   const isDashboard = pathname?.startsWith('/dashboard');
   const isAuthPage = pathname?.startsWith('/login') || pathname?.startsWith('/register');
 
-  // Don't show header/footer for dashboard and auth pages
+  
   if (isDashboard) {
     return <DashboardLayout>{children}</DashboardLayout>;
   }

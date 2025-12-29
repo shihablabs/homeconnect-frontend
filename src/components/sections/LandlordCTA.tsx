@@ -22,7 +22,7 @@ export default function LandlordCTA() {
             text-white shadow-lg ring-1 ring-white/10
           "
         >
-          {/* Decorative glows */}
+          {}
           <div
             aria-hidden="true"
             className="pointer-events-none absolute -top-24 -right-16 h-72 w-72 rounded-full bg-cyan-400/20 blur-3xl"
@@ -33,7 +33,7 @@ export default function LandlordCTA() {
           />
 
           <div className="relative grid items-center gap-8 p-8 md:grid-cols-2 md:p-12">
-            {/* Left: Content */}
+            {}
             <div>
               <div className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-3 py-1 text-xs font-medium tracking-wide">
                 Join our community
@@ -50,7 +50,7 @@ export default function LandlordCTA() {
               </h3>
               Whether you&apos;re buying, selling, renting, or letting - HomeConnect makes real estate simple, transparent, and secure for everyone.
 
-              {/* Feature bullets */}
+              {}
               <ul className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <Feature icon={Home} label="Vast Property Selection" />
                 <Feature icon={ShieldCheck} label="Verified Listings" />
@@ -58,7 +58,7 @@ export default function LandlordCTA() {
                 <Feature icon={BadgeCheck} label="Secure Transactions" />
               </ul>
 
-              {/* CTAs */}
+              {}
               <div className="mt-8 flex flex-wrap items-center gap-3">
                 <Button
                   asChild
@@ -90,7 +90,7 @@ export default function LandlordCTA() {
                 Join thousands of happy homeowners and tenants today.
               </p>
 
-              {/* Social proof */}
+              {}
               <div className="mt-6 flex flex-wrap items-center gap-4 text-sm text-white/85">
                 <span className="inline-flex items-center gap-1.5">
                   <Star className="h-4 w-4" aria-hidden="true" />
@@ -107,9 +107,9 @@ export default function LandlordCTA() {
               </div>
             </div>
 
-            {/* Right: Preview card */}
+            {}
             <div className="relative">
-              {/* Just a symbolic UI element representing connection */}
+              {}
               <div className="grid gap-4">
                 <div className="bg-white/10 backdrop-blur-md p-6 rounded-xl border border-white/20 transform md:rotate-2 hover:rotate-0 transition-all duration-500">
                   <div className="flex items-center gap-4 mb-4">
@@ -176,7 +176,7 @@ function Feature({
   );
 }
 
-// Simple icons for local usage if needed
+
 function BadgeCheck(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg

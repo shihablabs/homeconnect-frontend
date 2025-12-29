@@ -1,6 +1,6 @@
 import { api } from './api';
 
-// --- Interfaces & Types ---
+
 
 export type VendorServiceCategory =
   | 'plumbing'
@@ -67,12 +67,10 @@ export interface VendorListResponse {
   limit: number;
 }
 
-// --- API Implementation ---
+
 
 export const vendorsApi = {
-  /**
-   * Get vendors with filters
-   */
+  
   getVendors: async (filters?: VendorFilters): Promise<VendorListResponse> => {
     const response = await api.get('/vendors', { params: filters });
     return {
@@ -84,25 +82,19 @@ export const vendorsApi = {
     };
   },
 
-  /**
-   * Get a single vendor by ID
-   */
+  
   getVendor: async (id: string): Promise<Vendor> => {
     const response = await api.get(`/vendors/${id}`);
     return response.data.data;
   },
 
-  /**
-   * Create a new vendor (Admin/Support only)
-   */
+  
   createVendor: async (data: CreateVendorData): Promise<Vendor> => {
     const response = await api.post('/vendors', data);
     return response.data.data;
   },
 
-  /**
-   * Update vendor (Admin/Support only)
-   */
+  
   updateVendor: async (
     id: string,
     data: UpdateVendorData
@@ -111,9 +103,7 @@ export const vendorsApi = {
     return response.data.data;
   },
 
-  /**
-   * Delete vendor (Admin/Support only)
-   */
+  
   deleteVendor: async (id: string): Promise<{ message: string }> => {
     const response = await api.delete(`/vendors/${id}`);
     return response.data;

@@ -1,7 +1,4 @@
-/**
- * PollCard Component
- * Display poll information with voting interface and results
- */
+
 
 'use client';
 
@@ -9,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useEffect, useState } from 'react';
-// Progress component - using a simple div-based progress bar
+
 import { pollsApi, type Poll } from '@/lib/api/polls-api';
 import { formatDistanceToNow } from 'date-fns';
 import { BarChart3, CheckCircle2, Clock, Loader2, Lock, Users } from 'lucide-react';
@@ -48,7 +45,7 @@ export function PollCard({ poll, onVoteChange, showFullDetails = false }: PollCa
       setVoting(true);
       await pollsApi.voteOnPoll(currentPoll.id, { optionId });
 
-      // Refresh poll data
+      
       const updatedPoll = await pollsApi.getPollById(currentPoll.id);
       setCurrentPoll(updatedPoll);
       setSelectedOptionId(optionId);
@@ -59,7 +56,7 @@ export function PollCard({ poll, onVoteChange, showFullDetails = false }: PollCa
       }
     } catch (error: unknown) {
       console.error('Failed to vote:', error);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      
       const errorMessage = (error as any)?.response?.data?.message || 'Failed to record vote';
       toast.error(errorMessage);
     } finally {

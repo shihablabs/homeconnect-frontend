@@ -47,7 +47,7 @@ export default function BuyingGuidePage() {
 
       <div className="container mx-auto px-4 -mt-8 relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 max-w-7xl mx-auto">
-          {/* Sidebar Navigation */}
+          {}
           <div className="lg:col-span-3 lg:sticky lg:top-24 max-h-screen overflow-y-auto hidden lg:block">
             <Card className="shadow-md">
               <CardContent className="p-6">
@@ -71,7 +71,7 @@ export default function BuyingGuidePage() {
             </Card>
           </div>
 
-          {/* Main Content */}
+          {}
           <div className="lg:col-span-9 space-y-8">
             {guideSteps.map((step) => {
               const Icon = step.icon;
@@ -92,7 +92,7 @@ export default function BuyingGuidePage() {
               );
             })}
 
-            {/* CTA */}
+            {}
             <div className="bg-primary/5 rounded-2xl p-8 text-center mt-12 border border-primary/10">
               <h3 className="text-2xl font-bold mb-4">Ready to start looking?</h3>
               <p className="text-muted-foreground mb-6 max-w-xl mx-auto">

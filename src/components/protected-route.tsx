@@ -26,9 +26,9 @@ export function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) 
   const router = useRouter();
   const pathname = usePathname();
 
-  // Check if user role matches required role(s)
+  
   const hasAccess = useCallback(() => {
-    if (!requiredRole) return true; // No role requirement
+    if (!requiredRole) return true; 
     if (!user) return false;
 
     const allowedRoles = Array.isArray(requiredRole) ? requiredRole : [requiredRole];
@@ -36,23 +36,23 @@ export function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) 
   }, [requiredRole, user]);
 
   useEffect(() => {
-    // 1. Wait for auth to be initialized
+    
     if (!isInitialized) return;
 
-    // 2. Unauthenticated check
+    
     if (!isAuthenticated) {
       const returnUrl = encodeURIComponent(pathname);
       router.push(`/login?from=${returnUrl}`);
       return;
     }
 
-    // 3. Role check
+    
     if (user && requiredRole && !hasAccess()) {
       router.push('/dashboard');
     }
   }, [isAuthenticated, isInitialized, user, requiredRole, router, hasAccess, pathname]);
 
-  // Show loading while initializing
+  
   if (!isInitialized) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -62,7 +62,7 @@ export function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) 
     );
   }
 
-  // Show loading while redirecting
+  
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -72,7 +72,7 @@ export function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) 
     );
   }
 
-  // Show loading while user data is being loaded
+  
   if (!user) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -82,7 +82,7 @@ export function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) 
     );
   }
 
-  // Check role only after user is loaded
+  
   if (requiredRole && !hasAccess()) {
     const allowedRoles = Array.isArray(requiredRole) ? requiredRole : [requiredRole];
     const rolesText = allowedRoles.length === 1

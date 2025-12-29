@@ -1,7 +1,7 @@
 import { api } from './api';
 import { uploadApi } from './upload-api';
 
-// --- Interfaces & Types ---
+
 
 export type ExpenseCategory =
   | 'tax'
@@ -104,12 +104,10 @@ export interface ExpenseSummary {
   };
 }
 
-// --- API Implementation ---
+
 
 export const expensesApi = {
-  /**
-   * Upload attachment for expense (receipt/invoice)
-   */
+  
   uploadAttachment: async (file: File): Promise<string> => {
     const formData = new FormData();
     formData.append('images', file);
@@ -121,17 +119,13 @@ export const expensesApi = {
     return response.data.data[0]?.url;
   },
 
-  /**
-   * Create a new expense
-   */
+  
   createExpense: async (data: CreateExpenseData): Promise<Expense> => {
     const response = await api.post('/expenses', data);
     return response.data.data;
   },
 
-  /**
-   * Get expenses with filters
-   */
+  
   getExpenses: async (filters?: ExpenseFilters): Promise<ExpenseListResponse> => {
     const response = await api.get('/expenses', { params: filters });
     return {
@@ -143,17 +137,13 @@ export const expensesApi = {
     };
   },
 
-  /**
-   * Get a single expense by ID
-   */
+  
   getExpense: async (id: string): Promise<Expense> => {
     const response = await api.get(`/expenses/${id}`);
     return response.data.data;
   },
 
-  /**
-   * Update expense
-   */
+  
   updateExpense: async (
     id: string,
     data: UpdateExpenseData
@@ -162,17 +152,13 @@ export const expensesApi = {
     return response.data.data;
   },
 
-  /**
-   * Delete expense (soft delete)
-   */
+  
   deleteExpense: async (id: string): Promise<{ message: string }> => {
     const response = await api.delete(`/expenses/${id}`);
     return response.data;
   },
 
-  /**
-   * Get expense summary/aggregation
-   */
+  
   getExpenseSummary: async (
     filters?: {
       propertyId?: string;

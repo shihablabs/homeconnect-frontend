@@ -38,7 +38,7 @@ export default function MaintenancePage() {
           </TabsList>
 
           <TabsContent value="list" className="space-y-6">
-            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+            {}
             <MaintenanceList userRole={user?.role as any} />
           </TabsContent>
 

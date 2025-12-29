@@ -24,7 +24,7 @@ export function CompareTray() {
         className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 w-[95%] max-w-2xl px-4"
       >
         <div className="bg-white/95 backdrop-blur-md border border-gray-200/60 shadow-2xl rounded-2xl p-4 flex items-center gap-6 overflow-hidden">
-          {/* Header Info */}
+          {}
           <div className="hidden md:flex flex-col shrink-0">
             <div className="flex items-center gap-2 text-primary">
               <LayoutGrid className="h-4 w-4" />
@@ -33,13 +33,13 @@ export function CompareTray() {
             <span className="text-xs text-gray-500 font-semibold">{items.length} of 3 Selected</span>
           </div>
 
-          {/* Property Thumbnails */}
+          {}
           <div className="flex-1 flex gap-3 overflow-x-auto no-scrollbar">
             {items.map((item) => (
               <CompareThumbnail key={item.id} item={item} dispatch={dispatch} />
             ))}
 
-            {/* Empty Slots */}
+            {}
             {Array.from({ length: 3 - items.length }).map((_, i) => (
               <div
                 key={`empty-${i}`}
@@ -50,7 +50,7 @@ export function CompareTray() {
             ))}
           </div>
 
-          {/* Actions */}
+          {}
           <div className="flex items-center gap-3 shrink-0 ml-auto">
             <button
               onClick={() => { dispatch(clearCompare()) }}
@@ -71,7 +71,7 @@ export function CompareTray() {
   );
 }
 
-// ... imports
+
 
 function CompareThumbnail({ item, dispatch }: { item: any, dispatch: any }) {
   const [src, setSrc] = useState(item.images?.[0] || "/placeholder-property.jpg");

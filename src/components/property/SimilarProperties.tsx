@@ -31,12 +31,12 @@ export function SimilarProperties({
       const response = await propertiesApi.getProperties({
         listingType,
         page: 1,
-        limit: 6, // Fetch 6 to ensure we have 5 after filtering current
+        limit: 6, 
         sortBy: "createdAt",
         sortOrder: "desc",
       });
 
-      // Handle API inconsistency: check if response is array or PropertySearchResult object
+      
       if (Array.isArray(response)) {
         return response;
       }
@@ -46,7 +46,7 @@ export function SimilarProperties({
 
   useEffect(() => {
     if (data) {
-      // Filter out current property and take max 5
+      
       const filtered = data.filter((p) => p.id !== currentPropertyId).slice(0, 5);
       setProperties(filtered);
     }
@@ -63,7 +63,7 @@ export function SimilarProperties({
     );
   }
 
-  // If we have no properties after filtering, show a message instead of nothing
+  
   if (properties.length === 0) {
     return (
       <section className="container mx-auto px-4 py-16 border-t border-gray-100">

@@ -7,11 +7,11 @@ export const useDashboard = () => {
   const overviewQuery = useQuery<IDashboardOverviewResponse>({
     queryKey: ["dashboard", "overview"],
     queryFn: dashboardApi.getDashboard,
-    staleTime: 120000, // Consider data fresh for 2 minutes
-    refetchOnWindowFocus: false, // Disable to prevent excessive refetches
-    refetchInterval: 300000, // Refetch every 5 minutes
+    staleTime: 120000, 
+    refetchOnWindowFocus: false, 
+    refetchInterval: 300000, 
     retry: (failureCount, error: unknown) => {
-      // Don't retry on rate limit errors (429)
+      
       if (error && typeof error === 'object' && 'response' in error) {
         const err = error as { response?: { status?: number } };
         if (err.response?.status === 429) {

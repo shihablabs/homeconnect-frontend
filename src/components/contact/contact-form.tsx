@@ -1,13 +1,14 @@
 "use client";
 
+import { useCreateContactMutation } from "@/redux/features/contact/contactApiSlice";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
-import * as React from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "sonner";
+import Swal from "sweetalert2";
 import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Form,
   FormControl,
@@ -56,7 +57,7 @@ const FormSchema = z.object({
   consent: z.boolean().refine((value) => value === true, {
     message: "Please accept the privacy policy",
   }),
-  // Honeypot anti-spam
+  
   company: z.string().max(0).optional(),
 });
 
@@ -67,7 +68,8 @@ type Props = {
 };
 
 export function ContactForm({ prefill }: Props) {
-  const [submitting, setSubmitting] = React.useState(false);
+  
+  const [createContact, { isLoading }] = useCreateContactMutation();
 
   const form = useForm<FormValues>({
     resolver: zodResolver(FormSchema),
@@ -85,66 +87,65 @@ export function ContactForm({ prefill }: Props) {
   });
 
   async function onSubmit(values: FormValues) {
-    // Basic spam guard
+    
     if (values.company) return;
 
-    setSubmitting(true);
+    
+    Swal.fire({
+      title: "Sending Message...",
+      text: "Please wait while we connect you to our team.",
+      allowOutsideClick: false,
+      showConfirmButton: false,
+      willOpen: () => {
+        Swal.showLoading();
+      },
+    });
+
     try {
-      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "";
-      const res = await fetch(`${baseUrl}/v1/contact`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          fullName: values.fullName,
-          email: values.email,
-          phone: values.phone || undefined,
-          type: values.type,
-          propertyId: values.propertyId || undefined,
-          message: values.message,
-          source: "homeconnect-web",
-          pathname:
-            typeof window !== "undefined"
-              ? window.location.pathname
-              : undefined,
-        }),
-      });
+      await createContact({
+        fullName: values.fullName,
+        email: values.email,
+        phone: values.phone || undefined,
+        type: values.type,
+        propertyId: values.propertyId || undefined,
+        message: values.message,
+        source: "homeconnect-web",
+        pathname:
+          typeof window !== "undefined" ? window.location.pathname : undefined,
+      }).unwrap();
 
-      if (!res.ok) {
-        type ContactErrorResponse = { error?: string; message?: string };
-        const data = (await res
-          .json()
-          .catch(() => null)) as ContactErrorResponse | null;
-        const errorMessage =
-          data?.error || data?.message || "Something went wrong";
-        throw new Error(errorMessage);
-      }
+      form.reset();
 
-      form.reset({ ...form.getValues(), message: "", consent: false });
-      toast.success("Message sent", {
-        description: "Our team will get back to you within 1 business day.",
+      
+      Swal.fire({
+        icon: "success",
+        title: "Message Sent!",
+        text: "We have received your inquiry. Our team will contact you within 24 hours.",
+        confirmButtonColor: "#10b981", 
+        timer: 5000,
+        timerProgressBar: true,
       });
-    } catch (error: unknown) {
+    } catch (error: any) {
       const description =
-        error instanceof Error
-          ? error.message
-          : typeof error === "object" &&
-            error !== null &&
-            "message" in error &&
-            typeof (error as { message?: unknown }).message === "string"
-          ? (error as { message: string }).message
-          : "Please try again later.";
-      toast.error("Could not send", {
-        description,
+        error?.data?.message ||
+        error?.data?.error ||
+        error?.message ||
+        "Please check your internet connection and try again.";
+
+      
+      Swal.fire({
+        icon: "error",
+        title: "Submission Failed",
+        text: description,
+        confirmButtonColor: "#ef4444",
       });
-    } finally {
-      setSubmitting(false);
     }
   }
 
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        {/* Honeypot */}
+        {}
         <input
           type="text"
           tabIndex={-1}
@@ -162,7 +163,7 @@ export function ContactForm({ prefill }: Props) {
               <FormItem>
                 <FormLabel>Full name</FormLabel>
                 <FormControl>
-                  <Input placeholder="Jane Doe" {...field} />
+                  <Input placeholder="Jane Doe" {...field} className="h-11 shadow-sm bg-white focus-visible:ring-primary/20" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -181,6 +182,7 @@ export function ContactForm({ prefill }: Props) {
                     inputMode="email"
                     placeholder="jane@company.com"
                     {...field}
+                    className="h-11 shadow-sm bg-white focus-visible:ring-primary/20"
                   />
                 </FormControl>
                 <FormMessage />
@@ -202,6 +204,7 @@ export function ContactForm({ prefill }: Props) {
                     inputMode="tel"
                     placeholder="+1 415 555 0199"
                     {...field}
+                    className="h-11 shadow-sm bg-white focus-visible:ring-primary/20"
                   />
                 </FormControl>
                 <FormDescription>We’ll call only if needed.</FormDescription>
@@ -221,7 +224,7 @@ export function ContactForm({ prefill }: Props) {
                   defaultValue={field.value}
                 >
                   <FormControl>
-                    <SelectTrigger>
+                    <SelectTrigger className="h-11 shadow-sm bg-white focus-visible:ring-primary/20">
                       <SelectValue placeholder="Select a type" />
                     </SelectTrigger>
                   </FormControl>
@@ -248,7 +251,7 @@ export function ContactForm({ prefill }: Props) {
             <FormItem>
               <FormLabel>Property ID (optional)</FormLabel>
               <FormControl>
-                <Input placeholder="e.g., HC-102" {...field} />
+                <Input placeholder="e.g., HC-102" {...field} className="h-11 shadow-sm bg-white focus-visible:ring-primary/20" />
               </FormControl>
               <FormDescription>
                 Include if your message is about a specific listing.
@@ -280,37 +283,37 @@ export function ContactForm({ prefill }: Props) {
           control={form.control}
           name="consent"
           render={({ field }) => (
-            <FormItem className="flex items-start gap-2 space-y-0">
+            <FormItem className="flex items-start gap-3 space-y-0 rounded-md border p-4">
               <FormControl>
-                <input
-                  type="checkbox"
+                <Checkbox
                   checked={field.value}
-                  onChange={(e) => field.onChange(e.target.checked)}
-                  className="mt-1 h-4 w-4 rounded border-muted-foreground/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary"
-                  aria-label="Accept privacy policy"
+                  onCheckedChange={field.onChange}
                 />
               </FormControl>
-              <div className="text-sm text-muted-foreground">
-                I agree to the HomeConnect{" "}
-                <a
-                  href="/privacy"
-                  className="underline underline-offset-4 hover:text-foreground"
-                >
-                  Privacy Policy
-                </a>
-                .
+              <div className="space-y-1 leading-none">
+                <FormLabel>
+                  I agree to the{" "}
+                  <a
+                    href="/privacy"
+                    className="text-primary hover:underline underline-offset-4"
+                  >
+                    Privacy Policy
+                  </a>
+                </FormLabel>
+                <FormDescription>
+                  You consent to receiving updates from HomeConnect.
+                </FormDescription>
               </div>
-              <FormMessage />
             </FormItem>
           )}
         />
 
         <div className="flex items-center justify-between gap-4">
-          <div className="text-xs text-muted-foreground">
+          <div className="text-xs text-muted-foreground hidden sm:block">
             Secure form. You’ll get a confirmation email.
           </div>
-          <Button type="submit" className="min-w-[140px]" disabled={submitting}>
-            {submitting ? (
+          <Button type="submit" className="min-w-[140px]" disabled={isLoading}>
+            {isLoading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 Sending...

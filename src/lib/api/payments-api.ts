@@ -1,6 +1,6 @@
 import { api } from './api';
 
-// --- Interfaces & Types ---
+
 
 export interface Payment {
   id: string;
@@ -105,8 +105,8 @@ export interface PaymentSummary {
 }
 
 export interface MonthlyPaymentSummary {
-  month: string; // Format: "YYYY-MM"
-  monthLabel: string; // Format: "January 2024"
+  month: string; 
+  monthLabel: string; 
   totalPaid: number;
   totalDue: number;
   totalLateFees: number;
@@ -124,12 +124,10 @@ export interface EscrowStatus {
   isReleasable: boolean;
 }
 
-// --- API Implementation ---
+
 
 export const paymentsApi = {
-  /**
-   * Create a rent payment
-   */
+  
   createRentPayment: async (
     data: CreateRentPaymentRequest
   ): Promise<Payment> => {
@@ -137,9 +135,7 @@ export const paymentsApi = {
     return response.data.data;
   },
 
-  /**
-   * Create Stripe payment session for rent payment
-   */
+  
   createPaymentSession: async (
     paymentId: string,
     data: CreatePaymentSessionRequest
@@ -148,9 +144,7 @@ export const paymentsApi = {
     return response.data.data;
   },
 
-  /**
-   * Get payment history
-   */
+  
   getPaymentHistory: async (
     params?: PaymentHistoryParams
   ): Promise<PaymentHistoryResponse> => {
@@ -158,9 +152,7 @@ export const paymentsApi = {
     return response.data.data;
   },
 
-  /**
-   * Get upcoming payments
-   */
+  
   getUpcomingPayments: async (
     days: number = 30
   ): Promise<UpcomingPayment[]> => {
@@ -170,33 +162,25 @@ export const paymentsApi = {
     return response.data.data;
   },
 
-  /**
-   * Get landlord earnings (Landlord/Admin only)
-   */
+  
   getLandlordEarnings: async (): Promise<LandlordEarnings> => {
     const response = await api.get('/payments/earnings');
     return response.data.data;
   },
 
-  /**
-   * Get payment summary
-   */
+  
   getPaymentSummary: async (): Promise<PaymentSummary> => {
     const response = await api.get('/payments/summary');
     return response.data.data;
   },
 
-  /**
-   * Get single payment by ID
-   */
+  
   getPayment: async (id: string): Promise<Payment> => {
     const response = await api.get(`/payments/${id}`);
     return response.data.data;
   },
 
-  /**
-   * Cancel a pending payment
-   */
+  
   cancelPayment: async (
     id: string,
     reason?: string
@@ -205,17 +189,13 @@ export const paymentsApi = {
     return response.data.data;
   },
 
-  /**
-   * Get escrow status for a payment
-   */
+  
   getEscrowStatus: async (paymentId: string): Promise<EscrowStatus> => {
     const response = await api.get(`/payments/${paymentId}/escrow`);
     return response.data.data;
   },
 
-  /**
-   * Raise a dispute on a payment
-   */
+  
   raiseDispute: async (
     paymentId: string,
     reason: string
@@ -226,17 +206,13 @@ export const paymentsApi = {
     return response.data;
   },
 
-  /**
-   * Get Stripe configuration
-   */
+  
   getStripeConfig: async (): Promise<{ publishableKey: string }> => {
     const response = await api.get('/payments/config');
     return response.data.data;
   },
 
-  /**
-   * Get monthly payment summary for charts
-   */
+  
   getMonthlySummary: async (
     months: number = 12
   ): Promise<MonthlyPaymentSummary[]> => {

@@ -43,7 +43,7 @@ export function BookingsDashboardClient() {
           ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
           : undefined;
         toast.error(errorMessage || 'Failed to fetch bookings');
-        setBookings([]); // Ensure bookings is always an array
+        setBookings([]); 
       } finally {
         setLoading(false);
       }

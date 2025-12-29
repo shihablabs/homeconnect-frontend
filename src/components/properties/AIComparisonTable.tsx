@@ -43,7 +43,7 @@ export function AIComparisonTable({ data, isLoading }: AIComparisonTableProps) {
 
     data.properties.forEach((propName, index) => {
       baseCols.push({
-        accessorKey: `value_${index}`, // We will map data to this key
+        accessorKey: `value_${index}`, 
         header: () => <span className="text-violet-700 font-extrabold">{propName}</span>,
         cell: (info) => {
           const row = info.row.original;
@@ -105,11 +105,11 @@ export function AIComparisonTable({ data, isLoading }: AIComparisonTableProps) {
 
   return (
     <div id={tableId} className="bg-white rounded-3xl border border-gray-100 shadow-xl overflow-hidden relative">
-      {/* Header */}
+      {}
       <div className="bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 p-8 text-white relative overflow-hidden">
         <div className="absolute top-0 right-0 w-64 h-64 bg-[rgba(255,255,255,0.1)] rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none" />
 
-        {/* Download Button */}
+        {}
         {data && (
           <button
             data-html2canvas-ignore="true"
@@ -133,7 +133,7 @@ export function AIComparisonTable({ data, isLoading }: AIComparisonTableProps) {
       </div>
 
       <div className="p-8 space-y-10">
-        {/* Table */}
+        {}
         <div className="overflow-x-auto rounded-2xl border border-gray-200 shadow-sm">
           <table className="w-full">
             <thead className="bg-gray-50 border-b border-gray-200">
@@ -166,7 +166,7 @@ export function AIComparisonTable({ data, isLoading }: AIComparisonTableProps) {
           </table>
         </div>
 
-        {/* Summary & Recommendation */}
+        {}
         <div className="grid md:grid-cols-2 gap-8">
           <div className="bg-violet-50 rounded-2xl p-6 border border-violet-100">
             <h3 className="text-violet-800 font-black flex items-center gap-2 mb-3">

@@ -24,13 +24,13 @@ import * as z from 'zod';
 const blogSchema = z.object({
   title: z.string().min(5, 'Title must be at least 5 characters'),
   content: z.string().min(20, 'Content must be at least 20 characters'),
-  tags: z.string().optional(), // Comma separated string for input
+  tags: z.string().optional(), 
   isPublished: z.boolean(),
 });
 
 interface BlogFormProps {
   initialData?: BlogResponse;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  
   onSubmit: (data: any) => Promise<void>;
   isLoading: boolean;
 }

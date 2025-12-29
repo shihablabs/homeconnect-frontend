@@ -40,12 +40,12 @@ export default function LeafletMap({
     return centerFallback;
   }, [items, centerFallback]);
 
-  // Initialize map once, safely
+  
   useEffect(() => {
     const el = wrapperRef.current;
     if (!el) return;
 
-    // Clean any previous instance to avoid "Map container is being reused"
+    
     if (mapRef.current) {
       mapRef.current.remove();
       mapRef.current = null;
@@ -58,7 +58,7 @@ export default function LeafletMap({
     });
     mapRef.current = map;
 
-    // OSM tiles
+    
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
       attribution: '&copy; <a href="https://www.openstreetmap.org/">OSM</a> contributors',
       maxZoom: 19,
@@ -72,15 +72,15 @@ export default function LeafletMap({
       map.remove();
       mapRef.current = null;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // init once
+    
+  }, []); 
 
-  // Render markers and fit to bounds whenever items change or refreshToken bumps
+  
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
 
-    // Remove previous markers layer
+    
     if (markersRef.current) {
       markersRef.current.removeFrom(map);
       markersRef.current = null;
@@ -113,18 +113,18 @@ export default function LeafletMap({
     group.addTo(map);
     markersRef.current = group;
 
-    // Fit to markers (or default center)
+    
     if (items.length > 0) {
       try {
         map.fitBounds(group.getBounds().pad(0.2), { animate: false });
       } catch {
-        // ignore if bounds invalid
+        
       }
     } else {
       map.setView(center, 12);
     }
 
-    // Ensure size is valid after layout changes
+    
     setTimeout(() => map.invalidateSize(), 0);
   }, [items, center, refreshToken]);
 

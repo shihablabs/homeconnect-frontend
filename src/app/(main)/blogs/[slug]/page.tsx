@@ -37,7 +37,7 @@ export async function generateMetadata({ params }: BlogPageProps): Promise<Metad
 
 import { RecentBlogsSidebar } from '@/components/blog/RecentBlogsSidebar';
 
-// ... existing imports
+
 
 export default async function BlogDetailPage({ params }: BlogPageProps) {
   const { slug } = await params;
@@ -47,7 +47,7 @@ export default async function BlogDetailPage({ params }: BlogPageProps) {
   let recentBlogs: BlogResponse[] = [];
 
   try {
-    // Parallel fetching for performance
+    
     const blogPromise = blogApi.getBlogBySlug(slug);
     const propertiesPromise = propertiesApi.getFeaturedProperties(6);
     const recentPromise = blogApi.getAllBlogs({ limit: 6, sortBy: 'createdAt', sortOrder: 'desc' });
@@ -73,7 +73,7 @@ export default async function BlogDetailPage({ params }: BlogPageProps) {
       </Button>
 
       <div className="space-y-10">
-        {/* Header Section */}
+        {}
         <div className="space-y-6 text-center md:text-left max-w-4xl mx-auto">
           <div className="flex flex-wrap items-center justify-center md:justify-start gap-3">
             <Badge variant="secondary" className="px-3 py-1 font-bold text-primary bg-primary/10 hover:bg-primary/20 transition-colors uppercase tracking-widest text-[10px]">
@@ -126,7 +126,7 @@ export default async function BlogDetailPage({ params }: BlogPageProps) {
           </div>
         </div>
 
-        {/* Featured Image */}
+        {}
         <div className="relative h-[350px] md:h-[450px] w-full overflow-hidden rounded-3xl border border-gray-100 shadow-xl bg-muted">
           <BlogImage
             src={blog.images?.[0] || ""}
@@ -137,10 +137,10 @@ export default async function BlogDetailPage({ params }: BlogPageProps) {
           />
         </div>
 
-        {/* Content & Sidebar Layout */}
+        {}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
           <div className="lg:col-span-8 space-y-10">
-            {/* Article Content */}
+            {}
             <div
               className="prose prose-lg prose-gray dark:prose-invert max-w-none 
                   prose-headings:font-black prose-headings:tracking-tight prose-h2:text-3xl prose-h2:mt-12 prose-h2:mb-6
@@ -150,7 +150,7 @@ export default async function BlogDetailPage({ params }: BlogPageProps) {
               dangerouslySetInnerHTML={{ __html: blog.content }}
             />
 
-            {/* Tags Section (Moved to Bottom) */}
+            {}
             <div className="flex flex-col gap-4 pt-10 border-t border-gray-100">
               <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
                 <Tag className="h-4 w-4" />
@@ -165,13 +165,13 @@ export default async function BlogDetailPage({ params }: BlogPageProps) {
               </div>
             </div>
 
-            {/* Share Section */}
+            {}
             <div className="p-8 bg-gray-50 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-6">
               <div className="text-center md:text-left">
                 <h3 className="text-lg font-bold text-gray-900">Share this article</h3>
                 <p className="text-sm text-gray-500">Inspire others by sharing this insight.</p>
               </div>
-              {/* Placeholder for Share Buttons - simplistic for now */}
+              {}
               <div className="flex gap-2">
                 <Button variant="outline" className="rounded-full bg-white hover:bg-gray-50 border-gray-200">
                   <Share2 className="h-4 w-4 mr-2" />
@@ -188,7 +188,7 @@ export default async function BlogDetailPage({ params }: BlogPageProps) {
           </aside>
         </div>
 
-        {/* Related Properties - The "Conversion" Section */}
+        {}
         <RelatedProperties properties={recommendedProperties} title="Find Your Dream Home" />
 
       </div>

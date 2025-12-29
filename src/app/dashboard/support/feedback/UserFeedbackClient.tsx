@@ -51,9 +51,9 @@ export function UserFeedbackClient() {
   const fetchFeedback = async () => {
     try {
       setLoading(true);
-      // TODO: Implement feedback API
-      // const response = await supportApi.getFeedback({ status: statusFilter, rating: ratingFilter });
-      // setFeedbacks(response.feedback);
+      
+      
+      
       setFeedbacks([]);
     } catch {
       toast.error('Failed to fetch feedback');
@@ -123,7 +123,7 @@ export function UserFeedbackClient() {
         </p>
       </div>
 
-      {/* Stats */}
+      {}
       <div className="grid gap-4 md:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">

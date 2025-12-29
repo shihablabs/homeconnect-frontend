@@ -48,7 +48,7 @@ function computeBounds(points: MapItem[]) {
   return [southWest, northEast] as [[number, number], [number, number]];
 }
 
-// Safe map invalidation function
+
 const safeInvalidateSize = (map: L.Map | null) => {
   if (!map) return;
   try {
@@ -62,7 +62,7 @@ export default function MapSearchClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  // Filter state from URL params
+  
   const filters = useMemo((): PropertyFilters => {
     const q = searchParams.get("q") || undefined;
     const listingType = (searchParams.get("lt") as "rent" | "sale") || undefined;
@@ -72,7 +72,7 @@ export default function MapSearchClient() {
     const minPrice = searchParams.get("min") ? Number(searchParams.get("min")) : undefined;
     const maxPrice = searchParams.get("max") ? Number(searchParams.get("max")) : undefined;
     const page = Number(searchParams.get("page") || "1");
-    const limit = Number(searchParams.get("limit") || "100"); // Higher limit for map view
+    const limit = Number(searchParams.get("limit") || "100"); 
 
     const activeFilters: PropertyFilters = {
       search: q,
@@ -97,7 +97,7 @@ export default function MapSearchClient() {
     return activeFilters;
   }, [searchParams]);
 
-  // Fetch properties from API
+  
   const {
     data: searchResult,
     isLoading: isLoadingProperties,
@@ -109,7 +109,7 @@ export default function MapSearchClient() {
   const { data: filterOptions, isLoading: isLoadingFilters } =
     useGetAvailableFiltersQuery();
 
-  // Get properties with coordinates
+  
   const items = useMemo(() => {
     if (!searchResult?.properties) return [];
     return searchResult.properties.filter(
@@ -121,7 +121,7 @@ export default function MapSearchClient() {
     );
   }, [searchResult]);
 
-  // Update URL params
+  
   const updateURL = useCallback(
     (newParams: Record<string, string | number | undefined>) => {
       const next = new URLSearchParams(searchParams.toString());
@@ -152,19 +152,19 @@ export default function MapSearchClient() {
     router.push("/map", { scroll: false });
   }, [router]);
 
-  // Local filter states for quick filters
+  
   const [searchInput, setSearchInput] = useState<string>(filters.search || "");
   const [isMapReady, setIsMapReady] = useState(false);
   const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
 
-  // Debounced search
+  
   const debouncedSearch = useDebounce(searchInput, 500);
 
   useEffect(() => {
     updateURL({ q: debouncedSearch.trim() || undefined });
   }, [debouncedSearch, updateURL]);
 
-  // Selection state
+  
   const [selectedId, setSelectedId] = useState<string | null>(null);
   useEffect(() => {
     if (selectedId && !items.find((f) => f.id === selectedId)) {
@@ -172,14 +172,14 @@ export default function MapSearchClient() {
     }
   }, [items, selectedId]);
 
-  // Map refs
+  
   const mapElRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<L.Map | null>(null);
   const markersGroupRef = useRef<L.LayerGroup | null>(null);
   const LRef = useRef<typeof L | null>(null);
   const [tileError, setTileError] = useState<string | null>(null);
 
-  // Safe map operations
+  
   const safeMapOperation = useCallback((operation: (map: L.Map) => void) => {
     const map = mapRef.current;
     if (!map) return;
@@ -191,7 +191,7 @@ export default function MapSearchClient() {
     }
   }, []);
 
-  // Initialize Leaflet map
+  
   useEffect(() => {
     let destroyed = false;
     let resizeTimer: NodeJS.Timeout;
@@ -202,7 +202,7 @@ export default function MapSearchClient() {
 
       if (!mapElRef.current || destroyed) return;
 
-      // Clean existing map
+      
       if (mapRef.current) {
         mapRef.current.remove();
         mapRef.current = null;
@@ -212,7 +212,7 @@ export default function MapSearchClient() {
         ? getCoordinates(items[0])
         : DEFAULT_CENTER;
 
-      // Create map with proper options
+      
       const map = L.map(mapElRef.current, {
         center: initialCenter,
         zoom: 12,
@@ -224,7 +224,7 @@ export default function MapSearchClient() {
 
       mapRef.current = map;
 
-      // Add tiles with error handling
+      
       const tileLayer = L.tileLayer(
         "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
         {
@@ -241,7 +241,7 @@ export default function MapSearchClient() {
         .on("tileload", () => setTileError(null))
         .addTo(map);
 
-      // Safe resize handler
+      
       const onResize = () => {
         clearTimeout(resizeTimer);
         resizeTimer = setTimeout(() => {
@@ -251,7 +251,7 @@ export default function MapSearchClient() {
 
       window.addEventListener("resize", onResize);
 
-      // Wait for map to be fully initialized
+      
       setTimeout(() => {
         if (!destroyed) {
           safeInvalidateSize(map);
@@ -278,10 +278,10 @@ export default function MapSearchClient() {
         mapRef.current = null;
       }
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    
   }, []);
 
-  // Update markers when items or selection change
+  
   useEffect(() => {
     if (!isMapReady || isLoadingProperties) return;
 
@@ -289,7 +289,7 @@ export default function MapSearchClient() {
     const map = mapRef.current;
     if (!L || !map) return;
 
-    // Clear old markers safely
+    
     if (markersGroupRef.current) {
       try {
         markersGroupRef.current.removeFrom(map);
@@ -346,7 +346,7 @@ export default function MapSearchClient() {
       group.addTo(map);
       markersGroupRef.current = group;
 
-      // Fit bounds safely
+      
       const b = computeBounds(items);
       if (b && b[0] && b[1]) {
         setTimeout(() => {
@@ -360,7 +360,7 @@ export default function MapSearchClient() {
         });
       }
 
-      // Safe size invalidation
+      
       setTimeout(() => {
         safeInvalidateSize(map);
       }, 100);
@@ -369,7 +369,7 @@ export default function MapSearchClient() {
     }
   }, [items, selectedId, isMapReady, isLoadingProperties, safeMapOperation]);
 
-  // Controls
+  
   const fitToMarkers = () => {
     safeMapOperation((map) => {
       const b = computeBounds(items);
@@ -379,7 +379,7 @@ export default function MapSearchClient() {
     });
   };
 
-  // Active filters count
+  
   const activeFilterCount = useMemo(() => {
     let count = 0;
     if (filters.search) count++;
@@ -399,17 +399,17 @@ export default function MapSearchClient() {
 
   return (
     <div className="grid gap-6 md:grid-cols-12 mt-20">
-      {/* Map */}
+      {}
       <section className="md:col-span-7 lg:col-span-8">
         <div className="overflow-hidden rounded-xl border h-[70vh] md:h-[80vh] sticky top-20">
-          {/* Map Container */}
+          {}
           <div
             ref={mapElRef}
             className="absolute inset-0 z-10"
             style={{ visibility: isMapReady ? "visible" : "hidden" }}
           />
 
-          {/* Loading overlay */}
+          {}
           {(isLoadingProperties || !isMapReady) && (
             <div className="absolute inset-0 flex items-center justify-center bg-muted/50 z-20">
               <div className="text-center">
@@ -421,7 +421,7 @@ export default function MapSearchClient() {
             </div>
           )}
 
-          {/* Error overlay */}
+          {}
           {isError && (
             <div className="absolute inset-0 flex items-center justify-center bg-red-50/90 z-20">
               <div className="text-center p-6">
@@ -437,7 +437,7 @@ export default function MapSearchClient() {
             </div>
           )}
 
-          {/* Legend overlay */}
+          {}
           {isMapReady && !isLoadingProperties && (
             <div className="pointer-events-none absolute right-3 top-3 z-20 rounded-md bg-white/90 backdrop-blur-sm p-3 text-xs shadow-lg space-y-1.5 border">
               <div className="flex items-center gap-2 font-medium mb-1 text-xs text-muted-foreground">
@@ -458,7 +458,7 @@ export default function MapSearchClient() {
             </div>
           )}
 
-          {/* Map Controls */}
+          {}
           {isMapReady && !isLoadingProperties && items.length > 0 && (
             <div className="absolute left-3 top-3 z-20 flex flex-col gap-2">
               <Button
@@ -481,10 +481,10 @@ export default function MapSearchClient() {
         </div>
       </section>
 
-      {/* Sidebar */}
+      {}
       <aside className="md:col-span-5 lg:col-span-4">
         <div className="rounded-xl border bg-background p-6 space-y-6 sticky top-20 max-h-[80vh] overflow-y-auto">
-          {/* Header */}
+          {}
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl font-bold mb-1">Map Search</h1>
@@ -521,7 +521,7 @@ export default function MapSearchClient() {
             </Button>
           </div>
 
-          {/* Quick Search */}
+          {}
           <div className="space-y-4">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -538,7 +538,7 @@ export default function MapSearchClient() {
               )}
             </div>
 
-            {/* Quick Filters - Desktop */}
+            {}
             <div className="hidden md:block space-y-4">
               <div>
                 <div className="mb-2 text-sm font-medium">Listing Type</div>
@@ -571,7 +571,7 @@ export default function MapSearchClient() {
                 </ToggleGroup>
               </div>
 
-              {/* Active Filters */}
+              {}
               {activeFilterCount > 0 && (
                 <div className="border-t pt-4">
                   <div className="flex items-center justify-between mb-2">
@@ -656,7 +656,7 @@ export default function MapSearchClient() {
                 </div>
               )}
 
-              {/* View All Filters Button */}
+              {}
               <Button
                 variant="outline"
                 className="w-full"
@@ -673,7 +673,7 @@ export default function MapSearchClient() {
             </div>
           </div>
 
-          {/* Results List */}
+          {}
           <div className="border-t pt-4">
             <div className="space-y-3 max-h-[300px] overflow-y-auto pr-2">
               {isLoadingProperties ? (
@@ -716,7 +716,7 @@ export default function MapSearchClient() {
         </div>
       </aside>
 
-      {/* Filter Sheet (Mobile) */}
+      {}
       <Sheet open={isFilterSheetOpen} onOpenChange={setIsFilterSheetOpen}>
         <SheetContent
           side="right"

@@ -83,7 +83,7 @@ export function EscrowManagementClient() {
         </p>
       </div>
 
-      {/* Stats */}
+      {}
       {stats && (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           <Card>
@@ -125,7 +125,7 @@ export function EscrowManagementClient() {
         </div>
       )}
 
-      {/* Disputed Payments */}
+      {}
       <Card>
         <CardHeader>
           <CardTitle>Disputed Payments</CardTitle>

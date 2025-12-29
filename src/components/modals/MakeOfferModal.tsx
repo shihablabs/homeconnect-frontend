@@ -80,7 +80,7 @@ export function MakeOfferModal({
               Asking Price
             </Label>
             <div className="col-span-3 font-semibold">
-              {/* Assuming helper formatCurrency exists, otherwise simple display */}
+              {}
               {currency} {price.toLocaleString()}
             </div>
           </div>

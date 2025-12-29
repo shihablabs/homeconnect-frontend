@@ -7,7 +7,7 @@ import "leaflet/dist/leaflet.css";
 import { useEffect, useMemo, useRef } from "react";
 import { useFormContext } from "react-hook-form";
 import { MapContainer, Marker, Popup, TileLayer, useMap } from "react-leaflet";
-import { PropertyFormData } from "./AddPropertyForm"; // Import your form data type
+import { PropertyFormData } from "./AddPropertyForm"; 
 
 function ChangeView({ center }: { center: LatLngExpression }) {
   const map = useMap();
@@ -22,12 +22,12 @@ function ChangeView({ center }: { center: LatLngExpression }) {
 export default function LocationMap() {
   const { watch, setValue, getValues } = useFormContext<PropertyFormData>();
 
-  // Get initial values from the form
+  
   const lat = getValues("latitude");
   const lng = getValues("longitude");
   const position: LatLngExpression = [lat, lng];
 
-  // Watch for changes in the form
+  
   const watchedLat = watch("latitude");
   const watchedLng = watch("longitude");
   const watchedPosition: LatLngExpression = [watchedLat, watchedLng];
@@ -59,7 +59,7 @@ export default function LocationMap() {
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
       />
 
-      {/* This component updates the map's view */}
+      {}
       <ChangeView center={watchedPosition} />
 
       <Marker

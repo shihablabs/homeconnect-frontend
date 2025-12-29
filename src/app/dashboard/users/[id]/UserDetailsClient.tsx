@@ -158,7 +158,7 @@ export function UserDetailsClient({ userId }: UserDetailsClientProps) {
       </div>
 
       <div className="grid gap-6 md:grid-cols-2">
-        {/* User Info */}
+        {}
         <Card>
           <CardHeader>
             <CardTitle>User Information</CardTitle>
@@ -234,7 +234,7 @@ export function UserDetailsClient({ userId }: UserDetailsClientProps) {
           </CardContent>
         </Card>
 
-        {/* Actions */}
+        {}
         <Card>
           <CardHeader>
             <CardTitle>Actions</CardTitle>

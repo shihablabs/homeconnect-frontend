@@ -54,9 +54,9 @@ export function EscalationsClient() {
   const fetchEscalations = async () => {
     try {
       setLoading(true);
-      // TODO: Implement escalations API
-      // const response = await supportApi.getEscalations({ status: statusFilter, priority: priorityFilter });
-      // setEscalations(response.escalations);
+      
+      
+      
       setEscalations([]);
     } catch {
       toast.error('Failed to fetch escalations');
@@ -130,7 +130,7 @@ export function EscalationsClient() {
         </p>
       </div>
 
-      {/* Stats */}
+      {}
       <div className="grid gap-4 md:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">

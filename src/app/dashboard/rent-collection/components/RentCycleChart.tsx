@@ -13,8 +13,8 @@ export function RentCycleChart({ totalExpected, totalCollected }: RentCycleChart
   const percentage = totalExpected > 0 ? Math.round((totalCollected / totalExpected) * 100) : 0;
 
   const data = [
-    { name: 'Collected', value: totalCollected, color: '#22c55e' }, // green-500
-    { name: 'Pending', value: pending, color: '#f59e0b' }, // amber-500
+    { name: 'Collected', value: totalCollected, color: '#22c55e' }, 
+    { name: 'Pending', value: pending, color: '#f59e0b' }, 
   ];
 
   return (

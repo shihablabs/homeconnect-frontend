@@ -1,5 +1,5 @@
 
-// Logic copied from pagination-utils.ts for verification to avoid TS compilation issues in quick test
+
 function testPagination(current, total) {
   if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
   const items = [];

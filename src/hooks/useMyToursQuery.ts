@@ -12,7 +12,7 @@ export function useMyToursQuery() {
       return toursApi.getMyTours();
     },
     enabled: !!user,
-    staleTime: 1000 * 60 * 5, // 5 minutes cache
+    staleTime: 1000 * 60 * 5, 
   });
 
   const hasPendingTour = (propertyId: string) => {

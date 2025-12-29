@@ -19,7 +19,7 @@ export function useNotificationsSocket(options: UseNotificationsSocketOptions = 
   const [stats, setStats] = useState<NotificationStats | null>(null);
   const [loading, setLoading] = useState(false);
 
-  // Fetch notifications from API
+  
   const fetchNotifications = useCallback(async (params?: NotificationParams) => {
     try {
       setLoading(true);
@@ -37,30 +37,30 @@ export function useNotificationsSocket(options: UseNotificationsSocketOptions = 
     }
   }, []);
 
-  // Auto-fetch on mount
+  
   useEffect(() => {
     if (autoFetch) {
       fetchNotifications();
     }
   }, [autoFetch, fetchNotifications]);
 
-  // Listen for new notifications via socket
+  
   useEffect(() => {
     if (!socket || !isConnected) return;
 
     const handleNewNotification = (notification: Notification) => {
       console.log('[NotificationsSocket] New notification:', notification);
       
-      // Add to local state
+      
       setNotifications((prev) => {
-        // Check if already exists
+        
         if (prev.some((n) => n.id === notification.id)) {
           return prev;
         }
         return [notification, ...prev];
       });
 
-      // Update stats
+      
       setStats((prev) => {
         if (!prev) return prev;
         return {
@@ -86,13 +86,13 @@ export function useNotificationsSocket(options: UseNotificationsSocketOptions = 
     };
   }, [socket, isConnected, onNewNotification]);
 
-  // Listen for notification count updates
+  
   useEffect(() => {
     if (!socket || !isConnected) return;
 
     const handleNotificationCount = (data: { count: number }) => {
       console.log('[NotificationsSocket] Notification count:', data.count);
-      // Update stats with new count
+      
       setStats((prev) => {
         if (!prev) return prev;
         return {
@@ -109,10 +109,10 @@ export function useNotificationsSocket(options: UseNotificationsSocketOptions = 
     };
   }, [socket, isConnected]);
 
-  // Request notifications via socket
+  
   const requestNotifications = useCallback(() => {
     if (!socket || !isConnected) {
-      // Fallback to REST API
+      
       fetchNotifications();
       return;
     }
@@ -120,26 +120,26 @@ export function useNotificationsSocket(options: UseNotificationsSocketOptions = 
     socket.emit('get_notifications');
   }, [socket, isConnected, fetchNotifications]);
 
-  // Mark notification as read
+  
   const markAsRead = useCallback(
     async (notificationId: string) => {
       try {
         if (socket && isConnected) {
-          // Use socket if available
+          
           socket.emit('mark_notification_read', { notificationId });
         } else {
-          // Fallback to REST API
+          
           await notificationsApi.markAsRead(notificationId);
         }
 
-        // Update local state
+        
         setNotifications((prev) =>
           prev.map((n) =>
             n.id === notificationId ? { ...n, isRead: true, readAt: new Date() } : n
           )
         );
 
-        // Update stats
+        
         setStats((prev) => {
           if (!prev) return prev;
           return {
@@ -159,7 +159,7 @@ export function useNotificationsSocket(options: UseNotificationsSocketOptions = 
     [socket, isConnected, onNotificationRead]
   );
 
-  // Mark all as read
+  
   const markAllAsRead = useCallback(async () => {
     try {
       if (socket && isConnected) {
@@ -168,12 +168,12 @@ export function useNotificationsSocket(options: UseNotificationsSocketOptions = 
         await notificationsApi.markAllAsRead();
       }
 
-      // Update local state
+      
       setNotifications((prev) =>
         prev.map((n) => ({ ...n, isRead: true, readAt: new Date() }))
       );
 
-      // Update stats
+      
       setStats((prev) => {
         if (!prev) return prev;
         return {
@@ -189,17 +189,17 @@ export function useNotificationsSocket(options: UseNotificationsSocketOptions = 
     }
   }, [socket, isConnected]);
 
-  // Delete notification
+  
   const deleteNotification = useCallback(
     async (notificationId: string) => {
       try {
         await notificationsApi.deleteNotification(notificationId);
 
-        // Update local state
+        
         const deleted = notifications.find((n) => n.id === notificationId);
         setNotifications((prev) => prev.filter((n) => n.id !== notificationId));
 
-        // Update stats
+        
         if (deleted) {
           setStats((prev) => {
             if (!prev) return prev;

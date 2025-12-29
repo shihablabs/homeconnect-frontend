@@ -11,10 +11,10 @@ interface RelatedPropertiesProps {
 }
 
 export function RelatedProperties({ properties, title = "Recommended for You" }: RelatedPropertiesProps) {
-  // We use client-side interactive components like PropertyCard, so this wrapper can be a client component 
-  // or a server component passing data to client children. 
-  // PropertyCard is a client component ('use client' inside it usually, or handled by next).
-  // Let's keep this simple.
+  
+  
+  
+  
 
   if (!properties || properties.length === 0) return null;
 

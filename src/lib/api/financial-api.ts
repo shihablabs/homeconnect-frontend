@@ -1,29 +1,29 @@
 import { api } from './api';
 
-// --- Interfaces & Types ---
+
 
 export interface MonthlyFinancialData {
-  month: string; // Format: "YYYY-MM"
-  monthLabel: string; // Format: "January 2024"
+  month: string; 
+  monthLabel: string; 
   income: number;
   expenses: number;
   netProfit: number;
 }
 
 export interface FinancialSummary {
-  // Totals
+  
   totalIncome: number;
   totalExpenses: number;
   netProfit: number;
   netProfitPercentage: number;
 
-  // ROI Calculation (if investment data available)
+  
   roi?: number;
 
-  // Monthly Breakdown
+  
   monthlyBreakdown: MonthlyFinancialData[];
 
-  // Category Breakdowns
+  
   incomeBySource: {
     rent: number;
     securityDeposits: number;
@@ -32,7 +32,7 @@ export interface FinancialSummary {
   };
   expensesByCategory: Record<string, number>;
 
-  // Property-wise Breakdown
+  
   propertyBreakdown: Array<{
     propertyId: string;
     propertyTitle: string;
@@ -41,13 +41,13 @@ export interface FinancialSummary {
     netProfit: number;
   }>;
 
-  // Date Range
+  
   dateRange: {
     startDate: string;
     endDate: string;
   };
 
-  // Additional Metrics
+  
   metrics: {
     averageMonthlyIncome: number;
     averageMonthlyExpenses: number;
@@ -64,12 +64,10 @@ export interface FinancialSummaryFilters {
   months?: number;
 }
 
-// --- API Implementation ---
+
 
 export const financialApi = {
-  /**
-   * Get financial summary (Net Profit/Loss, ROI)
-   */
+  
   getFinancialSummary: async (
     filters?: FinancialSummaryFilters
   ): Promise<FinancialSummary> => {

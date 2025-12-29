@@ -11,6 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   Table,
   TableBody,
@@ -30,6 +31,7 @@ import { toast } from 'sonner';
 export function PropertyVerificationClient() {
   const [page, setPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [dataSort, setDataSort] = useState<string>('desc');
   const [changingStatus, setChangingStatus] = useState<string | null>(null);
   const [confirmDialog, setConfirmDialog] = useState<{
     open: boolean;
@@ -47,11 +49,12 @@ export function PropertyVerificationClient() {
     error,
     refetch,
   } = useQuery({
-    queryKey: ['admin', 'properties', 'pending', page, statusFilter],
+    queryKey: ['admin', 'properties', 'pending', page, statusFilter, dataSort],
     queryFn: async () => {
       const response = await adminApi.getPendingProperties({
         page,
         limit: 20,
+        sort: dataSort,
         status: statusFilter === 'all'
           ? undefined
           : (statusFilter as 'pending' | 'under_review' | 'approved' | 'rejected'),
@@ -61,11 +64,11 @@ export function PropertyVerificationClient() {
         pagination: response.pagination || { total: 0, page: 1, totalPages: 1 },
       };
     },
-    staleTime: 30000, // Consider data fresh for 30 seconds
-    refetchOnWindowFocus: true, // Refetch when window regains focus
-    refetchInterval: 60000, // Auto-refetch every minute for real-time updates
+    staleTime: 30000, 
+    refetchOnWindowFocus: true, 
+    refetchInterval: 60000, 
     retry: (failureCount, error: unknown) => {
-      // Don't retry on rate limit errors
+      
       if (error && typeof error === 'object' && 'response' in error) {
         const err = error as { response?: { status?: number } };
         if (err.response?.status === 429) {
@@ -178,21 +181,6 @@ export function PropertyVerificationClient() {
     }
   };
 
-  if (loading && (!properties || properties.length === 0)) {
-    return (
-      <div className="space-y-6">
-        <Card>
-          <CardContent className="py-12">
-            <div className="flex flex-col items-center justify-center gap-4">
-              <Loader2 className="h-8 w-8 animate-spin text-primary" />
-              <div className="text-center text-muted-foreground">Loading properties...</div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
   if (error) {
     return (
       <div className="space-y-6">
@@ -235,9 +223,9 @@ export function PropertyVerificationClient() {
             variant="outline"
             size="sm"
             onClick={() => refetch()}
-            disabled={isFetching}
+            disabled={isFetching || loading}
           >
-            {isFetching ? (
+            {isFetching || loading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 Refreshing...
@@ -251,37 +239,91 @@ export function PropertyVerificationClient() {
           </Button>
         </div>
 
-        {/* Filter */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Filters</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-[200px]">
-                <SelectValue placeholder="Filter by status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="pending">Pending</SelectItem>
-                <SelectItem value="under_review">Under Review</SelectItem>
-                <SelectItem value="approved">Approved</SelectItem>
-                <SelectItem value="rejected">Rejected</SelectItem>
-              </SelectContent>
-            </Select>
+        {}
+        <Card className='py-3 px-4'>
+          <CardContent className="p-3 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="flex flex-col gap-2 w-full sm:w-auto">
+              <span className="text-sm font-medium whitespace-nowrap block">Filter:</span>
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="w-full sm:w-[160px] h-9">
+                  <SelectValue placeholder="Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Status</SelectItem>
+                  <SelectItem value="pending">Pending</SelectItem>
+                  <SelectItem value="under_review">Under Review</SelectItem>
+                  <SelectItem value="approved">Approved</SelectItem>
+                  <SelectItem value="rejected">Rejected</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="flex flex-col sm:items-end gap-2 w-full sm:w-auto">
+              <span className="text-sm font-medium whitespace-nowrap">Sort:</span>
+              <Select value={dataSort} onValueChange={setDataSort}>
+                <SelectTrigger className="w-full sm:w-[160px] h-9">
+                  <SelectValue placeholder="Sort Order" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="desc">Newest First</SelectItem>
+                  <SelectItem value="asc">Oldest First</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </CardContent>
         </Card>
 
-        {/* Properties Table */}
+        {}
         <Card>
           <CardHeader>
             <CardTitle>Properties</CardTitle>
             <CardDescription>
-              {loading ? 'Loading...' : `${properties.length} propert${properties.length !== 1 ? 'ies' : 'y'} found${isFetching ? ' (updating...)' : ''}`}
+              {loading ? 'Fetching properties...' : `${properties.length} propert${properties.length !== 1 ? 'ies' : 'y'} found${isFetching ? ' (updating...)' : ''}`}
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {!properties || properties.length === 0 ? (
+            {loading ? (
+              
+              <div className="space-y-4">
+                {}
+                <div className="hidden md:block rounded-lg border overflow-hidden">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Property</TableHead>
+                        <TableHead>Owner</TableHead>
+                        <TableHead>Location</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Created</TableHead>
+                        <TableHead className="text-right">Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {[...Array(5)].map((_, i) => (
+                        <TableRow key={i}>
+                          <TableCell><div className="space-y-2"><Skeleton className="h-4 w-[200px]" /><Skeleton className="h-3 w-[100px]" /></div></TableCell>
+                          <TableCell><div className="space-y-2"><Skeleton className="h-4 w-[150px]" /><Skeleton className="h-3 w-[100px]" /></div></TableCell>
+                          <TableCell><div className="space-y-2"><Skeleton className="h-4 w-[150px]" /><Skeleton className="h-3 w-[100px]" /></div></TableCell>
+                          <TableCell><Skeleton className="h-6 w-[100px]" /></TableCell>
+                          <TableCell><Skeleton className="h-4 w-[100px]" /></TableCell>
+                          <TableCell className="text-right"><div className="flex justify-end gap-2"><Skeleton className="h-8 w-8" /><Skeleton className="h-8 w-8" /></div></TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+                {}
+                <div className="md:hidden space-y-4">
+                  {[...Array(3)].map((_, i) => (
+                    <div key={i} className="p-4 rounded-lg border bg-card shadow-sm space-y-4">
+                      <div className="flex justify-between items-start"><div className="space-y-2"><Skeleton className="h-4 w-[150px]" /><Skeleton className="h-3 w-[100px]" /></div><Skeleton className="h-6 w-[80px]" /></div>
+                      <div className="grid grid-cols-2 gap-2"><div className="space-y-1"><Skeleton className="h-3 w-[50px]" /><Skeleton className="h-4 w-[100px]" /></div><div className="space-y-1"><Skeleton className="h-3 w-[50px]" /><Skeleton className="h-4 w-[100px]" /></div></div>
+                      <div className="flex justify-between items-center pt-3 border-t"><Skeleton className="h-8 w-full mr-4" /><div className="flex gap-2"><Skeleton className="h-8 w-8" /><Skeleton className="h-8 w-8" /></div></div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : !properties || properties.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-12 text-center">
                 <Building2 className="h-12 w-12 text-muted-foreground mb-4" />
                 <h3 className="text-lg font-semibold mb-2">No properties found</h3>
@@ -291,7 +333,7 @@ export function PropertyVerificationClient() {
               </div>
             ) : (
               <>
-                {/* Desktop View: Table */}
+                {}
                 <div className="hidden md:block rounded-lg border overflow-hidden">
                   <Table>
                     <TableHeader>
@@ -385,7 +427,7 @@ export function PropertyVerificationClient() {
                   </Table>
                 </div>
 
-                {/* Mobile View: Cards */}
+                {}
                 <div className="md:hidden space-y-4">
                   {properties.map((property) => (
                     <div key={property.id} className="p-4 rounded-lg border bg-card text-card-foreground shadow-sm">
@@ -456,7 +498,7 @@ export function PropertyVerificationClient() {
                     </div>
                   ))}
                 </div>
-                {/* Pagination */}
+                {}
                 {totalPages > 1 && (
                   <div className="flex items-center justify-between mt-4">
                     <div className="text-sm text-muted-foreground">
@@ -488,7 +530,7 @@ export function PropertyVerificationClient() {
         </Card>
       </div>
 
-      {/* Status Change Confirmation Dialog with Message Input */}
+      {}
       <ConfirmDialogWithInput
         open={confirmDialog.open && confirmDialog.type === 'status'}
         onOpenChange={(open) => setConfirmDialog({ ...confirmDialog, open })}
@@ -508,7 +550,7 @@ export function PropertyVerificationClient() {
         isLoading={statusChangeMutation.isPending}
       />
 
-      {/* Delete Confirmation Dialog with Reason Input */}
+      {}
       <ConfirmDialogWithInput
         open={confirmDialog.open && confirmDialog.type === 'delete'}
         onOpenChange={(open) => setConfirmDialog({ ...confirmDialog, open })}

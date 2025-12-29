@@ -22,7 +22,7 @@ export function RentCollectionClient() {
   const [rentProperties, setRentProperties] = useState<PropertyRentStatus[]>([]);
   const [earnings, setEarnings] = useState<LandlordEarnings | null>(null);
 
-  // Modal State
+  
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
 
@@ -30,31 +30,31 @@ export function RentCollectionClient() {
     try {
       setLoading(true);
 
-      // 1. Fetch Landlord Earnings (Overview data)
+      
       const earningsData = await paymentsApi.getLandlordEarnings();
       setEarnings(earningsData);
 
-      // 2. Fetch Active Rentals (Bookings)
-      // Note: We're filtering client-side for now as the API returns all bookings
+      
+      
       const { bookings } = await bookingsApi.getUserBookings('landlord');
       const activeBookings = bookings.filter(b => b.status === 'confirmed' || b.status === 'completed');
 
-      // 3. Map bookings to status
-      // In a real app, we'd check recent payments for each booking to determine status.
-      // For this MVP, we'll simulate status based on random data or look for missing fields 
-      // if the API supported "last payment date" directly on booking.
-      // Assuming 'pending' as default for now unless we find logic.
+      
+      
+      
+      
+      
 
-      // Since we don't have a direct "Is Rent Due?" API, we will infer it:
-      // If we have earnings breakdown, we can guess. But better to use a placeholder logic 
-      // or check the 'payments' history for this month. 
-      // Optimization: Fetch consolidated status if available.
+      
+      
+      
+      
 
-      // For demonstration, let's map statuses:
+      
       const mappedProperties: PropertyRentStatus[] = activeBookings.map(booking => {
-        // Mock logic: 
-        // If booking ID is even -> 'paid', if odd -> 'pending'
-        // In production, cross-reference with `paymentsApi.getPaymentHistory` filtered by rentMonth
+        
+        
+        
         const isPaid = Math.random() > 0.4;
         return {
           booking,
@@ -86,18 +86,18 @@ export function RentCollectionClient() {
   };
 
   const handleSendReminder = async (bookingId: string) => {
-    // Mock API call for reminder
+    
     toast.info('Sending payment reminder (Taagad)...');
     await new Promise(resolve => setTimeout(resolve, 1000));
     toast.success('Taagad sent to tenant successfully!');
   };
 
   const handlePaymentSuccess = () => {
-    fetchData(); // Refresh data
+    fetchData(); 
   };
 
   const totalMonthlyExpected = rentProperties.reduce((sum, item) => sum + item.amountDue, 0);
-  // Using the mock status to calculate collected
+  
   const totalMonthlyCollected = rentProperties
     .filter(p => p.status === 'paid')
     .reduce((sum, item) => sum + item.amountDue, 0);
@@ -116,7 +116,7 @@ export function RentCollectionClient() {
   return (
     <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8 space-y-8">
 
-      {/* Header Section */}
+      {}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Rent Management</h1>
@@ -132,9 +132,9 @@ export function RentCollectionClient() {
         </div>
       </div>
 
-      {/* Top Cards Section: Financial Health */}
+      {}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* Chart Card */}
+        {}
         <div className="md:col-span-1">
           <RentCycleChart
             totalExpected={totalMonthlyExpected}
@@ -142,9 +142,9 @@ export function RentCollectionClient() {
           />
         </div>
 
-        {/* Stats Cards */}
+        {}
         <div className="md:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {/* Summary Text Card */}
+          {}
           <Card className="flex flex-col justify-center border-l-4 border-l-primary">
             <CardHeader className="pb-2">
               <CardTitle className="text-md font-medium text-muted-foreground">Monthly Overview</CardTitle>
@@ -209,7 +209,7 @@ export function RentCollectionClient() {
         </div>
       )}
 
-      {/* Payment Modal */}
+      {}
       {selectedBooking && (
         <RecordPaymentModal
           isOpen={modalOpen}

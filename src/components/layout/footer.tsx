@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
+
 import { pacifico } from '@/lib/fonts';
 import Link from 'next/link';
 import { FiInstagram, FiTwitter, FiYoutube } from 'react-icons/fi';
@@ -80,11 +80,11 @@ export default function Footer() {
 
   return (
     <footer className="relative overflow-hidden bg-gradient-to-br from-slate-950 via-blue-950 to-indigo-950 border-t border-white/5">
-      {/* Geometric Background Patterns */}
+      {}
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(120,119,198,0.15),rgba(255,255,255,0))]" />
       <div className="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t from-slate-950 to-transparent" />
 
-      {/* Academic-inspired Elements */}
+      {}
       <div className="absolute top-10 left-10 opacity-10">
         <div className="w-8 h-8 border-2 border-cyan-400 rounded-lg rotate-45" />
       </div>
@@ -95,15 +95,15 @@ export default function Footer() {
         <div className="w-12 h-1 bg-emerald-400" />
       </div>
 
-      {/* Main Content */}
+      {}
       <div className="relative z-10 pt-20 pb-12">
         <div className="container mx-auto px-4">
-          {/* Academic Header */}
+          {}
 
 
-          {/* Main Grid */}
+          {}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 mb-16">
-            {/* Brand Section with Academic Touch */}
+            {}
             <div className="lg:col-span-4">
               <div className="flex flex-col gap-8">
                 <div className="flex items-center gap-4">
@@ -117,7 +117,7 @@ export default function Footer() {
                 </p>
 
 
-                {/* Social Links */}
+                {}
                 <div className="flex items-center gap-3">
                   <span className="text-sm text-gray-400 font-medium">Follow our campus updates:</span>
                   <div className="flex items-center gap-2">
@@ -135,7 +135,7 @@ export default function Footer() {
               </div>
             </div>
 
-            {/* Enhanced Widgets with Academic Focus */}
+            {}
             <div className="lg:col-span-8 grid grid-cols-2 lg:grid-cols-4 gap-4">
               {footerWidgets.map((widget, index) => (
                 <div key={widget.title} className="group">
@@ -160,7 +160,7 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* Bottom Bar with Academic Touch */}
+          {}
           <div className="border-t border-white/10 pt-8">
             <div className="flex flex-col lg:flex-row items-center justify-between gap-6">
               <div className="flex items-center gap-6">
@@ -188,7 +188,7 @@ export default function Footer() {
         </div>
       </div>
 
-      {/* Floating Academic Elements */}
+      {}
       <div className="absolute bottom-40 left-10 w-3 h-3 bg-cyan-400 rounded-full opacity-60 animate-float" />
       <div className="absolute top-32 right-40 w-2 h-2 bg-blue-400 rounded-full opacity-40 animate-float" style={{ animationDelay: '1s' }} />
       <div className="absolute bottom-20 right-32 w-4 h-4 bg-amber-400 rounded-full opacity-30 animate-pulse" />

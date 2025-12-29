@@ -53,12 +53,12 @@ export function ConfirmDialogWithInput({
       return;
     }
     await onConfirm(message.trim() || undefined);
-    setMessage(''); // Reset message after confirm
+    setMessage(''); 
     onOpenChange(false);
   };
 
   const handleCancel = () => {
-    setMessage(''); // Reset message on cancel
+    setMessage(''); 
     onOpenChange(false);
   };
 

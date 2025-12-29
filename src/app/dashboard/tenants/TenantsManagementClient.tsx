@@ -32,7 +32,7 @@ export function TenantsManagementClient() {
       setLoading(true);
       const response = await bookingsApi.getUserBookings('landlord');
       const bookingsData = response?.bookings || [];
-      // Get unique tenants from bookings
+      
       const tenantMap = new Map();
       bookingsData.forEach((booking) => {
         if (!tenantMap.has(booking.tenant.id)) {
@@ -52,13 +52,13 @@ export function TenantsManagementClient() {
         ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
         : undefined;
       toast.error(errorMessage || 'Failed to fetch tenants');
-      setBookings([]); // Ensure bookings is always an array
+      setBookings([]); 
     } finally {
       setLoading(false);
     }
   };
 
-  // Get unique tenants
+  
   const getUniqueTenants = () => {
     const tenantMap = new Map();
     (bookings || []).forEach((booking) => {

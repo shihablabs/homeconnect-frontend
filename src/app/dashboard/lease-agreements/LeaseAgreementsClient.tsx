@@ -23,12 +23,12 @@ export function LeaseAgreementsClient() {
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['bookings', 'tenant', 'leases'],
     queryFn: () => bookingsApi.getUserBookings('tenant'),
-    staleTime: 60000, // 1 minute
+    staleTime: 60000, 
     refetchOnWindowFocus: false,
     retry: 2,
   });
 
-  // Handle errors (React Query v5 removed onError from useQuery)
+  
   useEffect(() => {
     if (error) {
       const errorObj = error as { response?: { status?: number; data?: { message?: string } } };
@@ -38,7 +38,7 @@ export function LeaseAgreementsClient() {
     }
   }, [error]);
 
-  // Filter only confirmed/completed bookings (active leases)
+  
   const leases = useMemo(() => {
     if (!data?.bookings) return [];
     return data.bookings.filter(
@@ -48,7 +48,7 @@ export function LeaseAgreementsClient() {
 
   const handleDownloadLease = async () => {
     try {
-      // TODO: Implement lease document download API
+      
       toast.info('Lease document download will be available soon');
     } catch {
       toast.error('Failed to download lease agreement');

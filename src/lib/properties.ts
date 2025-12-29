@@ -9,10 +9,7 @@ import {
   queryProperties as queryPropertiesApi,
 } from "./api/properties-api";
 
-/**
- * Fetch a list of properties using the public properties API.
- * Falls back to an empty array if the response payload is missing.
- */
+
 export async function listProperties(
   filters: PropertyFilters = {}
 ): Promise<PropertyResponse[]> {
@@ -21,10 +18,7 @@ export async function listProperties(
   return properties as unknown as PropertyResponse[];
 }
 
-/**
- * Fetch the newest property listings within the supplied time window.
- * Defaults to the last 30 days and applies a sensible fetch limit.
- */
+
 export async function getNewListings(
   days = 30,
   limit = 24

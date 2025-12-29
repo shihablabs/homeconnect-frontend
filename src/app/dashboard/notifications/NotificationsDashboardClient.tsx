@@ -16,7 +16,7 @@ import { useNotificationsSocket } from '@/hooks/useNotificationsSocket';
 import { type Notification } from '@/lib/api/notifications-api';
 import { Bell, CheckCheck, MessageSquare, CreditCard, Home, Wrench, Settings, Filter, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
-// Date formatting utility
+
 const formatTimeAgo = (date: string) => {
   const now = new Date();
   const past = new Date(date);
@@ -51,7 +51,7 @@ export function NotificationsDashboardClient() {
     },
   });
 
-  // Filter notifications based on active tab and type filter
+  
   useEffect(() => {
     const params: {
       limit: number;
@@ -207,7 +207,7 @@ export function NotificationsDashboardClient() {
         )}
       </div>
 
-      {/* Stats */}
+      {}
       {stats && (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <Card>

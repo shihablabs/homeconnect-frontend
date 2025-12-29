@@ -1,5 +1,5 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable @typescript-eslint/no-explicit-any */
+
+
 "use client";
 
 import { Button } from "@/components/ui/button";
@@ -51,31 +51,31 @@ import Swal from "sweetalert2";
 import { z } from "zod";
 import { FormStepper } from "../add-property/FormStepper";
 
-// --- START: Reusing Constants and Schemas from AddPropertyForm ---
-// Ideally these should be extracted to a shared file, but for now we duplicate to ensure independence and avoid breaking AddProperty
 
-// 1. CONSTANTS
+
+
+
 const RENT_PROPERTY_TYPES = [
   "apartment",
   "house",
   "villa",
   "studio",
   "penthouse",
-  "room",        // Sublet/Room share
-  "office",      // Commercial rent
-  "shop",        // Commercial rent
+  "room",        
+  "office",      
+  "shop",        
 ] as const;
 
 const SALE_PROPERTY_TYPES = [
-  "apartment",   // Flat
-  "house",       // Standalone building
-  "land",        // Plot
-  "commercial",  // Commercial space
-  "office",      // Office space
-  "warehouse",   // Industrial
+  "apartment",   
+  "house",       
+  "land",        
+  "commercial",  
+  "office",      
+  "warehouse",   
 ] as const;
 
-// Combined list for validation (unique values)
+
 const allPropertyTypes = Array.from(new Set([...RENT_PROPERTY_TYPES, ...SALE_PROPERTY_TYPES])) as [string, ...string[]];
 
 const areaUnits = ["sqft", "sqm", "acres", "hectares"] as const;
@@ -91,7 +91,7 @@ const propertyConditions = [
 const ownershipTypes = ["freehold", "leasehold", "condominium"] as const;
 const hoaFrequencies = ["monthly", "quarterly", "yearly"] as const;
 
-// 2. VALIDATION SCHEMA (Same as Add)
+
 const requiredString = z.string().min(1, "This field is required");
 const requiredNumber = z.coerce.number().min(1, "This field is required");
 
@@ -133,10 +133,10 @@ const baseSchema = z.object({
   amenities: z.array(z.string()).optional(),
   tags: z.array(z.string()).optional(),
 
-  // Adjusted for Edit: imageFiles can be empty if not updating images
-  // But we might want to allow adding *new* images.
-  // The backend update probably handles images differently or appends.
-  // For simplicity here, we'll keep the same schema but make it optional or just check logic in submit.
+  
+  
+  
+  
   imageFiles: z.any().optional(),
 
   videos: z.array(z.string().url("Must be a valid URL")).optional(),
@@ -252,35 +252,35 @@ export function EditPropertyForm({ propertyId }: { propertyId: string }) {
   const [currentStep, setCurrentStep] = useState(1);
   const router = useRouter();
 
-  // Fetch existing property data
+  
   const { data: property, isLoading: isFetching, isError } = useGetPropertyByIdQuery(propertyId);
   const [updateProperty, { isLoading: isUpdating }] = useUpdatePropertyMutation();
 
   const form = useForm<PropertyFormData>({
     resolver: zodResolver(propertyFormSchema) as any,
-    defaultValues: {} as any, // Will populate via useEffect
+    defaultValues: {} as any, 
     mode: "onBlur",
   });
 
-  // Populate form when data is fetched
+  
   useEffect(() => {
     if (property) {
-      // Map API response to Form Data format
+      
       const formData = {
         ...property,
         listingType: property.listingType,
 
-        // Date fields needs specific handling to be compatible with form inputs/date pickers
+        
         availableFrom: (property as any).availableFrom ? (property as any).availableFrom.split('T')[0] : undefined,
         offerDeadline: (property as any).offerDeadline ? new Date((property as any).offerDeadline) : undefined,
 
-        // Ensure arrays are arrays
+        
         amenities: property.amenities || [],
         utilitiesIncluded: (property as any).utilitiesIncluded || [],
         tags: property.tags || [],
         videos: property.videos || [],
         floorPlans: property.floorPlans || [],
-        imageFiles: [], // Start empty for updates, we don't re-upload existing by default here setup
+        imageFiles: [], 
       };
 
       form.reset(formData as any);
@@ -300,8 +300,8 @@ export function EditPropertyForm({ propertyId }: { propertyId: string }) {
       case 3:
         isValid = await trigger(["bedrooms", "bathrooms", "areaSize", "areaUnit"]); break;
       case 4:
-        isValid = true; // Media update is optional/complex, allow skip or specialized partial update
-        // Note: For now we skip validation of imageFiles as user might not change them
+        isValid = true; 
+        
         break;
       case 5:
         isValid = true; break;
@@ -323,7 +323,7 @@ export function EditPropertyForm({ propertyId }: { propertyId: string }) {
     try {
       const finalData: any = { ...data };
 
-      // Cleanup dates
+      
       if (finalData.listingType === 'rent' && finalData.availableFrom) {
         finalData.availableFrom = new Date(finalData.availableFrom).toISOString();
       }
@@ -334,19 +334,19 @@ export function EditPropertyForm({ propertyId }: { propertyId: string }) {
         delete finalData.offerDeadline;
       }
 
-      // Remove undefined/nulls
+      
       Object.keys(finalData).forEach(key => {
         if (finalData[key] === undefined || finalData[key] === null) {
           delete finalData[key];
         }
       });
 
-      // We do NOT send imageFiles directly in the 'data' payload for update typically, 
-      // unless backend handles it specifically. 
-      // The updateProperty mutation expects { id, data: UpdatePropertyData }
-      // If we support image updates, we might need a separate endpoint or specific logic.
-      // For this task, we focus on data updates. Image handling in update is complex (add/remove?).
-      // Let's assume for now we just update the text fields.
+      
+      
+      
+      
+      
+      
       delete finalData.imageFiles;
 
       Swal.fire({
@@ -436,7 +436,7 @@ export function EditPropertyForm({ propertyId }: { propertyId: string }) {
   );
 }
 
-// --- REUSED STEPS (Identical to AddPropertyForm essentially, but we copy to avoid export issues and allow customization) ---
+
 
 function Step1() {
   const { control, watch, setValue } = useFormContext<PropertyFormData>();
@@ -461,7 +461,7 @@ function Step1() {
                     else setValue("propertyType", "apartment");
                   }}
                   defaultValue={field.value}
-                  value={field.value} // Crucial for Edit: must bind value
+                  value={field.value} 
                   className="grid grid-cols-2 gap-4"
                 >
                   <FormItem>
@@ -542,7 +542,7 @@ function Step2() {
   const divisionOptions = getDivisionOptions();
   const districtOptions = getDistrictOptions(watchedDivision);
 
-  // Map is optional for Edit to avoid complexity, or we can include it.
+  
   const LocationMap = useMemo(() => dynamic(() => import("../add-property/LocationMap").then((mod) => mod.default), { ssr: false, loading: () => <div className="h-64 w-full bg-gray-200 animate-pulse" /> }), []);
 
   return (
@@ -662,7 +662,7 @@ function Step6({ listingType }: { listingType: "rent" | "sale" }) {
         <FormField control={control} name="mortgageAvailable" render={({ field }) => (<FormItem className="flex flex-row items-center justify-between rounded-lg border p-4"><FormLabel>Mortgage?</FormLabel><FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} /></FormControl></FormItem>)} />
       </div>
 
-      {/* Offer Deadline with New Calendar */}
+      {}
       <FormField
         control={control}
         name="offerDeadline"

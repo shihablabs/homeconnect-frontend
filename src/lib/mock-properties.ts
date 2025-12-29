@@ -90,7 +90,7 @@ export const MOCK_PROPERTIES: PropertyDetails[] = [
     lat: 22.3664,
     lng: 91.8114,
   },
-  // Map items you used
+  
   {
     id: "m1",
     title: "Modern 2BR Apartment with City View",

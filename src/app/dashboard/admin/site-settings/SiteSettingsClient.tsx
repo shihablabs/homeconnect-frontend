@@ -16,31 +16,31 @@ export function SiteSettingsClient() {
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
   const [settings, setSettings] = useState<SiteSettings>({
-    // General Settings
+    
     siteName: '',
     siteDescription: '',
     siteUrl: '',
     contactEmail: '',
     contactPhone: '',
 
-    // Feature Toggles
+    
     enableRegistration: true,
     enableEmailVerification: true,
     enableTwoFactorAuth: false,
     enableMaintenanceMode: false,
 
-    // Payment Settings
+    
     currency: 'BDT',
     paymentGateway: 'stripe',
     escrowEnabled: true,
     escrowDuration: 48,
 
-    // Notification Settings
+    
     emailNotifications: true,
     smsNotifications: false,
     pushNotifications: true,
 
-    // Security Settings
+    
     minPasswordLength: 8,
     requireStrongPassword: true,
     sessionTimeout: 30,

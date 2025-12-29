@@ -19,7 +19,7 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
-// Mock Data for Fallback
+
 const MOCK_SUMMARY: PaymentSummary = {
   totalPaid: 125000,
   totalPending: 45000,
@@ -75,13 +75,13 @@ export function PaymentsDashboardClient() {
       try {
         setLoading(true);
 
-        // Timeout promise to prevent infinite loading
+        
         const timeoutPromise = new Promise((_, reject) =>
           setTimeout(() => reject(new Error('Request timed out')), 5000)
         );
 
         if (activeTab === 'overview') {
-          // Race between API calls and timeout
+          
           try {
             const [summaryData, upcomingData] = await Promise.race([
               Promise.all([
@@ -97,7 +97,7 @@ export function PaymentsDashboardClient() {
             }
           } catch (err) {
             console.warn("Payment API failed or timed out, using mock data", err);
-            // Fallback to mock data if API fails
+            
             if (mounted) {
               setSummary(MOCK_SUMMARY);
               setUpcomingPayments(MOCK_UPCOMING);
@@ -112,7 +112,7 @@ export function PaymentsDashboardClient() {
             ]) as PaymentHistoryResponse;
             if (mounted) setPayments(response.payments);
           } catch {
-            if (mounted) setPayments([]); // Clear or mock history if needed
+            if (mounted) setPayments([]); 
           }
         } else if (activeTab === 'earnings' && user?.role === 'landlord') {
           try {
@@ -122,12 +122,12 @@ export function PaymentsDashboardClient() {
             ]) as LandlordEarnings;
             if (mounted) setEarnings(earningsData);
           } catch {
-            // Mock earnings if needed
+            
           }
         }
       } catch (error: unknown) {
         console.error("Dashboard fetch error:", error);
-        // Error handled by fallbacks above, but keeping catch for safety
+        
       } finally {
         if (mounted) setLoading(false);
       }
@@ -200,7 +200,7 @@ export function PaymentsDashboardClient() {
         </TabsList>
 
         <TabsContent value="overview" className="space-y-6">
-          {/* Summary Cards */}
+          {}
           {summary && (
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
               <Card>
@@ -251,7 +251,7 @@ export function PaymentsDashboardClient() {
             </div>
           )}
 
-          {/* Upcoming Payments */}
+          {}
           <Card>
             <CardHeader>
               <CardTitle>Upcoming Payments</CardTitle>

@@ -1,6 +1,6 @@
 import { api } from './api';
 
-// --- Interfaces & Types ---
+
 
 export interface Booking {
   id: string;
@@ -32,7 +32,7 @@ export interface Booking {
   specialRequests?: string;
   leaseDurationInMonths?: number;
   leaseDocumentURL?: string;
-  // Recurring Payment Fields
+  
   isRecurringPayment?: boolean;
   stripeSubscriptionId?: string;
   stripeCustomerId?: string;
@@ -49,7 +49,7 @@ export interface CreateBookingRequest {
   specialRequests?: string;
   leaseDurationInMonths?: number;
   leaseDocumentURL?: string;
-  setupRecurringPayment?: boolean; // Frontend option to setup recurring payment
+  setupRecurringPayment?: boolean; 
   documents?: { name: string; type: string; url: string }[];
 }
 
@@ -67,20 +67,16 @@ export interface CancelBookingRequest {
   reason: string;
 }
 
-// --- API Implementation ---
+
 
 export const bookingsApi = {
-  /**
-   * Create a new booking (Tenant Only)
-   */
+  
   createBooking: async (data: CreateBookingRequest): Promise<Booking> => {
     const response = await api.post('/bookings', data);
     return response.data.data.booking;
   },
 
-  /**
-   * Create Stripe payment session for booking
-   */
+  
   createPaymentSession: async (
     data: CreatePaymentSessionRequest
   ): Promise<PaymentSessionResponse> => {
@@ -88,34 +84,27 @@ export const bookingsApi = {
     return response.data.data;
   },
 
-  /**
-   * Get user's bookings
-   * @param type - 'tenant' (bookings made) or 'landlord' (bookings received)
-   */
+  
   getUserBookings: async (
     type: 'tenant' | 'landlord' = 'tenant'
   ): Promise<{ bookings: Booking[] }> => {
     const response = await api.get('/bookings/my-bookings', {
       params: { type },
     });
-    // Backend returns array directly, wrap it in bookings property
+    
     const bookings = Array.isArray(response.data.data)
       ? response.data.data
       : response.data.data?.bookings || [];
     return { bookings };
   },
 
-  /**
-   * Get booking by ID
-   */
+  
   getBooking: async (id: string): Promise<Booking> => {
     const response = await api.get(`/bookings/${id}`);
     return response.data.data.booking;
   },
 
-  /**
-   * Cancel a booking
-   */
+  
   cancelBooking: async (
     id: string,
     data: CancelBookingRequest

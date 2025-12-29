@@ -166,10 +166,10 @@ export function MyToursClient() {
                           </div>
                         </TableCell>
                         <TableCell>
-                          {/* Landlord info might not be fully populated in getMyTours depending on backend populate */}
-                          {/* Assuming simple display if available */}
+                          {}
+                          {}
                           <div className="text-sm">
-                            {/* Future Enhancement: Populate landlord details */}
+                            {}
                             <span className="text-muted-foreground">Hosted by Owner</span>
                           </div>
                         </TableCell>

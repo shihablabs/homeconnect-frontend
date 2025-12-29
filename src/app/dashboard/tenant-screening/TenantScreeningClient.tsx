@@ -51,14 +51,14 @@ export function TenantScreeningClient() {
       setLoading(true);
       const response = await bookingsApi.getUserBookings('landlord');
       setBookings(response?.bookings || []);
-      // TODO: Fetch screening results from API
-      // const screeningData = await screeningApi.getScreeningResults();
-      // setScreenings(screeningData);
+      
+      
+      
       setScreenings([]);
     } catch (error: unknown) {
       console.error('Failed to fetch data:', error);
       toast.error('Failed to fetch data');
-      setBookings([]); // Ensure bookings is always an array
+      setBookings([]); 
       setScreenings([]);
     } finally {
       setLoading(false);
@@ -67,7 +67,7 @@ export function TenantScreeningClient() {
 
   const handleRunScreening = async () => {
     try {
-      // TODO: Implement screening API
+      
       toast.info('Screening feature coming soon');
     } catch {
       toast.error('Failed to run screening');
@@ -116,7 +116,7 @@ export function TenantScreeningClient() {
     );
   }
 
-  // Get unique tenants from bookings
+  
   const uniqueTenants = Array.from(
     new Map((bookings || []).map((b) => [b.tenant.id, b.tenant])).values()
   );

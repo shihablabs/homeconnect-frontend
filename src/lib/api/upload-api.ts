@@ -2,12 +2,12 @@
 import { API_BASE_URL } from '@/config/config';
 import axios from 'axios';
 
-// Special instance for file uploads (without Content-Type header)
+
 export const uploadApi = axios.create({
   baseURL: API_BASE_URL,
 });
 
-// Add the same interceptors to uploadApi
+
 uploadApi.interceptors.request.use(
   (config) => {
     if (typeof window !== 'undefined') {
@@ -18,7 +18,7 @@ uploadApi.interceptors.request.use(
       }
     }
 
-    // Don't set Content-Type for FormData - let browser set it automatically
+    
     if (config.data instanceof FormData) {
       delete config.headers['Content-Type'];
     }
@@ -44,7 +44,7 @@ uploadApi.interceptors.response.use(
   }
 );
 
-// Upload service methods
+
 export const uploadService = {
   uploadImage: async (file: File, folder: string = 'bookings'): Promise<{ url: string; publicId: string }> => {
     const formData = new FormData();

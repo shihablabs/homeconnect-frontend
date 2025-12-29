@@ -30,7 +30,7 @@ import { Input } from "@/components/ui/input";
 import { authApi } from "@/lib/api/auth-api";
 import { pacifico } from "@/lib/fonts";
 
-// Validation schema
+
 const resetPasswordSchema = z
   .object({
     password: z
@@ -64,7 +64,7 @@ function ResetPasswordContent() {
     },
   });
 
-  // If no token, show error
+  
   if (!token) {
     return (
       <div className="w-full min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 py-12 px-4 sm:px-6 lg:px-8">
@@ -120,7 +120,7 @@ function ResetPasswordContent() {
       setIsSuccess(true);
       toast.success("Password reset successfully!", { id: toastId });
 
-      // Redirect to login after 2 seconds
+      
       setTimeout(() => {
         router.push("/login");
       }, 2000);

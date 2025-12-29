@@ -1,6 +1,6 @@
 import { api } from './api';
 
-// --- Interfaces & Types ---
+
 
 export interface AdminStats {
   totalUsers: number;
@@ -73,7 +73,7 @@ export interface AddDocumentRequest {
 
 export interface User {
   id: string;
-  slug: string; // Add slug field
+  slug: string; 
   name: string;
   email: string;
   role: 'tenant' | 'landlord' | 'admin' | 'support';
@@ -139,24 +139,21 @@ export interface ResolveDisputeRequest {
   adminNote?: string;
 }
 
-// --- API Implementation ---
+
 
 export const adminApi = {
-  /**
-   * Get admin dashboard statistics
-   */
+  
   getAdminStats: async (): Promise<AdminStats> => {
     const response = await api.get('/admin/stats');
     return response.data.data;
   },
 
-  /**
-   * Get properties pending verification
-   */
+  
   getPendingProperties: async (params?: {
     page?: number;
     limit?: number;
     status?: 'pending' | 'under_review' | 'approved' | 'rejected';
+    sort?: string;
   }): Promise<{
     properties: PendingProperty[];
     pagination: {
@@ -166,7 +163,7 @@ export const adminApi = {
     };
   }> => {
     const response = await api.get('/admin/properties/pending', { params });
-    // Backend returns: { data: properties[], meta: { total, page, totalPages, ... } }
+    
     return {
       properties: response.data.data || [],
       pagination: {
@@ -177,9 +174,7 @@ export const adminApi = {
     };
   },
 
-  /**
-   * Get property details for admin review
-   */
+  
   getPropertyForReview: async (
     id: string
   ): Promise<PropertyWithVerification> => {
@@ -187,9 +182,7 @@ export const adminApi = {
     return response.data.data;
   },
 
-  /**
-   * Verify (Approve/Reject) a property
-   */
+  
   verifyProperty: async (
     id: string,
     data: VerifyPropertyRequest
@@ -198,9 +191,7 @@ export const adminApi = {
     return response.data.data;
   },
 
-  /**
-   * Add verification document to property
-   */
+  
   addDocument: async (
     propertyId: string,
     data: AddDocumentRequest
@@ -209,9 +200,7 @@ export const adminApi = {
     return response.data.data;
   },
 
-  /**
-   * Remove verification document from property
-   */
+  
   removeDocument: async (
     propertyId: string,
     url: string
@@ -222,9 +211,7 @@ export const adminApi = {
     return response.data;
   },
 
-  /**
-   * Get all users with pagination and filters
-   */
+  
   getAllUsers: async (params?: {
     page?: number;
     limit?: number;
@@ -242,8 +229,8 @@ export const adminApi = {
     };
   }> => {
     const response = await api.get('/admin/users', { params });
-    // Backend returns: { data: User[], meta: PaginationInfo }
-    // Frontend expects: { users: User[], pagination: PaginationInfo }
+    
+    
     const users = Array.isArray(response.data.data) ? response.data.data : [];
     const pagination = response.data.meta || {
       total: users.length,
@@ -253,25 +240,19 @@ export const adminApi = {
     return { users, pagination };
   },
 
-  /**
-   * Get user statistics
-   */
+  
   getUserStats: async (): Promise<UserStats> => {
     const response = await api.get('/admin/users/stats');
     return response.data.data;
   },
 
-  /**
-   * Get user by ID
-   */
+  
   getUserById: async (id: string): Promise<User> => {
     const response = await api.get(`/admin/users/${id}`);
     return response.data.data;
   },
 
-  /**
-   * Update user status (activate/block)
-   */
+  
   updateUserStatus: async (
     id: string,
     data: UpdateUserStatusRequest
@@ -280,9 +261,7 @@ export const adminApi = {
     return response.data.data;
   },
 
-  /**
-   * Delete a user (soft delete)
-   */
+  
   deleteUser: async (
     id: string,
     reason?: string
@@ -293,33 +272,25 @@ export const adminApi = {
     return response.data.data;
   },
 
-  /**
-   * Restore a soft-deleted user
-   */
+  
   restoreUser: async (id: string): Promise<User> => {
     const response = await api.patch(`/admin/users/${id}/restore`);
     return response.data.data;
   },
 
-  /**
-   * Get escrow statistics
-   */
+  
   getEscrowStats: async (): Promise<EscrowStats> => {
     const response = await api.get('/admin/escrow/stats');
     return response.data.data;
   },
 
-  /**
-   * Get all disputed payments
-   */
+  
   getDisputedPayments: async (): Promise<DisputedPayment[]> => {
     const response = await api.get('/admin/escrow/disputed');
     return response.data.data;
   },
 
-  /**
-   * Resolve a disputed payment
-   */
+  
   resolveDispute: async (
     paymentId: string,
     data: ResolveDisputeRequest
@@ -328,9 +299,7 @@ export const adminApi = {
     return response.data;
   },
 
-  /**
-   * Manually release funds to landlord
-   */
+  
   manualRelease: async (
     paymentId: string
   ): Promise<{ message: string }> => {
@@ -338,9 +307,7 @@ export const adminApi = {
     return response.data;
   },
 
-  /**
-   * Refund a payment
-   */
+  
   refundPayment: async (
     paymentId: string,
     reason?: string
@@ -351,9 +318,7 @@ export const adminApi = {
     return response.data;
   },
 
-  /**
-   * Create support/admin staff account (Admin Only)
-   */
+  
   createStaffAccount: async (data: {
     name: string;
     email: string;

@@ -56,11 +56,11 @@ export function LeaseTemplatesClient() {
   const fetchTemplates = async () => {
     try {
       setLoading(true);
-      // TODO: Implement templates API
-      // const response = await templatesApi.getLeaseTemplates();
-      // setTemplates(response.templates);
+      
+      
+      
 
-      // Mock default template
+      
       setTemplates([
         {
           id: '1',
@@ -111,12 +111,12 @@ export function LeaseTemplatesClient() {
 
     try {
       if (isEditMode && selectedTemplate) {
-        // TODO: Implement template update API
-        // await templatesApi.updateTemplate(selectedTemplate.id, templateForm);
+        
+        
         toast.success('Template updated successfully');
       } else {
-        // TODO: Implement template creation API
-        // await templatesApi.createTemplate(templateForm);
+        
+        
         toast.success('Template created successfully');
       }
       setIsDialogOpen(false);
@@ -133,8 +133,8 @@ export function LeaseTemplatesClient() {
     if (!confirm(`Are you sure you want to delete template ${templateId}?`)) return;
 
     try {
-      // TODO: Implement template deletion API
-      // await templatesApi.deleteTemplate(templateId);
+      
+      
       toast.success('Template deleted successfully');
       fetchTemplates();
     } catch (error: unknown) {
@@ -143,10 +143,10 @@ export function LeaseTemplatesClient() {
     }
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  
   const handleDownload = async (template: LeaseTemplate) => {
     try {
-      // TODO: Implement template download API
+      
       toast.info('Template download feature coming soon');
     } catch {
       toast.error('Failed to download template');

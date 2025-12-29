@@ -17,7 +17,7 @@ import { useState } from 'react';
 export function AnalyticsClient() {
   const [timeRange, setTimeRange] = useState('30days');
   const { stats, isLoading: loading } = useAdminStats({
-    refetchInterval: undefined, // Disable auto-refetch since timeRange doesn't affect this endpoint
+    refetchInterval: undefined, 
   });
 
   if (loading && !stats) {
@@ -69,7 +69,7 @@ export function AnalyticsClient() {
 
         {stats && (
           <>
-            {/* Key Metrics */}
+            {}
             <div className="grid gap-4 md:grid-cols-4">
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">

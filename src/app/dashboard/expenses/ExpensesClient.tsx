@@ -48,7 +48,7 @@ interface Expense {
 
 export function ExpensesClient() {
   const [expenses, setExpenses] = useState<Expense[]>([]);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  
   const [_loading, setLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [expenseForm, setExpenseForm] = useState({
@@ -67,9 +67,9 @@ export function ExpensesClient() {
   const fetchExpenses = async () => {
     try {
       setLoading(true);
-      // TODO: Implement expenses API
-      // const response = await expensesApi.getExpenses();
-      // setExpenses(response.expenses);
+      
+      
+      
       setExpenses([]);
     } catch (error: unknown) {
       console.error('Failed to fetch expenses:', error);
@@ -87,8 +87,8 @@ export function ExpensesClient() {
     }
 
     try {
-      // TODO: Implement expense creation API
-      // await expensesApi.createExpense(expenseForm);
+      
+      
       toast.success('Expense added successfully');
       setIsDialogOpen(false);
       setExpenseForm({
@@ -221,7 +221,7 @@ export function ExpensesClient() {
         </Dialog>
       </div>
 
-      {/* Summary Cards */}
+      {}
       <div className="grid gap-4 md:grid-cols-3">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">

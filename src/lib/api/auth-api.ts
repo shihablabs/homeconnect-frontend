@@ -85,18 +85,16 @@ export const authApi = {
     data: IChangePasswordRequest
   ): Promise<{ message: string }> => {
     const response = await api.post("/auth/change-password", data);
-    return response.data; // Shudhu success message
+    return response.data; 
   },
 
-  /**
-   * @description (Bonus) User nijer account delete korbe
-   */
+  
   deleteAccount: async (): Promise<{ message: string }> => {
     const response = await api.delete("/users/me/delete-account");
     return response.data;
   },
 
-  // ✅ Add logout function
+  
   logout: async (): Promise<{ message: string }> => {
     const response = await api.post("/auth/logout");
     return response.data;
