@@ -43,7 +43,7 @@ export function BookingsDashboardClient() {
           ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
           : undefined;
         toast.error(errorMessage || 'Failed to fetch bookings');
-        setBookings([]); 
+        setBookings([]);
       } finally {
         setLoading(false);
       }
@@ -70,6 +70,7 @@ export function BookingsDashboardClient() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'approved':
+      case 'waiting_for_payment':
         return (
           <Badge className="gap-1 bg-green-600 hover:bg-green-700">
             <CheckCircle2 className="h-3 w-3" />
@@ -77,6 +78,7 @@ export function BookingsDashboardClient() {
           </Badge>
         );
       case 'pending':
+      case 'reviewing':
         return (
           <Badge variant="outline" className="gap-1 bg-yellow-50 text-yellow-700 border-yellow-200">
             <Clock className="h-3 w-3" />
@@ -84,6 +86,7 @@ export function BookingsDashboardClient() {
           </Badge>
         );
       case 'cancelled':
+      case 'rejected':
         return (
           <Badge variant="destructive" className="gap-1">
             <XCircle className="h-3 w-3" />
@@ -244,8 +247,13 @@ export function BookingsDashboardClient() {
                               >
                                 {booking.property?.title || 'N/A'}
                               </Link>
-                              <div className="text-sm text-muted-foreground">
-                                {booking.property?.city || ''}
+                              <div className="text-sm text-muted-foreground flex flex-col gap-1">
+                                <span>{booking.property?.city || ''}</span>
+                                {booking.tour && (
+                                  <Badge variant="outline" className="w-fit text-[10px] h-5 px-1 bg-green-50 text-green-700 border-green-200 gap-1">
+                                    <CheckCircle2 className="h-2 w-2" /> Verified Visit
+                                  </Badge>
+                                )}
                               </div>
                             </div>
                           </div>
@@ -284,7 +292,7 @@ export function BookingsDashboardClient() {
                               </Button>
                             </Link>
                             {user?.role === 'tenant' &&
-                              (booking.status) === 'approved' &&
+                              (booking.status === 'approved' || booking.status === 'waiting_for_payment') &&
                               (booking.paymentStatus || 'pending') === 'pending' && (
                                 <Button
                                   variant="default"

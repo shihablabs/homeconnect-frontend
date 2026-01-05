@@ -52,6 +52,7 @@ export interface Conversation {
     content: string;
     timestamp: string | Date;
     isFromMe?: boolean;
+    property?: ChatMessage['property'];
   };
   unreadCount: number;
   updatedAt?: string;

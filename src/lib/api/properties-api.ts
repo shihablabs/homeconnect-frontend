@@ -77,7 +77,7 @@ export const propertiesApi = {
   
   getProperty: async (id: string): Promise<PropertyResponse> => {
     const response = await api.get(`/properties/${id}`);
-    return response.data.data.property;
+    return response.data.data;
   },
 
   

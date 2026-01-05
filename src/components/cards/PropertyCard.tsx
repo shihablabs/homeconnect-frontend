@@ -11,17 +11,17 @@ import { addToCompare, removeFromCompare } from "@/redux/features/property/compa
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import { PropertyResponse, isRentalResponse } from "@/types/property.types";
 import {
-  Calendar,
-  Eye,
-  Flag,
-  GitCompare,
-  Heart,
-  Info,
-  Loader2,
-  MapPin,
-  Share2,
-  ShieldCheck,
-  User as UserIcon
+    Calendar,
+    Eye,
+    Flag,
+    GitCompare,
+    Heart,
+    Info,
+    Loader2,
+    MapPin,
+    Share2,
+    ShieldCheck,
+    User as UserIcon
 } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -30,9 +30,9 @@ import { toast } from "sonner";
 import { QuickViewModal } from "../property/QuickViewModal";
 import { PropertyBadge } from "./PropertyBadge";
 import {
-  CommercialDetails,
-  LandDetails,
-  ResidentialDetails,
+    CommercialDetails,
+    LandDetails,
+    ResidentialDetails,
 } from "./PropertyDetails";
 
 import { ScheduleVisitModal } from "../modals/ScheduleVisitModal";
@@ -412,13 +412,15 @@ export function PropertyCard({ property }: PropertyCardProps) {
                     <Button
                       className={cn(
                         "flex-1 text-[11px] h-9 bg-primary/10 hover:bg-primary text-primary hover:text-white border-none shadow-none font-semibold transition-all duration-300",
-                        hasPendingTour(id) && "opacity-70 cursor-not-allowed bg-gray-100 text-gray-500 hover:bg-gray-100 hover:text-gray-500"
+                        hasPendingTour(id) && "opacity-100 cursor-pointer bg-emerald-50 text-emerald-700 hover:bg-emerald-100 hover:text-emerald-800"
                       )}
                       variant="outline"
-                      disabled={hasPendingTour(id)}
                       onClick={(e) => {
                         e.stopPropagation();
-                        if (hasPendingTour(id)) return;
+                        if (hasPendingTour(id)) {
+                          router.push('/dashboard/my-tours');
+                          return;
+                        }
                         checkAuth(() => {
                           setIsScheduleVisitOpen(true);
                         });

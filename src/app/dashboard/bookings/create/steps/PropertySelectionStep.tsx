@@ -17,6 +17,7 @@ interface PropertySelectionStepProps {
   loading: boolean;
   searchProperties: () => void;
   handleSelectProperty: (property: PropertyResponse) => void;
+  tourId?: string | null;
 }
 
 export function PropertySelectionStep({
@@ -30,6 +31,7 @@ export function PropertySelectionStep({
   loading,
   searchProperties,
   handleSelectProperty,
+  tourId,
 }: PropertySelectionStepProps) {
   return (
     <Card className={`border-none shadow-md overflow-hidden transition-all duration-300 ${currentStep === 1 ? 'ring-2 ring-primary ring-offset-2' : ''}`}>
@@ -65,7 +67,7 @@ export function PropertySelectionStep({
                 </Button>
               </div>
 
-              {properties.length > 0 && (
+              {properties?.length > 0 && (
                 <div className="grid gap-3 pt-2">
                   {properties.map((property) => (
                     <div
@@ -126,7 +128,14 @@ export function PropertySelectionStep({
                   )}
                 </div>
                 <div className="p-4 sm:w-2/3">
-                  <Badge variant="outline" className="mb-2 theme-blue">{selectedProperty.listingType}</Badge>
+                  <div className="flex gap-2 mb-2">
+                    <Badge variant="outline" className="theme-blue">{selectedProperty.listingType}</Badge>
+                    {tourId && (
+                      <Badge className="bg-green-600 hover:bg-green-700 gap-1">
+                        <Check className="h-3 w-3" /> Verified Visit
+                      </Badge>
+                    )}
+                  </div>
                   <h3 className="text-lg font-bold text-gray-900 mb-1">{selectedProperty.title}</h3>
                   <p className="text-sm text-gray-500 mb-2">{selectedProperty.address}, {selectedProperty.city}</p>
                   <p className="text-lg font-bold text-primary">

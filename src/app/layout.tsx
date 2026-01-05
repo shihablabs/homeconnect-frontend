@@ -4,7 +4,6 @@ import { lato, merriweather, pacifico } from "@/lib/fonts";
 import { ReduxProvider } from "@/redux/ReduxProvider";
 import "leaflet/dist/leaflet.css";
 import { Metadata } from "next";
-import Script from "next/script";
 import { Toaster } from "sonner";
 import "./globals.css";
 import ReactQueryProvider from "./providers";
@@ -33,7 +32,7 @@ export default function RootLayout({
             <CompareTray />
             <Toaster richColors position="top-right" closeButton />
             {}
-            <Script id="tawk-to" strategy="lazyOnload">
+            {/* <Script id="tawk-to" strategy="lazyOnload">
               {`
                 var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
                 (function(){
@@ -45,7 +44,7 @@ export default function RootLayout({
                 s0.parentNode.insertBefore(s1,s0);
                 })();
               `}
-            </Script>
+            </Script> */}
           </ReduxProvider>
         </ReactQueryProvider>
       </body>

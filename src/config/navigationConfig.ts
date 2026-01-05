@@ -2,6 +2,7 @@
 import {
   TbBook,
   TbBuilding,
+  TbCalendar,
   TbCertificate,
   TbChartBar,
   TbCreditCard,
@@ -43,7 +44,14 @@ export const navigationConfig: RoleConfig = {
     },
     {
       type: 'section',
-      label: 'RENT & LEASE'
+      label: 'RENTAL MANAGEMENT'
+    },
+    {
+      type: 'link',
+      label: 'My Bookings',
+      href: '/dashboard/bookings',
+      icon: TbBook,
+      badge: null
     },
     {
       type: 'dropdown',
@@ -73,7 +81,7 @@ export const navigationConfig: RoleConfig = {
     },
     {
       type: 'section',
-      label: 'BUYING & INTERESTS'
+      label: 'DISCOVERY & PLANNING'
     },
     {
       type: 'link',
@@ -83,14 +91,11 @@ export const navigationConfig: RoleConfig = {
       badge: null
     },
     {
-      type: 'dropdown',
-      label: 'My Purchases',
-      icon: TbCertificate,
-      items: [
-        { type: 'link', href: '/dashboard/my-offers', label: 'My Offers' },
-        { type: 'link', href: '/dashboard/saved-sales', label: 'Saved for Sale' },
-        { type: 'link', href: '/dashboard/purchase-history', label: 'Purchase Documents' },
-      ]
+      type: 'link',
+      label: 'My Tours',
+      href: '/dashboard/my-tours',
+      icon: TbCalendar,
+      badge: null
     },
     {
       type: 'link',
@@ -101,7 +106,7 @@ export const navigationConfig: RoleConfig = {
     },
     {
       type: 'section',
-      label: 'ACCOUNT & SUPPORT'
+      label: 'SUPPORT & ACCOUNT'
     },
     {
       type: 'link',
@@ -119,7 +124,7 @@ export const navigationConfig: RoleConfig = {
     },
     {
       type: 'link',
-      label: 'Get Support',
+      label: 'Help & Support',
       href: '/dashboard/support',
       icon: TbHelp,
       badge: null

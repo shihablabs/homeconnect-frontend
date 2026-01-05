@@ -211,13 +211,15 @@ export function PropertySidebar({
                   variant="outline"
                   className={cn(
                     "w-full h-11 bg-gradient-to-r from-cyan-50 to-blue-50 text-cyan-700 border-cyan-200 hover:text-white hover:from-cyan-600 hover:to-blue-600 hover:border-transparent transition-all font-semibold shadow-sm",
-                    propertyId && hasPendingTour(propertyId) && "opacity-100 cursor-default bg-emerald-50 text-emerald-700 border-emerald-200 from-emerald-50 to-emerald-50 hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-200 hover:from-emerald-50 hover:to-emerald-50 shadow-none"
+                    propertyId && hasPendingTour(propertyId) && "opacity-100 cursor-pointer bg-emerald-50 text-emerald-700 border-emerald-200 from-emerald-50 to-emerald-50 hover:bg-emerald-100 hover:text-emerald-800 hover:border-emerald-300 hover:from-emerald-100 hover:to-emerald-100 shadow-none"
                   )}
                   onClick={() => {
-                    if (propertyId && hasPendingTour(propertyId)) return;
+                    if (propertyId && hasPendingTour(propertyId)) {
+                      router.push('/dashboard/my-tours');
+                      return;
+                    }
                     checkAuth(() => setIsScheduleVisitOpen(true));
                   }}
-                  disabled={propertyId ? hasPendingTour(propertyId) : false}
                 >
                   {propertyId && hasPendingTour(propertyId) ? "Visit Requested" : "Schedule a Visit"}
                 </Button>

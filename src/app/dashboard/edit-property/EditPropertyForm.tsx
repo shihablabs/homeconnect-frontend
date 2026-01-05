@@ -7,44 +7,46 @@ import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
+    Form,
+    FormControl,
+    FormField,
+    FormItem,
+    FormLabel,
+    FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  getDistrictOptions,
-  getDivisionOptions
+    getDistrictOptions,
+    getDivisionOptions
 } from "@/lib/bangladeshLocations";
 import { cn } from "@/lib/utils";
 import {
-  useGetPropertyByIdQuery,
-  useUpdatePropertyMutation
+    useGetPropertyByIdQuery,
+    useUpdatePropertyMutation
 } from "@/redux/features/property/propertyApiSlice";
 import { amenitiesList } from "@/types/property.types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
-import { CalendarIcon, Loader2 } from "lucide-react";
+import { CalendarIcon, Loader2, X } from "lucide-react";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
+import { FormImageUpload } from "../add-property/FormImageUpload";
+
 import {
-  FormProvider,
-  useForm,
-  useFormContext
+    FormProvider,
+    useForm,
+    useFormContext
 } from "react-hook-form";
 import { toast } from "sonner";
 import Swal from "sweetalert2";
@@ -250,6 +252,8 @@ const STEPS = [
 
 export function EditPropertyForm({ propertyId }: { propertyId: string }) {
   const [currentStep, setCurrentStep] = useState(1);
+  const [existingImages, setExistingImages] = useState<string[]>([]);
+  const [newImages, setNewImages] = useState<File[]>([]);
   const router = useRouter();
 
   
@@ -265,6 +269,7 @@ export function EditPropertyForm({ propertyId }: { propertyId: string }) {
   
   useEffect(() => {
     if (property) {
+      setExistingImages(property.images || []);
       
       const formData = {
         ...property,
@@ -341,12 +346,8 @@ export function EditPropertyForm({ propertyId }: { propertyId: string }) {
         }
       });
 
-      
-      
-      
-      
-      
-      
+      // Preserve existing images
+      finalData.images = existingImages;
       delete finalData.imageFiles;
 
       Swal.fire({
@@ -357,7 +358,7 @@ export function EditPropertyForm({ propertyId }: { propertyId: string }) {
         willOpen: () => Swal.showLoading(),
       });
 
-      await updateProperty({ id: propertyId, data: finalData }).unwrap();
+      await updateProperty({ id: propertyId, data: finalData, images: newImages }).unwrap();
 
       Swal.fire({
         icon: "success",
@@ -410,7 +411,14 @@ export function EditPropertyForm({ propertyId }: { propertyId: string }) {
                 {currentStep === 1 && <Step1 />}
                 {currentStep === 2 && <Step2 />}
                 {currentStep === 3 && <Step3 />}
-                {currentStep === 4 && <Step4 />}
+                {currentStep === 4 && (
+                  <Step4 
+                    existingImages={existingImages} 
+                    setExistingImages={setExistingImages}
+                    newImages={newImages}
+                    setNewImages={setNewImages}
+                  />
+                )}
                 {currentStep === 5 && <Step5 />}
                 {currentStep === 6 && <Step6 listingType={listingType} />}
               </div>
@@ -598,11 +606,63 @@ function Step3() {
   );
 }
 
-function Step4() {
+interface Step4Props {
+  existingImages: string[];
+  setExistingImages: (images: string[]) => void;
+  newImages: File[];
+  setNewImages: (files: File[]) => void;
+}
+
+function Step4({ existingImages, setExistingImages, newImages, setNewImages }: Step4Props) {
+  const handleRemoveExisting = (indexToRemove: number) => {
+    setExistingImages(existingImages.filter((_, index) => index !== indexToRemove));
+  };
+
   return (
-    <div className="text-center py-10 text-gray-500">
-      <p className="mb-4">Image updates are currently handled separately.</p>
-      <p className="text-sm">To update images, please delete and re-upload in the media gallery (Coming Soon).</p>
+    <div className="space-y-6">
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+        <h3 className="font-medium text-blue-800 mb-1">Manage Property Images</h3>
+        <p className="text-sm text-blue-600">
+          You can remove existing images and upload new ones properly.
+        </p>
+      </div>
+
+      {existingImages.length > 0 && (
+        <div className="space-y-3">
+          <label className="text-sm font-medium text-gray-700">Existing Images</label>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {existingImages.map((src, index) => (
+              <div key={index} className="relative aspect-video rounded-lg overflow-hidden group border border-gray-200">
+                <img
+                  src={src}
+                  alt={`Property ${index + 1}`}
+                  className="w-full h-full object-cover transition-transform group-hover:scale-105"
+                />
+                <button
+                  type="button"
+                  onClick={() => handleRemoveExisting(index)}
+                  className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600 shadow-sm"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <div className="space-y-3">
+        <label className="text-sm font-medium text-gray-700">Add New Images</label>
+        <FormImageUpload
+          value={newImages}
+          onChange={setNewImages}
+          maxFiles={10 - existingImages.length}
+          label="Upload New Images"
+        />
+        <p className="text-xs text-gray-500">
+          You can have a maximum of 10 images total. ({existingImages.length + newImages.length}/10)
+        </p>
+      </div>
     </div>
   );
 }

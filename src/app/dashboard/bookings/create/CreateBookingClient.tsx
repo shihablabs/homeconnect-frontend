@@ -3,11 +3,12 @@
 import { bookingsApi } from '@/lib/api/bookings-api';
 import { propertiesApi } from '@/lib/api/properties-api';
 import { uploadService } from '@/lib/api/upload-api';
+// Keeping Redux imports for potential future compatibility but bypassing for initialization as requested
 import type { PropertyResponse } from '@/types/property.types';
-import { ArrowLeft } from 'lucide-react';
-import Link from 'next/link';
+import { Loader2 } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { useDispatch } from 'react-redux';
 import { toast } from 'sonner';
 import { ApplicationDetailsStep } from './steps/ApplicationDetailsStep';
 import { BookingSummary } from './steps/BookingSummary';
@@ -18,19 +19,23 @@ import type { BookingFormData, DocumentFile } from './types';
 export function CreateBookingClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const preSelectedPropertyId = searchParams.get('propertyId');
+  const dispatch = useDispatch();
 
-  
+  // -- 1. Synchronous Params --
+  const paramPropertyId = searchParams.get('propertyId');
+  const paramTourId = searchParams.get('tourId');
+
+  // -- 2. State Blocking --
+  const [isInitializing, setIsInitializing] = useState(true);
+
+  // Normal States
   const [currentStep, setCurrentStep] = useState(1);
   const [searchQuery, setSearchQuery] = useState('');
   const [properties, setProperties] = useState<PropertyResponse[]>([]);
   const [selectedProperty, setSelectedProperty] = useState<PropertyResponse | null>(null);
-
-  
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(false); // For search loading
   const [submitting, setSubmitting] = useState(false);
 
-  
   const [formData, setFormData] = useState<BookingFormData>({
     propertyId: '',
     checkIn: '',
@@ -39,32 +44,62 @@ export function CreateBookingClient() {
     leaseDurationInMonths: '12',
   });
 
-  
   const [documents, setDocuments] = useState<DocumentFile[]>([
     { id: 'id_proof', name: 'Identity Proof', type: 'id_proof', url: '' },
     { id: 'income_proof', name: 'Income Proof', type: 'income_proof', url: '' },
   ]);
 
-  
+  // -- Tour State --
+  const [activeTourId, setActiveTourId] = useState<string | null>(null);
+
+  // -- 3. The 'Killer' UseEffect --
   useEffect(() => {
-    const fetchPreSelectedProperty = async () => {
-      if (!preSelectedPropertyId) return;
-      try {
-        setLoading(true);
-        const property = await propertiesApi.getProperty(preSelectedPropertyId);
-        if (property) {
-          handleSelectProperty(property);
+    // If we have a URL property ID, we MUST fetch and init
+    if (paramPropertyId) {
+      console.log('Commander Init: Fetching Property', paramPropertyId);
+      
+      const initFlow = async () => {
+        try {
+          // Note: using local var here, but the Guard Clause handles the visual loading
+          const res = await propertiesApi.getProperty(paramPropertyId);
+          // Handle potential different response structures (unwrapped vs wrapped)
+          // The API fix should return the object directly, but we add safety here.
+          const property = (res as any)?.data || res; 
+          
+          console.log('Commander Init: Data received:', property);
+
+          if (property && property._id || property.id) {
+             // -- ATOMIC UPDATE BLOCK --
+             setSelectedProperty(property);
+             setFormData(prev => ({ ...prev, propertyId: property.id || property._id }));
+             // Initialize activeTourId from param if present
+             if (paramTourId) setActiveTourId(paramTourId);
+             setCurrentStep(2);
+             // -------------------------
+          } else {
+             console.error('Property data missing _id/id or is null', property);
+             toast.error('Failed to load property details');
+          }
+        } catch (error) {
+          console.error('Commander Init: Error', error);
+          toast.error('Failed to load selected property');
+        } finally {
+          setIsInitializing(false);
         }
-      } catch (error) {
-        console.error('Failed to fetch pre-selected property:', error);
-        toast.error('Failed to load selected property');
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchPreSelectedProperty();
+      };
+
+      initFlow();
+    } else {
+      // No property ID in URL -> Allow Step 1 to render immediately
+      setIsInitializing(false);
+    }
     
-  }, [preSelectedPropertyId]);
+    // Explicitly excluding dependencies to run ONCE mainly, or when param changes
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [paramPropertyId]); 
+
+
+  // -- Handlers --
 
   const searchProperties = async () => {
     if (!searchQuery.trim()) return;
@@ -88,7 +123,28 @@ export function CreateBookingClient() {
     setFormData((prev) => ({ ...prev, propertyId: property?.id || '' }));
     setProperties([]);
     setSearchQuery('');
+    if (property) {
+      setCurrentStep(2);
+    }
   };
+
+  const handleBackToSelection = () => {
+      // If we are going back, we might be unlinking.
+      // The confirmation logic is in the Child (ApplicationDetailsStep).
+      // If this is called, confirms we go back and clear tour.
+      setActiveTourId(null);
+      setCurrentStep(1);
+  };
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (searchQuery.trim().length >= 2) {
+        searchProperties();
+      }
+    }, 500);
+    return () => clearTimeout(timer);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchQuery]);
 
   const calculateTotalDays = () => {
     if (!formData.checkIn || !formData.checkOut) return 0;
@@ -101,25 +157,19 @@ export function CreateBookingClient() {
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>, docId: string) => {
     const file = event.target.files?.[0];
     if (!file) return;
-
-    
     if (file.size > 5 * 1024 * 1024) {
       toast.error('File size must be less than 5MB');
       return;
     }
-
     setDocuments(prev => prev.map(d => d.id === docId ? { ...d, uploading: true } : d));
-
     try {
       const response = await uploadService.uploadImage(file, 'booking-documents');
-
       setDocuments(prev => prev.map(d => d.id === docId ? {
         ...d,
         url: response.url,
         file,
         uploading: false
       } : d));
-
       toast.success(`${file.name} uploaded successfully`);
     } catch (error) {
       console.error('Upload failed:', error);
@@ -159,9 +209,7 @@ export function CreateBookingClient() {
 
     try {
       setSubmitting(true);
-
       const leaseDuration = parseInt(formData.leaseDurationInMonths);
-
       const uploadedDocs = documents
         .filter(d => d.url)
         .map(d => ({ name: d.name, type: d.type, url: d.url }));
@@ -174,6 +222,7 @@ export function CreateBookingClient() {
         leaseDurationInMonths: leaseDuration,
         setupRecurringPayment: false, 
         documents: uploadedDocs,
+        tourId: activeTourId || undefined, // Use state-based tourId
       });
 
       toast.success('Application submitted successfully! Redirecting...');
@@ -189,22 +238,31 @@ export function CreateBookingClient() {
     }
   };
 
-  return (
-    <div className="max-w-6xl mx-auto space-y-8 animate-in fade-in duration-500 pb-20">
+  // -- 4. The Guard Clause (CRITICAL) --
+  if (isInitializing && paramPropertyId) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] animate-in fade-in">
+          <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
+          <h3 className="text-xl font-semibold text-gray-900">Configuring Application...</h3>
+          <p className="text-gray-500 max-w-sm text-center mt-2">
+            Verifying property availability...
+          </p>
+      </div>
+    );
+  }
 
-      {}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2 text-muted-foreground mb-1">
-            <Link href="/dashboard/bookings" className="hover:text-primary transition-colors flex items-center gap-1 text-sm">
-              <ArrowLeft className="h-4 w-4" /> Back to Dashboard
-            </Link>
-          </div>
-          <h1 className="text-3xl font-bold tracking-tight text-gray-900">Start Your Application</h1>
-          <p className="text-gray-500">Apply for your dream home in 3 simple steps.</p>
+  return (
+    <div className="max-w-6xl mx-auto space-y-8 animate-in fade-in duration-500 py-12 pb-24">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b border-gray-100">
+        <div className="space-y-2">
+          <h1 className="text-4xl font-extrabold tracking-tight bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">
+            Start Your Application
+          </h1>
+          <p className="text-lg text-muted-foreground/80 font-medium">
+            Apply for your dream home in <span className="text-primary">3 simple steps</span>.
+          </p>
         </div>
 
-        {}
         <div className="flex items-center gap-2 bg-gray-100 p-1 rounded-full">
           {[1, 2, 3].map((step) => (
             <div
@@ -219,8 +277,6 @@ export function CreateBookingClient() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-
-        {}
         <div className="lg:col-span-2 space-y-6">
           <PropertySelectionStep
             currentStep={currentStep}
@@ -233,6 +289,7 @@ export function CreateBookingClient() {
             loading={loading}
             searchProperties={searchProperties}
             handleSelectProperty={handleSelectProperty}
+            tourId={activeTourId}
           />
 
           <ApplicationDetailsStep
@@ -245,6 +302,8 @@ export function CreateBookingClient() {
             handleFileUpload={handleFileUpload}
             handleRemoveDocument={handleRemoveDocument}
             validateStep2={validateStep2}
+            isLocked={!!activeTourId}
+            onBack={handleBackToSelection}
           />
 
           <ReviewSubmitStep
@@ -258,7 +317,6 @@ export function CreateBookingClient() {
           />
         </div>
 
-        {}
         <div className="lg:col-span-1 hidden lg:block">
           <BookingSummary
             selectedProperty={selectedProperty}

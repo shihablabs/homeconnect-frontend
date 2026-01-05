@@ -18,6 +18,8 @@ interface ApplicationDetailsStepProps {
   handleFileUpload: (event: React.ChangeEvent<HTMLInputElement>, docId: string) => void;
   handleRemoveDocument: (docId: string) => void;
   validateStep2: () => boolean;
+  isLocked?: boolean;
+  onBack?: () => void;
 }
 
 export function ApplicationDetailsStep({
@@ -30,7 +32,24 @@ export function ApplicationDetailsStep({
   handleFileUpload,
   handleRemoveDocument,
   validateStep2,
+  isLocked,
+  onBack,
 }: ApplicationDetailsStepProps) {
+  // Need to reference props object for onBack access inside onClick if strictly destructured? 
+  // Ah, I added onBack to destructuring so it's a local var now.
+  // But my previous edit to ApplicationDetailsStep used `props.onBack`.
+  // I must match the usage. 
+  // Wait, the previous replace_file_content for ApplicationDetailsStep used `props.onBack`.
+  // But `props` is NOT defined in the signature I see above: `({ ... }: ApplicationDetailsStepProps)`.
+  // So `props` would be undefined.
+  // I need to use the destructured `onBack` variable.
+  // I will re-apply the logic in the NEXT tool call or fix it here if I can.
+  // I will assume I made a mistake in the previous tool call content (using `props.onBack` when `props` isn't available).
+  // I will Fix that in a subsequent step or try to fix it blindly now?
+  // I will just add `onBack` here.
+  // And then I will correct the storage of the component logic. 
+  // actually, I can just use `onBack` in the component. 
+
   return (
     <Card className={`border-none shadow-md overflow-hidden transition-all duration-300 ${currentStep === 2 ? 'ring-2 ring-primary ring-offset-2' : ''} ${currentStep < 2 ? 'opacity-60 pointer-events-none' : 'opacity-100'}`}>
       <div className="bg-primary/5 p-4 border-b border-primary/10 flex justify-between items-center cursor-pointer"
@@ -44,8 +63,28 @@ export function ApplicationDetailsStep({
 
       {currentStep === 2 && (
         <CardContent className="p-6 space-y-8">
+          
+          {selectedProperty && (
+            <div className="bg-muted/30 p-4 rounded-xl border flex gap-4 items-center">
+               <div className="h-16 w-20 relative rounded-lg overflow-hidden shrink-0 bg-gray-100">
+                  {selectedProperty.images?.[0] ? (
+                    <Image src={selectedProperty.images[0]} alt={selectedProperty.title} fill className="object-cover" />
+                  ) : (
+                    <div className="h-full w-full bg-gray-200" />
+                  )}
+                </div>
+                <div>
+                  <h3 className="font-semibold text-sm text-gray-900">{selectedProperty.title}</h3>
+                  <p className="text-xs text-muted-foreground">{selectedProperty.address}</p>
+                   <div className="flex gap-2 mt-1">
+                    <span className="text-xs font-bold text-primary">
+                      ৳{selectedProperty.listingType === 'rent' ? (selectedProperty as any).pricePerMonth?.toLocaleString() : 'N/A'}/mo
+                    </span>
+                   </div>
+                </div>
+            </div>
+          )}
 
-          {}
           <div className="space-y-4">
             <h3 className="text-sm font-semibold text-gray-900 border-b pb-2">Requested Dates</h3>
             <div className="grid gap-4 md:grid-cols-2">
@@ -86,7 +125,6 @@ export function ApplicationDetailsStep({
             )}
           </div>
 
-          {}
           <div className="space-y-2">
             <Label>Message to Landlord (Optional)</Label>
             <Textarea
@@ -97,7 +135,6 @@ export function ApplicationDetailsStep({
             />
           </div>
 
-          {}
           <div className="space-y-4">
             <h3 className="text-sm font-semibold text-gray-900 border-b pb-2 flex items-center justify-between">
               Required Documents
@@ -151,7 +188,22 @@ export function ApplicationDetailsStep({
           </div>
 
           <div className="flex justify-between pt-4">
-            <Button variant="outline" onClick={() => setCurrentStep(1)}>Back</Button>
+             <Button 
+               variant="outline" 
+               onClick={() => {
+                 if (isLocked) {
+                   if (window.confirm("Changing property will unlink this booking from your tour. Continue?")) {
+                      if (onBack) onBack();
+                      else setCurrentStep(1);
+                   }
+                 } else {
+                   if (onBack) onBack();
+                   else setCurrentStep(1);
+                 }
+               }}
+             >
+               Back to Selection
+             </Button>
             <Button onClick={() => validateStep2() && setCurrentStep(3)}>Review Application</Button>
           </div>
         </CardContent>

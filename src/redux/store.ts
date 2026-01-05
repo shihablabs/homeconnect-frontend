@@ -1,6 +1,7 @@
 import { configureStore } from '@reduxjs/toolkit';
 import { apiSlice } from './api/apiSlice';
 import authReducer from './features/auth/authSlice';
+import bookingsReducer from './features/bookings/bookingsSlice';
 import compareReducer from './features/property/compareSlice';
 
 export const store = configureStore({
@@ -8,6 +9,7 @@ export const store = configureStore({
     [apiSlice.reducerPath]: apiSlice.reducer,
     auth: authReducer,
     compare: compareReducer,
+    bookings: bookingsReducer,
   },
 
   middleware: (getDefaultMiddleware) =>

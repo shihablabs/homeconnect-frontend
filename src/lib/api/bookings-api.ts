@@ -26,7 +26,7 @@ export interface Booking {
   checkIn: string;
   checkOut: string;
   totalAmount: number;
-  status: 'pending' | 'confirmed' | 'cancelled' | 'completed';
+  status: 'pending' | 'confirmed' | 'cancelled' | 'completed' | 'reviewing' | 'waiting_for_payment' | 'approved' | 'rejected';
   paymentStatus: 'pending' | 'paid' | 'failed' | 'refunded';
   stripeSessionId?: string;
   specialRequests?: string;
@@ -38,6 +38,7 @@ export interface Booking {
   stripeCustomerId?: string;
   nextBillingDate?: string;
   documents?: { name: string; type: string; url: string }[];
+  tour?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -50,6 +51,7 @@ export interface CreateBookingRequest {
   leaseDurationInMonths?: number;
   leaseDocumentURL?: string;
   setupRecurringPayment?: boolean; 
+  tourId?: string;
   documents?: { name: string; type: string; url: string }[];
 }
 

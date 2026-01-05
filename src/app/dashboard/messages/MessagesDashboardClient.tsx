@@ -321,6 +321,23 @@ export function MessagesDashboardClient() {
                       )}
                     </CardDescription>
                   </div>
+                  
+                  {/* Direct Booking Button */}
+                  {(activePropertyId || selectedConversation.lastMessage?.property) && (
+                    <Button 
+                      size="sm" 
+                      className="hidden sm:flex"
+                      variant="outline"
+                      onClick={() => {
+                         const propId = activePropertyId || selectedConversation.lastMessage?.property?.id;
+                         if(propId) {
+                             window.location.href = `/dashboard/bookings/create?propertyId=${propId}`;
+                         }
+                      }}
+                    >
+                      {user?.role === 'landlord' ? 'Send Invitation' : 'Request to Book'}
+                    </Button>
+                  )}
                 </div>
               </CardHeader>
               <CardContent className="flex-1 flex flex-col p-0">
