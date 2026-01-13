@@ -1,5 +1,6 @@
 
 import { FeaturedProperties } from "@/components/property/FeaturedProperties";
+import BlogPreview from "@/components/sections/BlogPreview";
 import CityGrid from "@/components/sections/CityGrid";
 import Hero from "@/components/sections/Hero";
 import HowItWorks from "@/components/sections/HowItWorks";
@@ -24,6 +25,7 @@ export default function Home() {
         <CityGrid />
         <HowItWorks />
         <LandlordCTA />
+        <BlogPreview />
         <Newsletter />
       </main>
     </>

@@ -39,23 +39,16 @@ type ProfileResponsePayload = AuthUser;
 export const authApiSlice = apiSlice.injectEndpoints({
   overrideExisting: true,
   endpoints: (builder) => ({
-    register: builder.mutation<LoginResponsePayload, any>({
+    register: builder.mutation<{ message: string; email: string }, any>({
       query: (credentials) => ({
         url: '/auth/register',
         method: 'POST',
         body: credentials,
       }),
-      transformResponse(response: ApiSingleResponse<LoginResponsePayload>) {
+      transformResponse(response: ApiSingleResponse<{ message: string; email: string }>) {
         return response.data;
       },
-      async onQueryStarted(arg, { dispatch, queryFulfilled }) {
-        try {
-          const { data } = await queryFulfilled;
-          dispatch(setCredentials(data));
-        } catch (error) {
-          
-        }
-      },
+      // Removed onQueryStarted as we don't auto-login anymore
     }),
 
     login: builder.mutation<LoginResponsePayload, any>({
@@ -72,7 +65,7 @@ export const authApiSlice = apiSlice.injectEndpoints({
           const { data } = await queryFulfilled;
           dispatch(setCredentials(data));
         } catch (error) {
-          
+
         }
       },
     }),
@@ -158,7 +151,7 @@ export const authApiSlice = apiSlice.injectEndpoints({
           const { data } = await queryFulfilled;
           dispatch(updateUserProfile(data));
         } catch (error) {
-          
+
         }
       },
     }),
@@ -180,7 +173,7 @@ export const authApiSlice = apiSlice.injectEndpoints({
           const { data } = await queryFulfilled;
           dispatch(updateUserProfile(data));
         } catch (error) {
-          
+
         }
       },
     }),

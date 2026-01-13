@@ -7,21 +7,22 @@ import { useAuthState } from "@/hooks/useAuthState";
 import { useMyToursQuery } from "@/hooks/useMyToursQuery";
 import { propertiesApi } from "@/lib/api/properties-api";
 import { cn } from "@/lib/utils";
+import { formatBDT } from "@/lib/utils/currencyHelper";
 import { addToCompare, removeFromCompare } from "@/redux/features/property/compareSlice";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import { PropertyResponse, isRentalResponse } from "@/types/property.types";
 import {
-    Calendar,
-    Eye,
-    Flag,
-    GitCompare,
-    Heart,
-    Info,
-    Loader2,
-    MapPin,
-    Share2,
-    ShieldCheck,
-    User as UserIcon
+  Calendar,
+  Eye,
+  Flag,
+  GitCompare,
+  Heart,
+  Info,
+  Loader2,
+  MapPin,
+  Share2,
+  ShieldCheck,
+  User as UserIcon
 } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -30,11 +31,12 @@ import { toast } from "sonner";
 import { QuickViewModal } from "../property/QuickViewModal";
 import { PropertyBadge } from "./PropertyBadge";
 import {
-    CommercialDetails,
-    LandDetails,
-    ResidentialDetails,
+  CommercialDetails,
+  LandDetails,
+  ResidentialDetails,
 } from "./PropertyDetails";
 
+import { RequestInfoModal } from "../modals/RequestInfoModal";
 import { ScheduleVisitModal } from "../modals/ScheduleVisitModal";
 
 interface PropertyCardProps {
@@ -69,6 +71,7 @@ export function PropertyCard({ property }: PropertyCardProps) {
   const [loading, setLoading] = useState(false);
   const [isQuickViewOpen, setIsQuickViewOpen] = useState(false);
   const [isScheduleVisitOpen, setIsScheduleVisitOpen] = useState(false);
+  const [isRequestInfoOpen, setIsRequestInfoOpen] = useState(false);
 
   const isInCompare = compareItems.some((item) => item.id === id);
 
@@ -112,7 +115,7 @@ export function PropertyCard({ property }: PropertyCardProps) {
         return;
       }
 
-      
+
       if (compareItems.length > 0) {
         const currentType = compareItems[0].listingType;
         if (property.listingType !== currentType) {
@@ -142,8 +145,8 @@ export function PropertyCard({ property }: PropertyCardProps) {
     }
 
     checkAuth(() => {
-      
-      const profileIdentifier = author.username || author.id;
+
+      const profileIdentifier = author.slug || author.username || author.id;
       router.push(`/profile/${profileIdentifier}`);
     });
   };
@@ -165,17 +168,16 @@ export function PropertyCard({ property }: PropertyCardProps) {
   }, [images]);
 
   const getPriceLabel = () => {
-    const currency = property.currency || "BDT";
     if (isRentalResponse(property)) {
       const price = property.pricePerMonth;
-      if (!price || price === 0) return `${currency} 00 /mo`;
-      return `${currency} ${price.toLocaleString()} /mo`;
+      if (!price || price === 0) return `৳ 00 /mo`;
+      return `${formatBDT(price)} /mo`;
     }
-    
+
     if ('totalPrice' in property) {
       const price = property.totalPrice;
-      if (!price || price === 0) return `${currency} 00`;
-      return `${currency} ${price.toLocaleString()}`;
+      if (!price || price === 0) return `৳ 00`;
+      return `${formatBDT(price)}`;
     }
     return "Price on Request";
   };
@@ -212,7 +214,7 @@ export function PropertyCard({ property }: PropertyCardProps) {
             getThemeColor()
           )}
         >
-          {}
+          { }
           <div className="relative aspect-[4/3] w-full overflow-hidden rounded-t-xl bg-gray-50">
             <Image
               src={imgSrc}
@@ -224,7 +226,7 @@ export function PropertyCard({ property }: PropertyCardProps) {
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60" />
 
-            {}
+            { }
             <div className="absolute left-3 top-3 z-10">
               <PropertyBadge
                 listingType={listingType}
@@ -233,7 +235,7 @@ export function PropertyCard({ property }: PropertyCardProps) {
               />
             </div>
 
-            {}
+            { }
             <div className="absolute right-3 top-3 z-30 flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
               <TooltipProvider>
                 <Tooltip>
@@ -338,7 +340,7 @@ export function PropertyCard({ property }: PropertyCardProps) {
               )}
             </div>
 
-            {}
+            { }
             <div className="absolute bottom-3 left-3 z-10">
               <div className="px-2.5 py-1 rounded-lg bg-black/40 backdrop-blur-md border border-white/20">
                 <h4 className="text-lg font-bold text-white leading-tight">
@@ -348,7 +350,7 @@ export function PropertyCard({ property }: PropertyCardProps) {
             </div>
           </div>
 
-          {}
+          { }
           <div className="p-4 space-y-3.5">
             <div className="flex items-start justify-between gap-2 h-11">
               <h3 className="line-clamp-2 text-[15px] md:text-[17px] lg:text-lg font-bold text-gray-900 group-hover:text-primary transition-colors leading-snug">
@@ -371,9 +373,9 @@ export function PropertyCard({ property }: PropertyCardProps) {
               )}
             </div>
 
-            {}
+            { }
             <div className="pt-1 flex flex-col gap-3">
-              {}
+              { }
               <div className="flex items-center justify-between gap-4">
                 <button
                   onClick={handleAuthorClick}
@@ -435,7 +437,9 @@ export function PropertyCard({ property }: PropertyCardProps) {
                       variant="outline"
                       onClick={(e) => {
                         e.stopPropagation();
-                        toast.info("Inquiry feature under development");
+                        checkAuth(() => {
+                          setIsRequestInfoOpen(true);
+                        });
                       }}
                     >
                       <Info className="h-3.5 w-3.5 mr-1.5" />
@@ -485,6 +489,12 @@ export function PropertyCard({ property }: PropertyCardProps) {
         propertyTitle={title}
         isOpen={isScheduleVisitOpen}
         onClose={() => setIsScheduleVisitOpen(false)}
+      />
+      <RequestInfoModal
+        propertyId={id}
+        propertyTitle={title}
+        isOpen={isRequestInfoOpen}
+        onClose={() => setIsRequestInfoOpen(false)}
       />
     </>
   );

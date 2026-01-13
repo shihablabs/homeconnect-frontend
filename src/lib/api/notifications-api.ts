@@ -5,7 +5,7 @@ import { api } from './api';
 export interface Notification {
   id: string;
   user: string;
-  type: 'message' | 'booking' | 'payment' | 'property' | 'maintenance' | 'system';
+  type: 'message' | 'booking' | 'payment' | 'property' | 'maintenance' | 'system' | 'inquiry' | 'verification';
   title: string;
   message: string;
   data?: {
@@ -28,6 +28,8 @@ export interface NotificationStats {
     property: number;
     maintenance: number;
     system: number;
+    inquiry: number;
+    verification: number;
   };
 }
 
@@ -35,7 +37,7 @@ export interface NotificationParams {
   page?: number;
   limit?: number;
   unreadOnly?: boolean;
-  type?: 'message' | 'booking' | 'payment' | 'property' | 'maintenance' | 'system';
+  type?: 'message' | 'booking' | 'payment' | 'property' | 'maintenance' | 'system' | 'inquiry' | 'verification';
 }
 
 export interface NotificationResponse {

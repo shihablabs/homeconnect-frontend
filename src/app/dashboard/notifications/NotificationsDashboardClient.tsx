@@ -1,10 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Select,
   SelectContent,
@@ -12,28 +10,32 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useFCM } from '@/hooks/useFCM';
 import { useNotificationsSocket } from '@/hooks/useNotificationsSocket';
 import { type Notification } from '@/lib/api/notifications-api';
-import { Bell, CheckCheck, MessageSquare, CreditCard, Home, Wrench, Settings, Filter, Loader2 } from 'lucide-react';
+import { Bell, CheckCheck, CreditCard, Filter, Home, Loader2, MessageSquare, Settings, Wrench } from 'lucide-react';
+import Link from 'next/link';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
 const formatTimeAgo = (date: string) => {
   const now = new Date();
   const past = new Date(date);
   const diffInSeconds = Math.floor((now.getTime() - past.getTime()) / 1000);
-  
+
   if (diffInSeconds < 60) return 'just now';
   if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} minutes ago`;
   if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} hours ago`;
   if (diffInSeconds < 604800) return `${Math.floor(diffInSeconds / 86400)} days ago`;
   return past.toLocaleDateString();
 };
-import Link from 'next/link';
 
 export function NotificationsDashboardClient() {
   const [activeTab, setActiveTab] = useState('all');
   const [typeFilter, setTypeFilter] = useState<string>('all');
   const [markingAll, setMarkingAll] = useState(false);
+  const { fcmToken, notificationPermission, requestPermission } = useFCM();
 
   const {
     notifications: allNotifications,
@@ -51,7 +53,7 @@ export function NotificationsDashboardClient() {
     },
   });
 
-  
+
   useEffect(() => {
     const params: {
       limit: number;
@@ -207,7 +209,34 @@ export function NotificationsDashboardClient() {
         )}
       </div>
 
-      {}
+      <Card className="bg-muted/50">
+        <CardContent className="py-4 flex items-center justify-between">
+          <div className="space-y-1">
+            <h3 className="font-semibold text-sm">Push Notifications</h3>
+            <div className="text-xs text-muted-foreground">
+              Permission: <Badge variant={notificationPermission === 'granted' ? 'default' : 'secondary'}>{notificationPermission}</Badge>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            {fcmToken && (
+              <div className="hidden">Token available in console</div>
+            )}
+            <Button size="sm" onClick={requestPermission} disabled={notificationPermission === 'granted'}>
+              {notificationPermission === 'granted' ? 'Enabled' : 'Enable Notifications'}
+            </Button>
+            {fcmToken && (
+              <Button size="sm" variant="outline" onClick={() => {
+                navigator.clipboard.writeText(fcmToken);
+                toast.success('Token copied to clipboard');
+              }}>
+                Copy Token
+              </Button>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      { }
       {stats && (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <Card>
@@ -295,9 +324,8 @@ export function NotificationsDashboardClient() {
                     const link = getNotificationLink(notification);
                     const NotificationContent = (
                       <div
-                        className={`p-4 border rounded-lg ${
-                          !notification.isRead ? 'bg-primary/5 border-primary/20' : ''
-                        }`}
+                        className={`p-4 border rounded-lg ${!notification.isRead ? 'bg-primary/5 border-primary/20' : ''
+                          }`}
                       >
                         <div className="flex items-start gap-4">
                           <div

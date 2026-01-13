@@ -16,12 +16,32 @@ export interface User {
   isVerified?: boolean;
   createdAt: string;
   updatedAt: string;
+  bio?: string;
+  title?: string;
+  socialLinks?: {
+    linkedin?: string;
+    twitter?: string;
+    instagram?: string;
+    website?: string;
+  };
+  yearsOfExperience?: number;
+  specializedArea?: string;
 }
 
 export interface UpdateUserRequest {
   name?: string;
   phone?: string;
   avatar?: string;
+  bio?: string;
+  title?: string;
+  socialLinks?: {
+    linkedin?: string;
+    twitter?: string;
+    instagram?: string;
+    website?: string;
+  };
+  yearsOfExperience?: number;
+  specializedArea?: string;
 }
 
 export interface GetUsersParams {

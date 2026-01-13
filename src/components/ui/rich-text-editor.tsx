@@ -30,13 +30,14 @@ import {
   Strikethrough,
   Undo,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 interface RichTextEditorProps {
   value: string;
   onChange: (value: string) => void;
   placeholder?: string;
   className?: string;
+  disabled?: boolean;
 }
 
 const MenuBar = ({ editor }: { editor: any }) => {
@@ -64,16 +65,12 @@ const MenuBar = ({ editor }: { editor: any }) => {
   };
 
   const applyLink = () => {
-    
-
-    
     if (linkUrl === "") {
       editor.chain().focus().extendMarkRange("link").unsetLink().run();
       setIsLinkModalOpen(false);
       return;
     }
 
-    
     editor
       .chain()
       .focus()
@@ -86,7 +83,6 @@ const MenuBar = ({ editor }: { editor: any }) => {
 
   return (
     <div className="border-b bg-gray-50 p-2 flex flex-wrap gap-1 rounded-t-lg items-center">
-      {}
       <Button
         type="button"
         variant="ghost"
@@ -273,6 +269,7 @@ export function RichTextEditor({
   onChange,
   placeholder,
   className,
+  disabled,
 }: RichTextEditorProps) {
   const editor = useEditor({
     extensions: [
@@ -297,8 +294,16 @@ export function RichTextEditor({
     onUpdate: ({ editor }) => {
       onChange(editor.getHTML());
     },
+    editable: !disabled,
     immediatelyRender: false,
   });
+
+  // Effect to update editable status when disabled prop changes
+  useEffect(() => {
+    if (editor && editor.isEditable === disabled) {
+      editor.setEditable(!disabled);
+    }
+  }, [editor, disabled]);
 
   return (
     <div className="w-full rounded-md border border-input bg-transparent shadow-sm overflow-hidden focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2">

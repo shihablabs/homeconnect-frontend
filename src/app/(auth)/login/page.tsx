@@ -41,14 +41,19 @@ export default function LoginPage() {
     if (isAuthenticated) {
       console.log('🔐 User already logged in, redirecting...');
 
-      
+
       if (returnUrl) {
         const decodedUrl = decodeURIComponent(returnUrl);
         router.push(decodedUrl);
         return;
       }
 
-      
+
+      if (!user?.isPhoneVerified) {
+        router.push('/verify-phone');
+        return;
+      }
+
       switch (user?.role) {
         case 'landlord':
         case 'admin':
@@ -57,7 +62,7 @@ export default function LoginPage() {
           break;
         case 'tenant':
         default:
-          router.push('/properties'); 
+          router.push('/properties');
           break;
       }
     }
@@ -150,7 +155,7 @@ export default function LoginPage() {
                     setRememberMe={setRememberMe}
                   />
 
-                  {}
+                  { }
                   <div className="border-t pt-6 mt-6">
                     <p className="text-xs text-gray-500 text-center mb-4 font-medium uppercase tracking-wide">
                       Demo Accounts

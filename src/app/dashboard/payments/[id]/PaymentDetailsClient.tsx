@@ -5,7 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { paymentsApi, type EscrowStatus, type Payment } from '@/lib/api/payments-api';
-import { ArrowLeft, CheckCircle2, Clock, CreditCard } from 'lucide-react';
+import { convertBDTtoUSD, formatBDT, formatUSD } from '@/lib/utils/currencyHelper';
+import { AlertCircle, ArrowLeft, CheckCircle2, Clock, CreditCard } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -151,8 +152,12 @@ export function PaymentDetailsClient({ paymentId }: PaymentDetailsClientProps) {
                   </Badge>
                 </div>
                 <div>
-                  <Label className="text-muted-foreground">Amount</Label>
-                  <p className="text-2xl font-bold">৳{payment.amount.toLocaleString()}</p>
+                  <Label className="text-muted-foreground">Amount (BDT)</Label>
+                  <p className="text-2xl font-bold">{formatBDT(payment.amount)}</p>
+                </div>
+                <div>
+                  <Label className="text-muted-foreground">Amount (USD Equivalent)</Label>
+                  <p className="text-lg font-semibold text-muted-foreground">{formatUSD(convertBDTtoUSD(payment.amount))}</p>
                 </div>
                 <div>
                   <Label className="text-muted-foreground">Status</Label>
@@ -224,12 +229,22 @@ export function PaymentDetailsClient({ paymentId }: PaymentDetailsClientProps) {
             <CardHeader>
               <CardTitle>Actions</CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="space-y-4">
               {payment.status === 'pending' && (
-                <Button onClick={handlePay} className="w-full">
-                  <CreditCard className="mr-2 h-4 w-4" />
-                  Pay Now
-                </Button>
+                <div className="space-y-3">
+                  <div className="bg-primary/5 border border-primary/20 rounded-lg p-3 flex gap-2 items-start">
+                    <AlertCircle className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+                    <div className="text-[11px] text-muted-foreground">
+                      <p className="font-semibold text-primary/80">Payment Disclaimer</p>
+                      <p>Total in BDT: <span className="font-bold">{formatBDT(payment.amount)}</span></p>
+                      <p>Equivalent in USD: <span className="font-bold">{formatUSD(convertBDTtoUSD(payment.amount))}</span></p>
+                    </div>
+                  </div>
+                  <Button onClick={handlePay} className="w-full">
+                    <CreditCard className="mr-2 h-4 w-4" />
+                    Pay Now
+                  </Button>
+                </div>
               )}
             </CardContent>
           </Card>

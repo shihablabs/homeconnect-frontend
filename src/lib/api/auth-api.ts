@@ -38,6 +38,16 @@ export interface IUpdateProfileRequest {
   name?: string;
   phone?: string;
   avatar?: string;
+  bio?: string;
+  title?: string;
+  socialLinks?: {
+    linkedin?: string;
+    twitter?: string;
+    instagram?: string;
+    website?: string;
+  };
+  yearsOfExperience?: number;
+  specializedArea?: string;
 }
 
 export const authApi = {
@@ -56,8 +66,13 @@ export const authApi = {
     return response.data.data;
   },
 
-  verifyEmail: async (token: string): Promise<{ message: string }> => {
-    const response = await api.post("/auth/verify-email", { token });
+  verifyEmail: async (data: { email: string; otp: string }): Promise<{ message: string }> => {
+    const response = await api.post("/auth/verify-email", data);
+    return response.data;
+  },
+
+  verifyPhone: async (): Promise<{ message: string }> => {
+    const response = await api.post("/auth/verify-phone", {});
     return response.data;
   },
 
@@ -85,16 +100,16 @@ export const authApi = {
     data: IChangePasswordRequest
   ): Promise<{ message: string }> => {
     const response = await api.post("/auth/change-password", data);
-    return response.data; 
+    return response.data;
   },
 
-  
+
   deleteAccount: async (): Promise<{ message: string }> => {
     const response = await api.delete("/users/me/delete-account");
     return response.data;
   },
 
-  
+
   logout: async (): Promise<{ message: string }> => {
     const response = await api.post("/auth/logout");
     return response.data;

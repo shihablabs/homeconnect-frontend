@@ -1,4 +1,3 @@
-import { PhoneVerification } from "@/components/auth/PhoneVerification";
 import { MakeOfferModal } from "@/components/modals/MakeOfferModal";
 import { RequestInfoModal } from "@/components/modals/RequestInfoModal";
 import { ScheduleVisitModal } from "@/components/modals/ScheduleVisitModal";
@@ -11,6 +10,7 @@ import { useMyToursQuery } from "@/hooks/useMyToursQuery";
 import { bookingsApi } from "@/lib/api/bookings-api";
 import { stripePromise } from "@/lib/stripe";
 import { cn } from "@/lib/utils";
+import { useGetMyInquiriesQuery } from "@/redux/features/inquiry/inquiryApiSlice";
 import { RootState } from "@/redux/store";
 import { OwnerAgentResponse } from "@/types/property.types";
 import { MessageSquare, Share2, ShieldCheck, User as UserIcon } from "lucide-react";
@@ -18,7 +18,6 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useSelector } from "react-redux";
 import { toast } from "sonner";
-
 
 
 interface PropertySidebarProps {
@@ -49,24 +48,33 @@ export function PropertySidebar({
   const [isOfferModalOpen, setIsOfferModalOpen] = useState(false);
   const { hasPendingTour } = useMyToursQuery();
 
-  const [isPhoneModalOpen, setIsPhoneModalOpen] = useState(false);
   const [isRequestInfoOpen, setIsRequestInfoOpen] = useState(false);
   const [isBookingLoading, setIsBookingLoading] = useState(false);
   const { user } = useSelector((state: RootState) => state.auth);
+
+  // Check if user has already inquired about this property
+  const { data: myInquiries } = useGetMyInquiriesQuery(undefined, {
+    skip: !user
+  });
+
+  const hasInquired = myInquiries?.some(
+    (inquiry: any) =>
+      (inquiry.property?._id === propertyId) ||
+      (inquiry.property?.id === propertyId)
+  );
 
   const handleRentNow = async () => {
     checkAuth(async () => {
       if (!user) return;
 
       if (!user.isPhoneVerified) {
-        setIsPhoneModalOpen(true);
+        toast.error("Please verify your phone number to proceed.");
+        router.push('/verify-phone');
         return;
       }
 
       setIsBookingLoading(true);
       try {
-        
-        
         const checkIn = new Date();
         const checkOut = new Date();
         checkOut.setFullYear(checkOut.getFullYear() + 1);
@@ -78,7 +86,7 @@ export function PropertySidebar({
           leaseDurationInMonths: 12,
         });
 
-        
+
         const session = await bookingsApi.createPaymentSession({
           bookingId: booking.id,
           returnUrl: `${window.location.origin}/dashboard/bookings/${booking.id}/complete`,
@@ -127,7 +135,7 @@ export function PropertySidebar({
 
   return (
     <Card className="p-8 sticky top-24 shadow-2xl border-gray-100 rounded-2xl overflow-hidden group">
-      {}
+      { }
       <div className="mb-8">
         <span className="text-xs font-bold text-primary uppercase tracking-[0.2em] mb-1 block">
           {listingType === "rent" ? "Monthly Rent" : "Asking Price"}
@@ -139,7 +147,7 @@ export function PropertySidebar({
 
       <Separator className="mb-8 bg-gray-100" />
 
-      {}
+      { }
       <div className="mb-8 space-y-6">
         <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest">
           {agent ? "Listing Representative" : "Property Owner"}
@@ -147,7 +155,7 @@ export function PropertySidebar({
         <div
           onClick={() => {
             checkAuth(() => {
-              
+
               const profileIdentifier = contactPerson.username || contactPerson.slug || contactPerson.id;
               router.push(`/profile/${profileIdentifier}`);
             });
@@ -178,7 +186,7 @@ export function PropertySidebar({
         </div>
       </div>
 
-      {}
+      { }
       <div className="space-y-3.5">
         {(!user || user.role === 'tenant') && (
           <>
@@ -192,19 +200,23 @@ export function PropertySidebar({
                 {isBookingLoading ? "Processing..." : "Rent This Home Now"}
               </Button>
             )}
+            {/* Replaced Chat with Email Inquiry */}
             <Button
               size="lg"
-              className="w-full h-12 bg-primary hover:bg-primary/90 text-white font-bold rounded-xl shadow-lg shadow-primary/20 transition-all hover:scale-[1.02] active:scale-95"
+              disabled={hasInquired}
+              className={cn(
+                "w-full h-12 bg-primary hover:bg-primary/90 text-white font-bold rounded-xl shadow-lg shadow-primary/20 transition-all hover:scale-[1.02] active:scale-95 mb-4",
+                hasInquired && "opacity-70 cursor-not-allowed bg-gray-400 hover:bg-gray-400 shadow-none hover:scale-100"
+              )}
               onClick={() => {
-                checkAuth(() => {
-                  router.push(`/dashboard/messages?partner=${contactPerson.id}&property=${propertyId}`);
-                });
+                if (hasInquired) return;
+                checkAuth(() => setIsRequestInfoOpen(true));
               }}
             >
               <MessageSquare className="mr-2.5 h-5 w-5" />
-              Message {agent ? "Agent" : "Owner"}
+              {hasInquired ? "Request Sent" : "Send Email Inquiry"}
             </Button>
-            {}
+
             <div className="space-y-3 pt-4 border-t border-gray-100">
               {listingType === "rent" ? (
                 <Button
@@ -234,22 +246,12 @@ export function PropertySidebar({
                   Make an Offer
                 </Button>
               )}
-
-              <Button
-                variant="ghost"
-                className="w-full h-11 border border-dashed border-gray-200 text-gray-500 hover:text-cyan-600 hover:border-cyan-200 hover:bg-cyan-50 transition-all font-medium text-xs uppercase tracking-wider"
-                onClick={() => {
-                  checkAuth(() => setIsRequestInfoOpen(true));
-                }}
-              >
-                {listingType === "rent" ? "Ask a Question" : "Inquiry Info"}
-              </Button>
             </div>
           </>
         )}
 
         <div className="space-y-3.5 mt-4">
-          {}
+          { }
           <Button
             variant="ghost"
             size="lg"
@@ -269,11 +271,7 @@ export function PropertySidebar({
         price={price}
         currency={currency}
       />
-      <PhoneVerification
-        isOpen={isPhoneModalOpen}
-        onClose={() => setIsPhoneModalOpen(false)}
-        onSuccess={handleRentNow}
-      />
+
       {propertyId && (
         <ScheduleVisitModal
           propertyId={propertyId}

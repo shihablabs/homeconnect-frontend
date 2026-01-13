@@ -1,5 +1,6 @@
 "use client";
 
+import { formatBDT } from "@/lib/utils/currencyHelper";
 import L, { LayerGroup, Map as LeafletMapInstance } from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { useEffect, useMemo, useRef } from "react";
@@ -40,12 +41,12 @@ export default function LeafletMap({
     return centerFallback;
   }, [items, centerFallback]);
 
-  
+
   useEffect(() => {
     const el = wrapperRef.current;
     if (!el) return;
 
-    
+
     if (mapRef.current) {
       mapRef.current.remove();
       mapRef.current = null;
@@ -58,7 +59,7 @@ export default function LeafletMap({
     });
     mapRef.current = map;
 
-    
+
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
       attribution: '&copy; <a href="https://www.openstreetmap.org/">OSM</a> contributors',
       maxZoom: 19,
@@ -72,15 +73,15 @@ export default function LeafletMap({
       map.remove();
       mapRef.current = null;
     };
-    
-  }, []); 
 
-  
+  }, []);
+
+
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
 
-    
+
     if (markersRef.current) {
       markersRef.current.removeFrom(map);
       markersRef.current = null;
@@ -101,7 +102,7 @@ export default function LeafletMap({
           <div style="font-weight:600; margin-bottom:2px;">${p.title}</div>
           <div style="color:#6b7280">${p.neighborhood ? `${p.neighborhood}, ` : ""}${p.city}</div>
           <div style="margin-top:4px;">
-            ${p.currency ?? "USD"} ${p.price.toLocaleString()}${p.listingType === "rent" ? "/mo" : ""}
+            ${formatBDT(p.price)}${p.listingType === "rent" ? "/mo" : ""}
           </div>
           <a href="/property/${p.id}" style="color:#2563eb; text-decoration:underline; font-size:11px; display:inline-block; margin-top:4px;">View details</a>
         </div>
@@ -113,18 +114,18 @@ export default function LeafletMap({
     group.addTo(map);
     markersRef.current = group;
 
-    
+
     if (items.length > 0) {
       try {
         map.fitBounds(group.getBounds().pad(0.2), { animate: false });
       } catch {
-        
+
       }
     } else {
       map.setView(center, 12);
     }
 
-    
+
     setTimeout(() => map.invalidateSize(), 0);
   }, [items, center, refreshToken]);
 

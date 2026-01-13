@@ -9,6 +9,25 @@ export interface AuthUser {
   phone?: string;
   gender?: 'male' | 'female' | 'other';
   isPhoneVerified?: boolean;
+  isEmailVerified?: boolean;
+  isVerified?: boolean;
+  bio?: string;
+  title?: string;
+  yearsOfExperience?: number;
+  specializedArea?: string;
+  socialLinks?: {
+    linkedin?: string;
+    twitter?: string;
+    instagram?: string;
+    website?: string;
+  };
+  permanentAddress?: string;
+  nidNumber?: string;
+  emergencyContact?: {
+    name: string;
+    relationship: string;
+    phoneNumber: string;
+  };
 }
 
 interface AuthState {
@@ -47,7 +66,7 @@ const initialState: AuthState = {
   user: null,
   token: null,
   isAuthenticated: false,
-  isInitialized: false, 
+  isInitialized: false,
 };
 
 const authSlice = createSlice({
@@ -83,7 +102,7 @@ const authSlice = createSlice({
       state.user = hydratedState.user;
       state.token = hydratedState.token;
       state.isAuthenticated = hydratedState.isAuthenticated;
-      state.isInitialized = true; 
+      state.isInitialized = true;
     },
     updateUserProfile: (state, action: PayloadAction<Partial<AuthUser>>) => {
       if (state.user) {

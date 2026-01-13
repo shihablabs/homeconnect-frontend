@@ -1,21 +1,21 @@
 
 import {
-  TbBook,
-  TbBuilding,
-  TbCalendar,
-  TbCertificate,
-  TbChartBar,
-  TbCreditCard,
-  TbHeart,
-  TbHelp,
-  TbHome,
-  TbHomeSearch,
-  TbMail,
-  TbMessage,
-  TbPackage,
-  TbSettings,
-  TbUser,
-  TbUsers
+    TbBook,
+    TbBuilding,
+    TbCalendar,
+    TbCertificate,
+    TbChartBar,
+    TbCreditCard,
+    TbHeart,
+    TbHelp,
+    TbHome,
+    TbHomeSearch,
+    TbMail,
+    TbMessage,
+    TbPackage,
+    TbSettings,
+    TbUser,
+    TbUsers
 } from 'react-icons/tb';
 
 export type NavItemType = 'link' | 'dropdown' | 'section';
@@ -108,13 +108,7 @@ export const navigationConfig: RoleConfig = {
       type: 'section',
       label: 'SUPPORT & ACCOUNT'
     },
-    {
-      type: 'link',
-      label: 'Messages',
-      href: '/dashboard/messages',
-      icon: TbMessage,
-      badge: '5'
-    },
+
     {
       type: 'link',
       label: 'Service Requests',
@@ -222,13 +216,7 @@ export const navigationConfig: RoleConfig = {
         { type: 'link', href: '/dashboard/taxes', label: 'Tax Documents' },
       ]
     },
-    {
-      type: 'link',
-      label: 'Messages',
-      href: '/dashboard/messages',
-      icon: TbMessage,
-      badge: '12'
-    },
+
     {
       type: 'link',
       label: 'Settings',

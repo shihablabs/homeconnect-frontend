@@ -7,32 +7,32 @@ import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
-    Form,
-    FormControl,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage,
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import {
-    getDistrictOptions,
-    getDivisionOptions
+  getDistrictOptions,
+  getDivisionOptions
 } from "@/lib/bangladeshLocations";
 import { cn } from "@/lib/utils";
 import {
-    useGetPropertyByIdQuery,
-    useUpdatePropertyMutation
+  useGetPropertyByIdQuery,
+  useUpdatePropertyMutation
 } from "@/redux/features/property/propertyApiSlice";
 import { amenitiesList } from "@/types/property.types";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -44,9 +44,9 @@ import { useEffect, useMemo, useState } from "react";
 import { FormImageUpload } from "../add-property/FormImageUpload";
 
 import {
-    FormProvider,
-    useForm,
-    useFormContext
+  FormProvider,
+  useForm,
+  useFormContext
 } from "react-hook-form";
 import { toast } from "sonner";
 import Swal from "sweetalert2";
@@ -63,25 +63,25 @@ const RENT_PROPERTY_TYPES = [
   "villa",
   "studio",
   "penthouse",
-  "room",        
-  "office",      
-  "shop",        
+  "room",
+  "office",
+  "shop",
 ] as const;
 
 const SALE_PROPERTY_TYPES = [
-  "apartment",   
-  "house",       
-  "land",        
-  "commercial",  
-  "office",      
-  "warehouse",   
+  "apartment",
+  "house",
+  "land",
+  "commercial",
+  "office",
+  "warehouse",
 ] as const;
 
 
 const allPropertyTypes = Array.from(new Set([...RENT_PROPERTY_TYPES, ...SALE_PROPERTY_TYPES])) as [string, ...string[]];
 
 const areaUnits = ["sqft", "sqm", "acres", "hectares"] as const;
-const currencies = ["BDT", "USD", "EUR", "GBP"] as const;
+const currencies = ["BDT"] as const;
 const petPolicies = ["allowed", "not-allowed", "case-by-case"] as const;
 const smokingPolicies = ["allowed", "not-allowed"] as const;
 const propertyConditions = [
@@ -135,10 +135,10 @@ const baseSchema = z.object({
   amenities: z.array(z.string()).optional(),
   tags: z.array(z.string()).optional(),
 
-  
-  
-  
-  
+
+
+
+
   imageFiles: z.any().optional(),
 
   videos: z.array(z.string().url("Must be a valid URL")).optional(),
@@ -256,36 +256,36 @@ export function EditPropertyForm({ propertyId }: { propertyId: string }) {
   const [newImages, setNewImages] = useState<File[]>([]);
   const router = useRouter();
 
-  
+
   const { data: property, isLoading: isFetching, isError } = useGetPropertyByIdQuery(propertyId);
   const [updateProperty, { isLoading: isUpdating }] = useUpdatePropertyMutation();
 
   const form = useForm<PropertyFormData>({
     resolver: zodResolver(propertyFormSchema) as any,
-    defaultValues: {} as any, 
+    defaultValues: {} as any,
     mode: "onBlur",
   });
 
-  
+
   useEffect(() => {
     if (property) {
       setExistingImages(property.images || []);
-      
+
       const formData = {
         ...property,
         listingType: property.listingType,
 
-        
+
         availableFrom: (property as any).availableFrom ? (property as any).availableFrom.split('T')[0] : undefined,
         offerDeadline: (property as any).offerDeadline ? new Date((property as any).offerDeadline) : undefined,
 
-        
+
         amenities: property.amenities || [],
         utilitiesIncluded: (property as any).utilitiesIncluded || [],
         tags: property.tags || [],
         videos: property.videos || [],
         floorPlans: property.floorPlans || [],
-        imageFiles: [], 
+        imageFiles: [],
       };
 
       form.reset(formData as any);
@@ -305,8 +305,8 @@ export function EditPropertyForm({ propertyId }: { propertyId: string }) {
       case 3:
         isValid = await trigger(["bedrooms", "bathrooms", "areaSize", "areaUnit"]); break;
       case 4:
-        isValid = true; 
-        
+        isValid = true;
+
         break;
       case 5:
         isValid = true; break;
@@ -328,7 +328,7 @@ export function EditPropertyForm({ propertyId }: { propertyId: string }) {
     try {
       const finalData: any = { ...data };
 
-      
+
       if (finalData.listingType === 'rent' && finalData.availableFrom) {
         finalData.availableFrom = new Date(finalData.availableFrom).toISOString();
       }
@@ -339,7 +339,7 @@ export function EditPropertyForm({ propertyId }: { propertyId: string }) {
         delete finalData.offerDeadline;
       }
 
-      
+
       Object.keys(finalData).forEach(key => {
         if (finalData[key] === undefined || finalData[key] === null) {
           delete finalData[key];
@@ -412,8 +412,8 @@ export function EditPropertyForm({ propertyId }: { propertyId: string }) {
                 {currentStep === 2 && <Step2 />}
                 {currentStep === 3 && <Step3 />}
                 {currentStep === 4 && (
-                  <Step4 
-                    existingImages={existingImages} 
+                  <Step4
+                    existingImages={existingImages}
                     setExistingImages={setExistingImages}
                     newImages={newImages}
                     setNewImages={setNewImages}
@@ -469,7 +469,7 @@ function Step1() {
                     else setValue("propertyType", "apartment");
                   }}
                   defaultValue={field.value}
-                  value={field.value} 
+                  value={field.value}
                   className="grid grid-cols-2 gap-4"
                 >
                   <FormItem>
@@ -550,7 +550,7 @@ function Step2() {
   const divisionOptions = getDivisionOptions();
   const districtOptions = getDistrictOptions(watchedDivision);
 
-  
+
   const LocationMap = useMemo(() => dynamic(() => import("../add-property/LocationMap").then((mod) => mod.default), { ssr: false, loading: () => <div className="h-64 w-full bg-gray-200 animate-pulse" /> }), []);
 
   return (
@@ -722,7 +722,7 @@ function Step6({ listingType }: { listingType: "rent" | "sale" }) {
         <FormField control={control} name="mortgageAvailable" render={({ field }) => (<FormItem className="flex flex-row items-center justify-between rounded-lg border p-4"><FormLabel>Mortgage?</FormLabel><FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} /></FormControl></FormItem>)} />
       </div>
 
-      {}
+      { }
       <FormField
         control={control}
         name="offerDeadline"

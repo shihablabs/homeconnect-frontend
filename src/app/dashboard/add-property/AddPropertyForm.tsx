@@ -61,25 +61,25 @@ const RENT_PROPERTY_TYPES = [
   "villa",
   "studio",
   "penthouse",
-  "room",        
-  "office",      
-  "shop",        
+  "room",
+  "office",
+  "shop",
 ] as const;
 
 const SALE_PROPERTY_TYPES = [
-  "apartment",   
-  "house",       
-  "land",        
-  "commercial",  
-  "office",      
-  "warehouse",   
+  "apartment",
+  "house",
+  "land",
+  "commercial",
+  "office",
+  "warehouse",
 ] as const;
 
 
 const allPropertyTypes = Array.from(new Set([...RENT_PROPERTY_TYPES, ...SALE_PROPERTY_TYPES])) as [string, ...string[]];
 
 const areaUnits = ["sqft", "sqm", "acres", "hectares"] as const;
-const currencies = ["BDT", "USD", "EUR", "GBP"] as const;
+const currencies = ["BDT"] as const;
 const petPolicies = ["allowed", "not-allowed", "case-by-case"] as const;
 const smokingPolicies = ["allowed", "not-allowed"] as const;
 const propertyConditions = [
@@ -177,17 +177,17 @@ const baseSchema = z.object({
   agent: z.string().optional(),
   managementCompany: z.string().optional(),
 
-  
+
   requestVerification: z.boolean().default(false),
   documentFiles: z
     .any()
     .optional()
     .refine(
       (files) => {
-        
-        
-        
-        
+
+
+
+
         return true;
       },
       "Documents required"
@@ -323,8 +323,8 @@ const initialFormData: Partial<PropertyFormData> & Record<string, any> = {
   requestVerification: false,
   documentFiles: [],
 
-  
-  pricePerMonth: undefined, 
+
+  pricePerMonth: undefined,
   currency: "BDT",
   securityDeposit: undefined,
   utilityDeposit: undefined,
@@ -340,7 +340,7 @@ const initialFormData: Partial<PropertyFormData> & Record<string, any> = {
   petPolicy: "not-allowed",
   smokingPolicy: "not-allowed",
 
-  
+
   totalPrice: undefined,
   originalPrice: undefined,
   priceNegotiable: true,
@@ -424,7 +424,7 @@ export function AddPropertyForm() {
             ? ["pricePerMonth", "currency", "availableFrom"]
             : ["totalPrice", "currency", "propertyCondition"]
         );
-        
+
         if (listingType === "rent" && form.getValues("pricePerMonth") <= 0) {
           form.setError("pricePerMonth", { type: "manual", message: "Rent price must be greater than 0" });
           isValid = false;
@@ -452,34 +452,34 @@ export function AddPropertyForm() {
       const finalData: any = { ...data };
       const images = finalData.imageFiles as File[];
 
-      const documents = finalData.documentFiles as File[]; 
+      const documents = finalData.documentFiles as File[];
       delete finalData.imageFiles;
       delete finalData.documentFiles;
-      delete finalData.requestVerification; 
-      
-      
-      
-      
-      
-      
+      delete finalData.requestVerification;
 
-      
 
-      
+
+
+
+
+
+
+
+
       if (!finalData.neighborhood || finalData.neighborhood.trim() === '') {
         finalData.neighborhood = finalData.city || 'N/A';
       }
 
-      
+
       if (finalData.listingType === 'rent' && finalData.availableFrom) {
         const availableFromDate = new Date(finalData.availableFrom);
         if (isNaN(availableFromDate.getTime())) {
-          
+
           const tomorrow = new Date();
           tomorrow.setDate(tomorrow.getDate() + 1);
           finalData.availableFrom = tomorrow.toISOString();
         } else {
-          
+
           const now = new Date();
           if (availableFromDate <= now) {
             const tomorrow = new Date();
@@ -491,23 +491,23 @@ export function AddPropertyForm() {
         }
       }
 
-      
+
       Object.keys(finalData).forEach(key => {
         const value = finalData[key];
 
-        
+
         if (value === undefined || value === null) {
-          
+
           if (['zipCode', 'yearBuilt', 'lotSize', 'agent', 'managementCompany', 'videos', 'floorPlans', 'tags'].includes(key)) {
             delete finalData[key];
           }
         } else if (value === '' && ['zipCode', 'agent', 'managementCompany'].includes(key)) {
-          
+
           delete finalData[key];
         }
       });
 
-      
+
       if (finalData.amenities && !Array.isArray(finalData.amenities)) {
         finalData.amenities = [];
       }
@@ -524,14 +524,14 @@ export function AddPropertyForm() {
         finalData.floorPlans = [];
       }
 
-      
+
       if (finalData.offerDeadline instanceof Date) {
         finalData.offerDeadline = finalData.offerDeadline.toISOString();
       } else {
         delete finalData.offerDeadline;
       }
 
-      
+
       Swal.fire({
         title: "Submitting Property...",
         text: "Please wait while we list your property.",
@@ -544,12 +544,12 @@ export function AddPropertyForm() {
 
 
       const formData = new FormData();
-      
-      
+
+
 
       const response = await createProperty({ data: finalData, images, documents }).unwrap();
 
-      
+
       Swal.fire({
         icon: "success",
         title: "Property Listed!",
@@ -643,22 +643,22 @@ function Step1() {
   const listingType = watch("listingType");
   const propertyType = watch("propertyType");
 
-  
+
   const availableTypes = listingType === "rent" ? RENT_PROPERTY_TYPES : SALE_PROPERTY_TYPES;
 
-  
-  
-  
+
+
+
   if (listingType === "rent" && !RENT_PROPERTY_TYPES.includes(propertyType as any)) {
-    
-    
-    
+
+
+
   }
 
   return (
     <div className="space-y-8 pt-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
 
-      {}
+      { }
       <FormField
         control={control}
         name="title"
@@ -677,10 +677,10 @@ function Step1() {
         )}
       />
 
-      {}
+      { }
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-end">
 
-        {}
+        { }
         <FormField
           control={control}
           name="listingType"
@@ -720,7 +720,7 @@ function Step1() {
           )}
         />
 
-        {}
+        { }
         <FormField
           control={control}
           name="propertyType"
@@ -751,7 +751,7 @@ function Step1() {
         />
       </div>
 
-      {}
+      { }
       <FormField
         control={control}
         name="description"
@@ -807,7 +807,7 @@ function Step2() {
   return (
     <div className="space-y-8 pt-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
 
-      {}
+      { }
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <FormField
           control={control}
@@ -845,7 +845,7 @@ function Step2() {
         />
       </div>
 
-      {}
+      { }
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <FormField
           control={control}
@@ -875,7 +875,7 @@ function Step2() {
                   value={field.value || undefined}
                   onValueChange={(value) => {
                     field.onChange(value);
-                    setValue("city", ""); 
+                    setValue("city", "");
                     const division = divisionOptions.find(
                       (d) => d.value === value
                     );
@@ -903,7 +903,7 @@ function Step2() {
         />
       </div>
 
-      {}
+      { }
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <FormField
           control={control}
@@ -959,7 +959,7 @@ function Step2() {
         />
       </div>
 
-      {}
+      { }
       <div className="space-y-3 pt-2">
         <FormLabel className="text-base font-semibold text-gray-800">Set Property Location</FormLabel>
         <p className="text-sm text-gray-500">
@@ -1112,7 +1112,7 @@ function Step5() {
 
   return (
     <div className="space-y-6">
-      {}
+      { }
       <FormField
         control={control}
         name="amenities"
@@ -1157,7 +1157,7 @@ function Step5() {
         )}
       />
 
-      {}
+      { }
       {listingType === "rent" && (
         <>
           <FormField

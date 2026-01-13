@@ -4,95 +4,66 @@ import { AuthLoginBrand } from "@/components/auth/AuthLayoutBrand";
 import { Button } from "@/components/ui/button";
 import {
   Card,
-  CardContent,
+  CardDescription,
   CardHeader,
   CardTitle
 } from "@/components/ui/card";
-import { authApi } from "@/lib/api/auth-api";
-import { pacifico } from "@/lib/fonts";
-import { CheckCircle2, Loader2, Mail, XCircle } from "lucide-react";
-import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { authApi } from "@/lib/api/auth-api"; // Using direct API calls for simplicity or hook if available
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Loader2 } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
 import { toast } from "sonner";
+import { z } from "zod";
+
+const verifyEmailSchema = z.object({
+  email: z.string().email("Invalid email"),
+  otp: z.string().min(6, "OTP must be 6 digits").max(6, "OTP must be 6 digits"),
+});
+
+type VerifyEmailValues = z.infer<typeof verifyEmailSchema>;
 
 function VerifyEmailContent() {
+  const router = useRouter();
   const searchParams = useSearchParams();
-  const token = searchParams.get("token");
-  const sent = searchParams.get("sent");
-  const [status, setStatus] = useState<
-    "idle" | "verifying" | "success" | "error"
-  >("idle");
-  const [message, setMessage] = useState("");
+  const emailParam = searchParams.get("email");
+  const [isLoading, setIsLoading] = useState(false);
+
+  const form = useForm<VerifyEmailValues>({
+    resolver: zodResolver(verifyEmailSchema),
+    defaultValues: {
+      email: emailParam || "",
+      otp: "",
+    },
+  });
 
   useEffect(() => {
-    if (token) {
-      verifyEmail(token);
+    if (emailParam) {
+      form.setValue("email", emailParam);
     }
-  }, [token]);
+  }, [emailParam, form]);
 
-  const verifyEmail = async (token: string) => {
-    setStatus("verifying");
+  async function onSubmit(data: VerifyEmailValues) {
+    setIsLoading(true);
     try {
-      await authApi.verifyEmail(token);
-      setStatus("success");
-      setMessage("Email verified successfully! You can now log in.");
-      toast.success("Email verified!");
-    } catch (error) {
-      setStatus("error");
-      setMessage(
-        error instanceof Error ? error.message : "Verification failed"
-      );
-      toast.error("Verification failed");
+      await authApi.verifyEmail(data);
+      toast.success("Email verified successfully! Please log in.");
+      router.push("/login");
+    } catch (error: any) {
+      toast.error(error?.message || "Verification failed");
+    } finally {
+      setIsLoading(false);
     }
-  };
-
-  if (sent) {
-    return (
-      <div className="w-full min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 py-12 px-4 sm:px-6 lg:px-8">
-        <div className="w-full max-w-6xl">
-          <Card className="flex flex-col lg:flex-row shadow-2xl overflow-hidden border-0 py-0">
-            <AuthLoginBrand />
-
-            <div className="lg:w-1/2 flex items-center justify-center p-8 bg-white">
-              <div className="w-full max-w-md text-center space-y-6">
-                <div className="flex justify-center">
-                  <div className="rounded-full bg-blue-100 p-4">
-                    <Mail className="h-12 w-12 text-blue-600" />
-                  </div>
-                </div>
-
-                <div>
-                  <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                    Check Your Email
-                  </h2>
-                  <p className="text-gray-600">
-                    We have sent a verification link to your email address.
-                    Please check your inbox and click the verification link to
-                    activate your account.
-                  </p>
-                </div>
-
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-left">
-                  <p className="text-sm text-blue-800 font-medium mb-2">
-                    Didn&apos;t receive the email?
-                  </p>
-                  <ul className="text-sm text-blue-700 space-y-1 list-disc list-inside">
-                    <li>Check your spam/junk folder</li>
-                    <li>Make sure you entered the correct email</li>
-                    <li>Wait a few minutes and check again</li>
-                  </ul>
-                </div>
-
-                <Button asChild className="w-full">
-                  <Link href="/login">Go to Login</Link>
-                </Button>
-              </div>
-            </div>
-          </Card>
-        </div>
-      </div>
-    );
   }
 
   return (
@@ -102,115 +73,57 @@ function VerifyEmailContent() {
           <AuthLoginBrand />
 
           <div className="lg:w-1/2 flex items-center justify-center p-8 bg-white">
-            <div className="w-full max-w-md text-center space-y-6">
-              <CardHeader className="p-0 pb-4">
-                <div className="flex lg:hidden items-center justify-center pb-6">
-                  <Link
-                    href="/"
-                    className={`${pacifico.className} text-3xl font-bold bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent`}
-                  >
-                    HomeConnect
-                  </Link>
-                </div>
+            <div className="w-full max-w-md space-y-6">
+              <CardHeader className="p-0 pb-4 text-center">
                 <CardTitle className="text-2xl font-bold text-gray-900">
-                  Email Verification
+                  Verify Your Email
                 </CardTitle>
+                <CardDescription>
+                  Enter the 6-digit code sent to your email.
+                </CardDescription>
               </CardHeader>
 
-              <CardContent className="p-0 space-y-6">
-                {status === "verifying" && (
-                  <>
-                    <div className="flex justify-center">
-                      <div className="rounded-full bg-blue-100 p-4">
-                        <Loader2 className="h-12 w-12 text-blue-600 animate-spin" />
-                      </div>
-                    </div>
-                    <div>
-                      <p className="text-lg font-medium text-gray-900">
-                        Verifying your email...
-                      </p>
-                      <p className="text-sm text-gray-600 mt-2">
-                        Please wait while we verify your email address.
-                      </p>
-                    </div>
-                  </>
-                )}
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                  <FormField
+                    control={form.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Email</FormLabel>
+                        <FormControl>
+                          <Input placeholder="name@example.com" {...field} readOnly={!!emailParam} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="otp"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>OTP Code</FormLabel>
+                        <FormControl>
+                          <Input placeholder="123456" {...field} maxLength={6} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <Button type="submit" className="w-full" disabled={isLoading}>
+                    {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    Verify Email
+                  </Button>
+                </form>
+              </Form>
 
-                {status === "success" && (
-                  <>
-                    <div className="flex justify-center">
-                      <div className="rounded-full bg-green-100 p-4">
-                        <CheckCircle2 className="h-12 w-12 text-green-600" />
-                      </div>
-                    </div>
-                    <div>
-                      <p className="text-lg font-medium text-green-600 mb-2">
-                        {message}
-                      </p>
-                      <p className="text-sm text-gray-600">
-                        You can now log in to your account.
-                      </p>
-                    </div>
-                    <Button asChild className="w-full">
-                      <Link href="/login">Go to Login</Link>
-                    </Button>
-                  </>
-                )}
+              <div className="text-center text-sm">
+                <p className="text-muted-foreground">
+                  Didn't receive code? Check your spam folder.
+                </p>
+              </div>
 
-                {status === "error" && (
-                  <>
-                    <div className="flex justify-center">
-                      <div className="rounded-full bg-red-100 p-4">
-                        <XCircle className="h-12 w-12 text-red-600" />
-                      </div>
-                    </div>
-                    <div>
-                      <p className="text-lg font-medium text-red-600 mb-2">
-                        Verification Failed
-                      </p>
-                      <p className="text-sm text-gray-600 mb-4">{message}</p>
-                      <p className="text-xs text-gray-500">
-                        The verification link may have expired or is invalid.
-                      </p>
-                    </div>
-                    <div className="flex flex-col gap-3">
-                      <Button asChild>
-                        <Link href="/register">Register Again</Link>
-                      </Button>
-                      <Button asChild variant="outline">
-                        <Link href="/login">Go to Login</Link>
-                      </Button>
-                    </div>
-                  </>
-                )}
-
-                {status === "idle" && !token && (
-                  <>
-                    <div className="flex justify-center">
-                      <div className="rounded-full bg-gray-100 p-4">
-                        <Mail className="h-12 w-12 text-gray-600" />
-                      </div>
-                    </div>
-                    <div>
-                      <p className="text-lg font-medium text-gray-900 mb-2">
-                        No Verification Token
-                      </p>
-                      <p className="text-sm text-gray-600">
-                        No verification token found in the URL. Please check
-                        your email for the verification link.
-                      </p>
-                    </div>
-                    <div className="flex flex-col gap-3">
-                      <Button asChild>
-                        <Link href="/register">Go to Registration</Link>
-                      </Button>
-                      <Button asChild variant="outline">
-                        <Link href="/login">Go to Login</Link>
-                      </Button>
-                    </div>
-                  </>
-                )}
-              </CardContent>
             </div>
           </div>
         </Card>
@@ -221,28 +134,8 @@ function VerifyEmailContent() {
 
 export default function VerifyEmailPage() {
   return (
-    <Suspense
-      fallback={
-        <div className="w-full min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 py-12 px-4 sm:px-6 lg:px-8">
-          <div className="w-full max-w-6xl">
-            <Card className="flex flex-col lg:flex-row shadow-2xl overflow-hidden border-0 py-0">
-              <AuthLoginBrand />
-              <div className="lg:w-1/2 flex items-center justify-center p-8 bg-white">
-                <div className="w-full max-w-md text-center">
-                  <div className="flex justify-center mb-4">
-                    <div className="rounded-full bg-blue-100 p-4">
-                      <Loader2 className="h-12 w-12 text-blue-600 animate-spin" />
-                    </div>
-                  </div>
-                  <p className="text-gray-600">Preparing email verification...</p>
-                </div>
-              </div>
-            </Card>
-          </div>
-        </div>
-      }
-    >
+    <Suspense fallback={<div>Loading...</div>}>
       <VerifyEmailContent />
     </Suspense>
-  );
+  )
 }

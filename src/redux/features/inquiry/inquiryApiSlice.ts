@@ -1,7 +1,7 @@
 import { apiSlice } from '@/redux/api/apiSlice';
 
 export interface CreateInquiryData {
-  property: string; 
+  property: string;
   offeredPrice?: number;
   message: string;
   type?: 'general' | 'offer';
@@ -9,9 +9,9 @@ export interface CreateInquiryData {
 
 export interface InquiryResponse {
   id: string;
-  property: any; 
-  buyer: any;    
-  seller: any;   
+  property: any;
+  buyer: any;
+  seller: any;
   offeredPrice: number;
   message: string;
   status: 'pending' | 'responded' | 'accepted' | 'rejected' | 'countered';
@@ -27,11 +27,21 @@ export const inquiryApiSlice = apiSlice.injectEndpoints({
         method: 'POST',
         body: data,
       }),
+      transformResponse: (response: any) => response.data,
       invalidatesTags: ['Inquiry' as any],
     }),
     getMyInquiries: builder.query<InquiryResponse[], void>({
       query: () => '/inquiries/my-inquiries',
+      transformResponse: (response: any) => response.data,
       providesTags: ['Inquiry' as any],
+    }),
+    replyToInquiry: builder.mutation<InquiryResponse, { id: string; message: string }>({
+      query: ({ id, message }) => ({
+        url: `/inquiries/${id}/reply`,
+        method: 'PATCH',
+        body: { message },
+      }),
+      invalidatesTags: ['Inquiry' as any],
     }),
   }),
 });
@@ -39,4 +49,5 @@ export const inquiryApiSlice = apiSlice.injectEndpoints({
 export const {
   useCreateInquiryMutation,
   useGetMyInquiriesQuery,
+  useReplyToInquiryMutation,
 } = inquiryApiSlice;

@@ -88,17 +88,17 @@ const getPriorityColor = (priority: string | undefined) => {
 };
 
 export default function DashboardPage() {
-  
+
   const user = useAppSelector(selectCurrentUser);
 
-  
+
   const { stats, activities, properties, isLoading, error, refetch, isFetching } = useDashboard();
   const queryClient = useQueryClient();
 
   const [markingRead, setMarkingRead] = useState<string | null>(null);
   const [markingAll, setMarkingAll] = useState(false);
 
-  
+
   const dashboardData = stats ? {
     stats,
     recentActivity: activities,
@@ -111,7 +111,7 @@ export default function DashboardPage() {
     setMarkingRead(id);
     try {
       await dashboardApi.markActivityAsRead(id);
-      
+
       await queryClient.invalidateQueries({ queryKey: ['dashboard', 'overview'] });
       toast.success('Activity marked as read');
     } catch (error: unknown) {
@@ -129,7 +129,7 @@ export default function DashboardPage() {
     setMarkingAll(true);
     try {
       const result = await dashboardApi.markAllActivitiesAsRead();
-      
+
       await queryClient.invalidateQueries({ queryKey: ['dashboard', 'overview'] });
       toast.success(`${result.count} activities marked as read`);
     } catch (error: unknown) {
@@ -156,7 +156,7 @@ export default function DashboardPage() {
     <ProtectedRoute>
       <div className="min-h-screen bg-gray-50">
         <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-          {}
+          { }
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
             <div className="flex items-center gap-3">
               <div>
@@ -195,17 +195,17 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {}
+          { }
           {dashboardData && (
             <div className="space-y-6">
-              {}
+              { }
               {isFetching && !isLoading && (
                 <div className="flex items-center justify-center gap-2 text-sm text-blue-600 bg-blue-50 border border-blue-200 rounded-lg p-2 animate-pulse">
                   <Loader2 className="h-4 w-4 animate-spin" />
                   <span>Updating dashboard data...</span>
                 </div>
               )}
-              {}
+              { }
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <StatCard
                   title="Total Properties"
@@ -235,7 +235,7 @@ export default function DashboardPage() {
                 />
               </div>
 
-              {}
+              { }
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <Card className="lg:col-span-2">
                   <CardHeader>
@@ -361,9 +361,9 @@ export default function DashboardPage() {
                 ) : null}
               </div>
 
-              {}
+              { }
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {}
+                { }
                 <Card>
                   <CardHeader className="flex flex-row items-center justify-between">
                     <div>
@@ -406,8 +406,8 @@ export default function DashboardPage() {
                         <div
                           key={activity.id}
                           className={`flex items-start space-x-3 p-3 rounded-lg border transition-colors duration-200 ${!activity.read
-                              ? 'bg-blue-50 border-blue-200'
-                              : 'bg-white border-gray-200'
+                            ? 'bg-blue-50 border-blue-200'
+                            : 'bg-white border-gray-200'
                             }`}
                         >
                           <span className="text-lg mt-0.5 flex-shrink-0">
@@ -453,7 +453,7 @@ export default function DashboardPage() {
                   </CardContent>
                 </Card>
 
-                {}
+                { }
                 <Card>
                   <CardHeader className="flex flex-row items-center justify-between">
                     <div>
@@ -471,7 +471,7 @@ export default function DashboardPage() {
                       {dashboardData?.pendingMaintenanceRequests?.slice(0, 5).map((request) => (
                         <Link
                           key={request.id}
-                          href={`/dashboard/maintenance`} 
+                          href={`/dashboard/maintenance`}
                           className="block transition-transform hover:scale-[1.02]"
                         >
                           <div className="flex items-center space-x-4 p-3 rounded-lg border border-gray-200 bg-white hover:shadow-md transition-all duration-200">
@@ -528,7 +528,7 @@ export default function DashboardPage() {
                 </Card>
               </div>
 
-              {}
+              { }
               <Card>
                 <CardHeader>
                   <CardTitle>Quick Actions</CardTitle>
@@ -568,10 +568,10 @@ export default function DashboardPage() {
             </div>
           )}
 
-          {}
+          { }
           {isLoading && !dashboardData && <DashboardSkeleton />}
 
-          {}
+          { }
           {error && !isLoading && (
             <ErrorState
               error={error}
@@ -584,7 +584,7 @@ export default function DashboardPage() {
             />
           )}
 
-          {}
+          { }
           {!dashboardData && !isLoading && !error && (
             <Card>
               <CardHeader>
