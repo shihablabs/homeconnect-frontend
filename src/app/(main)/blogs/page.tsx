@@ -11,7 +11,7 @@ export const metadata: Metadata = {
   description: 'Read our latest articles about real estate, home improvement, and more.',
 };
 
-export const revalidate = 60; 
+export const revalidate = 60;
 
 interface BlogListPageProps {
   searchParams: Promise<{
@@ -24,16 +24,27 @@ interface BlogListPageProps {
 
 export default async function BlogListPage({ searchParams }: BlogListPageProps) {
   const { search, sortBy, sortOrder } = await searchParams;
-  const result = await blogApi.getAllBlogs({
-    limit: 100,
-    search: search || undefined,
-    sortBy: sortBy || 'createdAt',
-    sortOrder: sortOrder || 'desc'
-  });
+
+  let result;
+  try {
+    result = await blogApi.getAllBlogs({
+      limit: 100,
+      search: search || undefined,
+      sortBy: sortBy || 'createdAt',
+      sortOrder: sortOrder || 'desc'
+    });
+  } catch (error) {
+    console.error("Failed to fetch blogs:", error);
+    // Fallback to empty result to render page without crashing
+    result = {
+      data: [],
+      meta: { page: 1, limit: 100, total: 0, totalPages: 0 }
+    };
+  }
 
   return (
     <div className="min-h-screen bg-slate-50">
-      {}
+      { }
       <PageHeader
         title="Real Estate & Lifestyle Guide"
         description="Expert analysis, market trends, and home improvement tips to guide your next move."
@@ -41,10 +52,10 @@ export default async function BlogListPage({ searchParams }: BlogListPageProps) 
         className="bg-transparent"
       />
 
-      {}
+      { }
       <div className="container mx-auto px-4 py-8 max-w-[1600px] -mt-8 relative z-10">
 
-        {}
+        { }
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
           <div>
             <h2 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
@@ -61,7 +72,7 @@ export default async function BlogListPage({ searchParams }: BlogListPageProps) 
           </div>
         </div>
 
-        {}
+        { }
         {result.data.length > 0 ? (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {result.data.map((blog) => (
@@ -79,7 +90,7 @@ export default async function BlogListPage({ searchParams }: BlogListPageProps) 
         )}
       </div>
 
-      {}
+      { }
       <div className="bg-white border-t border-slate-100">
         <GoodDeals />
       </div>

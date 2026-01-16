@@ -1,5 +1,6 @@
 
 "use client";
+import { NotificationBell } from "./NotificationBell";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -13,37 +14,25 @@ import {
 import { pacifico } from "@/lib/fonts";
 import { useLogoutMutation } from "@/redux/features/auth/authApiSlice";
 
-import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { useNotificationsSocket } from "@/hooks/useNotificationsSocket";
-import { Conversation } from "@/lib/api/chat-api";
-import { type Notification } from "@/lib/api/notifications-api";
 import {
   selectCurrentUser,
   selectIsAuthenticated,
 } from "@/redux/features/auth/authSlice";
 import { AppDispatch } from "@/redux/store";
-import { formatDistanceToNow } from "date-fns";
 import * as LucideIcons from "lucide-react";
 import {
-  Bell,
   BookOpen,
   Building,
   Calculator,
-  CheckCheck,
   ChevronDown,
-  CreditCard,
   Heart,
   Home,
   LayoutDashboard,
   LogOut,
-  MessageSquare,
   Phone,
   PlusCircle,
   Settings,
-  TrendingUp,
-  Wrench
+  TrendingUp
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -52,6 +41,8 @@ import { FiMenu, FiX } from "react-icons/fi";
 import { TbHomeSearch } from "react-icons/tb";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "sonner";
+
+
 
 
 
@@ -64,7 +55,7 @@ function DateTimeDisplay() {
     return () => clearInterval(timer);
   }, []);
 
-  if (!time) return null; 
+  if (!time) return null;
 
   return (
     <div className="flex items-center gap-2 text-white/90">
@@ -99,17 +90,17 @@ function NextHolidayDisplay() {
 
       const allHolidays: { date: string; name: string; obj: Date }[] = [];
 
-      
+
       const nextFriday = new Date(today);
       nextFriday.setDate(today.getDate() + ((5 - today.getDay() + 7) % 7));
       if (today.getDay() === 5) {
-        
+
         allHolidays.push({ date: nextFriday.toISOString().split('T')[0], name: "Friday (Weekend)", obj: nextFriday });
       } else {
         allHolidays.push({ date: nextFriday.toISOString().split('T')[0], name: "Upcoming Friday", obj: nextFriday });
       }
 
-      
+
       try {
         const res = await fetch('https://date.nager.at/api/v3/NextPublicHolidays/BD');
         if (res.ok) {
@@ -127,12 +118,12 @@ function NextHolidayDisplay() {
         });
       }
 
-      
+
       const upcoming = allHolidays
-        .filter(h => h.obj >= today) 
+        .filter(h => h.obj >= today)
         .sort((a, b) => a.obj.getTime() - b.obj.getTime());
 
-      
+
       if (upcoming.length > 0) {
         processHoliday(upcoming[0]);
       }
@@ -142,7 +133,7 @@ function NextHolidayDisplay() {
       const today = new Date();
       today.setHours(0, 0, 0, 0);
       const holidayDate = new Date(holiday.date);
-      
+
       holidayDate.setHours(0, 0, 0, 0);
 
       const diffTime = Math.abs(holidayDate.getTime() - today.getTime());
@@ -182,69 +173,17 @@ export default function Header() {
 
   const [logoutUser, { isLoading: isLoggingOut }] = useLogoutMutation();
 
-  
-  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
-  const [selectedNotification, setSelectedNotification] = useState<Notification | null>(null);
-  const [isDetailOpen, setIsDetailOpen] = useState(false);
 
-  
-  const [isMessageOpen, setIsMessageOpen] = useState(false);
-  const [recentConversations, setRecentConversations] = useState<Conversation[]>([]);
-  const [unreadMsgCount, setUnreadMsgCount] = useState(0);
 
-  useEffect(() => {
-    if (user) {
-      
-      
-      
-      
-      
-      
-      
-    }
-  }, [user]);
 
-  const {
-    notifications,
-    stats,
-    markAsRead,
-    markAllAsRead,
-    deleteNotification,
-  } = useNotificationsSocket({
-    
-    
-    autoFetch: false, 
-  });
 
-  const unreadCount = stats?.unread || 0;
 
-  const handleNotificationClick = async (notification: Notification) => {
-    setSelectedNotification(notification);
-    setIsDetailOpen(true);
-    if (!notification.isRead) {
-      await markAsRead(notification.id);
-    }
-  };
 
-  const getNotificationIcon = (type: string) => {
-    switch (type) {
-      case 'message': return <MessageSquare className="h-4 w-4" />;
-      case 'payment': return <CreditCard className="h-4 w-4" />;
-      case 'booking': return <Home className="h-4 w-4" />;
-      case 'maintenance': return <Wrench className="h-4 w-4" />;
-      default: return <Bell className="h-4 w-4" />;
-    }
-  };
 
-  const getNotificationColor = (type: string) => {
-    switch (type) {
-      case 'message': return 'bg-blue-100 text-blue-600';
-      case 'payment': return 'bg-green-100 text-green-600';
-      case 'booking': return 'bg-purple-100 text-purple-600';
-      case 'maintenance': return 'bg-yellow-100 text-yellow-600';
-      default: return 'bg-gray-100 text-gray-600';
-    }
-  };
+
+
+
+
 
   useEffect(() => {
     const handleScroll = () => {
@@ -282,34 +221,33 @@ export default function Header() {
     }
   };
 
-  
-  
-  
 
-  
+
+
+
+
   const getIcon = (iconName: string) => {
-    
-    return LucideIcons[iconName] || LucideIcons.HelpCircle;
+    return (LucideIcons as any)[iconName] || LucideIcons.HelpCircle;
   };
 
   const mainNavItems = [
     {
       href: "/properties",
-      label: "Properties", 
+      label: "Properties",
       icon: Home,
       showAlways: true,
       hasDropdown: true,
       dropdownType: "properties"
     },
     {
-      href: "/blogs", 
+      href: "/blogs",
       label: "Blogs",
       icon: BookOpen,
       showAlways: true,
       hasDropdown: false
     },
     {
-      href: "/about-us", 
+      href: "/about-us",
       label: "About Us",
       icon: Building,
       showAlways: true,
@@ -325,7 +263,7 @@ export default function Header() {
   ];
 
 
-  
+
   const propertyTypes = [
     { href: "/properties", label: "For Sale", query: "sale", listingType: "sale" },
     { href: "/properties", label: "For Rent", query: "rent", listingType: "rent" },
@@ -336,7 +274,7 @@ export default function Header() {
     { href: "/properties", label: "New Projects", query: "new-projects" },
   ];
 
-  
+
   const resourceItems = [
     { href: "/blog", label: "Blog & Guides" },
     { href: "/calculator", label: "EMI Calculator" },
@@ -347,17 +285,17 @@ export default function Header() {
 
   return (
     <>
-      {}
+      { }
       <div className="w-full bg-gradient-to-r from-cyan-600 to-blue-600 text-white text-sm py-2">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between">
-            {}
+            { }
             <div className="flex items-center gap-6">
               <DateTimeDisplay />
               <NextHolidayDisplay />
             </div>
 
-            {}
+            { }
             <div className="flex items-center space-x-4 md:space-x-6">
               <Link
                 href="/calculator"
@@ -380,14 +318,14 @@ export default function Header() {
         </div>
       </div>
 
-      {}
+      { }
       <header
         className={`sticky top-0 z-50 w-full bg-white border-b transition-shadow duration-200 ${isScrolled ? "shadow-md" : "shadow-sm"
           }`}
       >
         <div className="container mx-auto px-3 md:px-4">
           <div className="flex items-center justify-between h-14 md:h-[85px]">
-            {}
+            { }
             <Link
               href="/"
               className={`${pacifico.className} text-2xl lg:text-3xl font-bold bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent drop-shadow-lg hover:drop-shadow-xl inline-flex items-center space-x-3 hover:scale-105 transition-transform duration-300`}
@@ -401,9 +339,9 @@ export default function Header() {
               <span className="">HomeConnect</span>
             </Link>
 
-            {}
+            { }
             <nav className="hidden md:flex items-center space-x-1">
-              {}
+              { }
               {mainNavItems.map((item: any) => {
                 const Icon = item.icon;
                 return (
@@ -426,7 +364,7 @@ export default function Header() {
                           <ChevronDown className="h-3.5 w-3.5" />
                         </div>
 
-                        {}
+                        { }
                         <div
                           className={`absolute left-0 top-full pt-4 transition-all duration-200 z-50 ${desktopActiveDropdown === item.label
                             ? "opacity-100 visible"
@@ -435,10 +373,10 @@ export default function Header() {
                         >
                           {item.dropdownType === "properties" ? (
                             <div className="bg-white rounded-2xl shadow-xl border border-gray-200 w-[800px] overflow-hidden flex">
-                              {}
+                              { }
                               <div className="flex-1 p-8 grid grid-cols-2 gap-8">
                                 <div className="space-y-6">
-                                  {}
+                                  { }
                                   <Link href="/properties" className="block group/item" onClick={() => setDesktopActiveDropdown(null)}>
                                     <h4 className="text-base font-bold text-gray-900 group-hover/item:text-blue-600 transition-colors">All Properties</h4>
                                     <p className="mt-1 text-xs text-gray-500 line-clamp-2">
@@ -482,7 +420,7 @@ export default function Header() {
                                 </div>
                               </div>
 
-                              {}
+                              { }
                               <div className="w-[300px] bg-gradient-to-br from-cyan-600 via-blue-600 to-indigo-700 p-8 flex flex-col justify-between text-white relative overflow-hidden">
                                 <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
                                 <div className="absolute bottom-0 left-0 w-24 h-24 bg-cyan-400/20 rounded-full blur-2xl translate-y-1/2 -translate-x-1/2" />
@@ -492,7 +430,7 @@ export default function Header() {
                                     <Home className="w-6 h-6 text-white" />
                                   </div>
 
-                                  {}
+                                  { }
                                   {!isAuthenticated ? (
                                     <>
                                       <h3 className="text-xl font-bold mb-2 font-heading">Join HomeConnect</h3>
@@ -517,7 +455,7 @@ export default function Header() {
                                   )}
                                 </div>
 
-                                {}
+                                { }
                                 {!isAuthenticated ? (
                                   <Link
                                     href="/dashboard/add-property"
@@ -546,9 +484,9 @@ export default function Header() {
                               </div>
                             </div>
                           ) : (
-                            
+
                             <div className="bg-white rounded-lg shadow-xl border border-gray-200 min-w-[220px] py-2">
-                              {}
+                              { }
                             </div>
                           )}
                         </div>
@@ -570,13 +508,13 @@ export default function Header() {
               })}
             </nav>
 
-            {}
+            { }
             <div className="hidden md:flex items-center space-x-2">
               {isAuthenticated ? (
                 <>
-                  {}
+                  { }
                   {pathname?.startsWith('/dashboard') ? (
-                    
+
                     <Link href="/properties">
                       <Button className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm font-medium shadow-lg shadow-blue-500/20 transition-all hover:scale-105">
                         <Home className="mr-1.5 md:mr-2 h-3.5 w-3.5 md:h-4 md:w-4" />
@@ -585,7 +523,7 @@ export default function Header() {
                       </Button>
                     </Link>
                   ) : (
-                    
+
                     user?.role === 'landlord' ? (
                       <Link href="/dashboard/add-property">
                         <Button className="bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm font-medium shadow-lg shadow-cyan-500/20 transition-all hover:scale-105">
@@ -607,227 +545,8 @@ export default function Header() {
 
 
 
-                  <DropdownMenu open={isMessageOpen} onOpenChange={setIsMessageOpen}>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="relative rounded-full hover:bg-gray-100 text-gray-500 hover:text-blue-600 transition-colors"
-                      >
-                        <MessageSquare className="h-5 w-5" />
-                        {unreadMsgCount > 0 && (
-                          <span className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center animate-pulse">
-                            {unreadMsgCount > 9 ? '9+' : unreadMsgCount}
-                          </span>
-                        )}
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-80 p-0">
-                      <div className="flex items-center justify-between p-3 border-b bg-gray-50/50">
-                        <h4 className="font-semibold text-sm">Messages</h4>
-                        {unreadMsgCount > 0 && (
-                          <span className="text-xs text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full font-medium">
-                            {unreadMsgCount} new
-                          </span>
-                        )}
-                      </div>
-                      <ScrollArea className="h-[320px]">
-                        {recentConversations.length > 0 ? (
-                          <div className="divide-y">
-                            {recentConversations.slice(0, 5).map((conv) => (
-                              <Link
-                                key={conv.id || conv.partner.id}
-                                href={`/dashboard/messages?partner=${conv.partner.id}`}
-                                onClick={() => setIsMessageOpen(false)}
-                                className={`block p-3 hover:bg-gray-50 transition-colors ${conv.unreadCount > 0 ? 'bg-blue-50/30' : ''}`}
-                              >
-                                <div className="flex items-center gap-3">
-                                  <div className="relative shrink-0">
-                                    <Avatar className="h-9 w-9 border border-gray-100">
-                                      <AvatarImage src={conv.partner.avatar} />
-                                      <AvatarFallback>{conv.partner.name.charAt(0)}</AvatarFallback>
-                                    </Avatar>
-                                    {conv.partner.isOnline && (
-                                      <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-white rounded-full"></span>
-                                    )}
-                                  </div>
-                                  <div className="flex-1 min-w-0 overflow-hidden">
-                                    <div className="flex justify-between items-baseline mb-0.5">
-                                      <p className="text-sm font-medium text-gray-900 truncate pr-2">{conv.partner.name}</p>
-                                      {conv.lastMessage && (
-                                        <span className="text-[10px] text-gray-400 shrink-0">
-                                          {formatDistanceToNow(new Date(conv.lastMessage.timestamp), { addSuffix: true }).replace('about ', '')}
-                                        </span>
-                                      )}
-                                    </div>
-                                    <p className={`text-xs truncate ${conv.unreadCount > 0 ? 'font-medium text-gray-900' : 'text-gray-500'}`}>
-                                      {conv.lastMessage?.isFromMe && 'You: '}
-                                      {conv.lastMessage?.content || 'No messages yet'}
-                                    </p>
-                                  </div>
-                                </div>
-                              </Link>
-                            ))}
-                          </div>
-                        ) : (
-                          <div className="flex flex-col items-center justify-center py-12 text-center text-gray-500">
-                            <MessageSquare className="h-10 w-10 mb-2 opacity-10" />
-                            <p className="text-sm">No messages yet</p>
-                          </div>
-                        )}
-                      </ScrollArea>
-                      <div className="p-2 border-t bg-gray-50 text-center">
-                        <Link
-                          href="/dashboard/messages"
-                          className="text-xs text-blue-600 hover:underline font-medium block w-full py-1"
-                          onClick={() => setIsMessageOpen(false)}
-                        >
-                          View All Messages
-                        </Link>
-                      </div>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-
-                  <DropdownMenu open={isNotificationOpen} onOpenChange={setIsNotificationOpen}>
-                    <DropdownMenuTrigger asChild>
-                      <button className="relative p-1.5 md:p-2 hover:bg-gray-100 rounded-lg outline-none">
-                        <Bell className="h-4 w-4 md:h-5 md:w-5 text-gray-600" />
-                        {unreadCount > 0 && (
-                          <span className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 md:w-4 md:h-4 bg-red-500 text-white text-[10px] md:text-xs rounded-full flex items-center justify-center animate-pulse">
-                            {unreadCount > 9 ? '9+' : unreadCount}
-                          </span>
-                        )}
-                      </button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-80 md:w-96 p-0">
-                      <div className="flex items-center justify-between p-4 border-b">
-                        <h4 className="font-semibold text-sm">Notifications</h4>
-                        {unreadCount > 0 && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-auto px-2 py-1 text-xs text-blue-600 hover:text-blue-700"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              markAllAsRead();
-                            }}
-                          >
-                            <CheckCheck className="h-3 w-3 mr-1" /> Mark all read
-                          </Button>
-                        )}
-                      </div>
-                      <ScrollArea className="h-[400px]">
-                        {notifications && notifications.length > 0 ? (
-                          <div className="divide-y">
-                            {notifications.slice(0, 10).map((notification) => (
-                              <div
-                                key={notification.id}
-                                className={`p-4 hover:bg-gray-50 cursor-pointer transition-colors ${!notification.isRead ? 'bg-blue-50/50' : ''}`}
-                                onClick={() => handleNotificationClick(notification)}
-                              >
-                                <div className="flex items-start gap-3">
-                                  <div className={`p-2 rounded-full shrink-0 ${getNotificationColor(notification.type)}`}>
-                                    {getNotificationIcon(notification.type)}
-                                  </div>
-                                  <div className="flex-1 min-w-0">
-                                    <p className="text-sm font-medium text-gray-900 truncate">
-                                      {notification.title}
-                                    </p>
-                                    <p className="text-xs text-gray-500 line-clamp-2 mt-0.5">
-                                      {notification.message}
-                                    </p>
-                                    <p className="text-[10px] text-gray-400 mt-1.5">
-                                      {new Date(notification.createdAt).toLocaleDateString()} • {new Date(notification.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                    </p>
-                                  </div>
-                                  {!notification.isRead && (
-                                    <div className="w-2 h-2 bg-blue-500 rounded-full mt-1.5 shrink-0" />
-                                  )}
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        ) : (
-                          <div className="flex flex-col items-center justify-center py-12 text-center text-gray-500">
-                            <Bell className="h-8 w-8 mb-2 opacity-20" />
-                            <p className="text-sm">No notifications</p>
-                          </div>
-                        )}
-                      </ScrollArea>
-                      <div className="p-2 border-t bg-gray-50 text-center">
-                        <Link
-                          href="/dashboard/notifications"
-                          className="text-xs text-blue-600 hover:underline font-medium block w-full py-1"
-                          onClick={() => setIsNotificationOpen(false)}
-                        >
-                          View All Notifications
-                        </Link>
-                      </div>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-
-                  {}
-                  <Dialog open={isDetailOpen} onOpenChange={setIsDetailOpen}>
-                    <DialogContent className="sm:max-w-md">
-                      {selectedNotification && (
-                        <>
-                          <DialogHeader>
-                            <div className="flex items-center gap-2 mb-2">
-                              <Badge variant="outline" className="capitalize">
-                                {selectedNotification.type}
-                              </Badge>
-                              <span className="text-xs text-muted-foreground">
-                                {new Date(selectedNotification.createdAt).toLocaleString()}
-                              </span>
-                            </div>
-                            <DialogTitle>{selectedNotification.title}</DialogTitle>
-                          </DialogHeader>
-                          <div className="py-4 space-y-4">
-                            <div className={`p-3 rounded-lg ${getNotificationColor(selectedNotification.type)} bg-opacity-10 border border-opacity-20`}>
-                              <p className="text-sm leading-relaxed">
-                                {selectedNotification.message}
-                              </p>
-                            </div>
-
-                            {}
-                            {selectedNotification.data && (
-                              <div className="text-sm space-y-2">
-                                {(selectedNotification.data as any).propertyName && (
-                                  <div className="flex justify-between border-b pb-2">
-                                    <span className="text-muted-foreground">Property:</span>
-                                    <span className="font-medium">{(selectedNotification.data as any).propertyName}</span>
-                                  </div>
-                                )}
-                                {(selectedNotification.data as any).amount && (
-                                  <div className="flex justify-between border-b pb-2">
-                                    <span className="text-muted-foreground">Amount:</span>
-                                    <span className="font-medium">${(selectedNotification.data as any).amount}</span>
-                                  </div>
-                                )}
-                              </div>
-                            )}
-                          </div>
-                          <DialogFooter className="flex-col sm:flex-row gap-2">
-                            <Button variant="outline" onClick={() => deleteNotification(selectedNotification.id).then(() => setIsDetailOpen(false))}>
-                              Delete
-                            </Button>
-                            {(selectedNotification.data as any)?.entityId && (
-                              <Button asChild>
-                                <Link href={
-                                  selectedNotification.type === 'booking' ? `/dashboard/bookings/${(selectedNotification.data as any).entityId}` :
-                                    selectedNotification.type === 'payment' ? `/dashboard/payments/${(selectedNotification.data as any).entityId}` :
-                                      selectedNotification.type === 'property' ? `/properties/${(selectedNotification.data as any).entityId}` :
-                                        '/dashboard/notifications'
-                                } onClick={() => setIsDetailOpen(false)}>
-                                  View Details
-                                </Link>
-                              </Button>
-                            )}
-                          </DialogFooter>
-                        </>
-                      )}
-                    </DialogContent>
-                  </Dialog>
+                  {/* Messages Dropdown Fully Removed */}
+                  {user?.id && <NotificationBell userId={user.id} />}
 
                   <DropdownMenu>
                     <DropdownMenuTrigger className="outline-none rounded-full ring-offset-2 ring-offset-background transition-all hover:ring-2 hover:ring-primary/20 focus:ring-2 focus:ring-primary/40">
@@ -844,7 +563,7 @@ export default function Header() {
                     </DropdownMenuTrigger>
 
                     <DropdownMenuContent align="end" className="w-64 p-0 overflow-hidden shadow-xl border-gray-100/50 mt-2">
-                      {}
+                      { }
                       <div className="flex flex-col items-center justify-center py-4 bg-white">
                         <div className="relative mb-2">
                           <Avatar className="h-12 w-12 border-[2px] border-white shadow-md ring-1 ring-gray-100">
@@ -888,7 +607,7 @@ export default function Header() {
                           </Link>
                         </DropdownMenuItem>
 
-                        {}
+                        { }
                         {user?.role === 'tenant' && (
                           <>
                             <DropdownMenuSeparator className="my-1" />
@@ -913,7 +632,7 @@ export default function Header() {
                           </>
                         )}
 
-                        {}
+                        { }
                         {user?.role === 'landlord' && (
                           <>
                             <DropdownMenuSeparator className="my-1" />
@@ -974,7 +693,7 @@ export default function Header() {
               )}
             </div>
 
-            {}
+            { }
             <button
               onClick={() => {
                 setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -991,13 +710,13 @@ export default function Header() {
           </div>
         </div>
 
-        {}
+        { }
         {isMobileMenuOpen && (
           <div className="md:hidden absolute top-full left-0 right-0 bg-white shadow-lg border-t animate-slideDown">
             <div className="container mx-auto px-3 py-4">
-              {}
+              { }
               <div className="space-y-1 mb-6">
-                {}
+                { }
                 {mainNavItems.map((item: any) => {
                   const Icon = item.icon;
                   const isDropdownOpen = openDropdown === item.label;
@@ -1020,7 +739,7 @@ export default function Header() {
                             <ChevronDown className={`h-4 w-4 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} />
                           </button>
 
-                          {}
+                          { }
                           {isDropdownOpen && (
                             <div className="ml-4 pl-4 border-l-2 border-blue-200 space-y-1 mt-1">
                               {item.dropdownType === "properties"
@@ -1061,7 +780,7 @@ export default function Header() {
                 })}
               </div>
 
-              {}
+              { }
               {isAuthenticated ? (
                 <div className="space-y-4">
                   <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
@@ -1090,8 +809,8 @@ export default function Header() {
                       <LayoutDashboard className="h-4 w-4" />
                       <span className="text-sm">Dashboard</span>
                     </Link>
-                    {}
-                    {}
+                    { }
+                    { }
                     {user?.role === 'landlord' || user?.role === 'admin' ? (
                       <Link
                         href="/dashboard/add-property"
@@ -1144,7 +863,7 @@ export default function Header() {
         )}
       </header >
 
-      {}
+      { }
       < style jsx > {`
         @keyframes slideDown {
           from {

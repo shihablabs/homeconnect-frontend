@@ -1,20 +1,21 @@
 
 import {
-  TbBook,
-  TbBuilding,
-  TbCertificate,
-  TbChartBar,
-  TbCreditCard,
-  TbHeart,
-  TbHelp,
-  TbHome,
-  TbHomeSearch,
-  TbMail,
-  TbMessage,
-  TbPackage,
-  TbSettings,
-  TbUser,
-  TbUsers
+    TbBook,
+    TbBuilding,
+    TbCalendar,
+    TbCertificate,
+    TbChartBar,
+    TbCreditCard,
+    TbHeart,
+    TbHelp,
+    TbHome,
+    TbHomeSearch,
+    TbMail,
+    TbMessage,
+    TbPackage,
+    TbSettings,
+    TbUser,
+    TbUsers
 } from 'react-icons/tb';
 
 export type NavItemType = 'link' | 'dropdown' | 'section';
@@ -43,7 +44,14 @@ export const navigationConfig: RoleConfig = {
     },
     {
       type: 'section',
-      label: 'RENT & LEASE'
+      label: 'RENTAL MANAGEMENT'
+    },
+    {
+      type: 'link',
+      label: 'My Bookings',
+      href: '/dashboard/bookings',
+      icon: TbBook,
+      badge: null
     },
     {
       type: 'dropdown',
@@ -73,7 +81,7 @@ export const navigationConfig: RoleConfig = {
     },
     {
       type: 'section',
-      label: 'BUYING & INTERESTS'
+      label: 'DISCOVERY & PLANNING'
     },
     {
       type: 'link',
@@ -83,14 +91,11 @@ export const navigationConfig: RoleConfig = {
       badge: null
     },
     {
-      type: 'dropdown',
-      label: 'My Purchases',
-      icon: TbCertificate,
-      items: [
-        { type: 'link', href: '/dashboard/my-offers', label: 'My Offers' },
-        { type: 'link', href: '/dashboard/saved-sales', label: 'Saved for Sale' },
-        { type: 'link', href: '/dashboard/purchase-history', label: 'Purchase Documents' },
-      ]
+      type: 'link',
+      label: 'My Tours',
+      href: '/dashboard/my-tours',
+      icon: TbCalendar,
+      badge: null
     },
     {
       type: 'link',
@@ -101,15 +106,9 @@ export const navigationConfig: RoleConfig = {
     },
     {
       type: 'section',
-      label: 'ACCOUNT & SUPPORT'
+      label: 'SUPPORT & ACCOUNT'
     },
-    {
-      type: 'link',
-      label: 'Messages',
-      href: '/dashboard/messages',
-      icon: TbMessage,
-      badge: '5'
-    },
+
     {
       type: 'link',
       label: 'Service Requests',
@@ -119,7 +118,7 @@ export const navigationConfig: RoleConfig = {
     },
     {
       type: 'link',
-      label: 'Get Support',
+      label: 'Help & Support',
       href: '/dashboard/support',
       icon: TbHelp,
       badge: null
@@ -217,13 +216,7 @@ export const navigationConfig: RoleConfig = {
         { type: 'link', href: '/dashboard/taxes', label: 'Tax Documents' },
       ]
     },
-    {
-      type: 'link',
-      label: 'Messages',
-      href: '/dashboard/messages',
-      icon: TbMessage,
-      badge: '12'
-    },
+
     {
       type: 'link',
       label: 'Settings',

@@ -23,6 +23,8 @@ export interface Payment {
   };
   type: 'rent' | 'security_deposit' | 'booking' | 'maintenance';
   amount: number;
+  amountBDT?: number;
+  amountUSD?: number;
   currency: string;
   status: 'pending' | 'processing' | 'paid' | 'failed' | 'refunded' | 'cancelled';
   method?: string;
@@ -105,8 +107,8 @@ export interface PaymentSummary {
 }
 
 export interface MonthlyPaymentSummary {
-  month: string; 
-  monthLabel: string; 
+  month: string;
+  monthLabel: string;
   totalPaid: number;
   totalDue: number;
   totalLateFees: number;
@@ -127,7 +129,7 @@ export interface EscrowStatus {
 
 
 export const paymentsApi = {
-  
+
   createRentPayment: async (
     data: CreateRentPaymentRequest
   ): Promise<Payment> => {
@@ -135,7 +137,7 @@ export const paymentsApi = {
     return response.data.data;
   },
 
-  
+
   createPaymentSession: async (
     paymentId: string,
     data: CreatePaymentSessionRequest
@@ -144,7 +146,7 @@ export const paymentsApi = {
     return response.data.data;
   },
 
-  
+
   getPaymentHistory: async (
     params?: PaymentHistoryParams
   ): Promise<PaymentHistoryResponse> => {
@@ -152,7 +154,7 @@ export const paymentsApi = {
     return response.data.data;
   },
 
-  
+
   getUpcomingPayments: async (
     days: number = 30
   ): Promise<UpcomingPayment[]> => {
@@ -162,25 +164,25 @@ export const paymentsApi = {
     return response.data.data;
   },
 
-  
+
   getLandlordEarnings: async (): Promise<LandlordEarnings> => {
     const response = await api.get('/payments/earnings');
     return response.data.data;
   },
 
-  
+
   getPaymentSummary: async (): Promise<PaymentSummary> => {
     const response = await api.get('/payments/summary');
     return response.data.data;
   },
 
-  
+
   getPayment: async (id: string): Promise<Payment> => {
     const response = await api.get(`/payments/${id}`);
     return response.data.data;
   },
 
-  
+
   cancelPayment: async (
     id: string,
     reason?: string
@@ -189,13 +191,13 @@ export const paymentsApi = {
     return response.data.data;
   },
 
-  
+
   getEscrowStatus: async (paymentId: string): Promise<EscrowStatus> => {
     const response = await api.get(`/payments/${paymentId}/escrow`);
     return response.data.data;
   },
 
-  
+
   raiseDispute: async (
     paymentId: string,
     reason: string
@@ -206,13 +208,13 @@ export const paymentsApi = {
     return response.data;
   },
 
-  
+
   getStripeConfig: async (): Promise<{ publishableKey: string }> => {
     const response = await api.get('/payments/config');
     return response.data.data;
   },
 
-  
+
   getMonthlySummary: async (
     months: number = 12
   ): Promise<MonthlyPaymentSummary[]> => {

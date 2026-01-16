@@ -31,6 +31,7 @@ const baseUrl = resolveBaseUrl();
 
 const baseQuery = fetchBaseQuery({
   baseUrl,
+  credentials: 'include',
   prepareHeaders: (headers, { getState }) => {
     let token = (getState() as RootState)?.auth?.token;
 
@@ -60,6 +61,7 @@ export const apiSlice = createApi({
     "Contact",
     "Blog",
     "Newsletter",
+    "Inquiry",
   ],
   endpoints: (builder) => ({}),
 });

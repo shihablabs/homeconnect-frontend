@@ -37,10 +37,12 @@ import {
 import { amenitiesList } from "@/types/property.types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
-import { CalendarIcon, Loader2 } from "lucide-react";
+import { CalendarIcon, Loader2, X } from "lucide-react";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
+import { FormImageUpload } from "../add-property/FormImageUpload";
+
 import {
   FormProvider,
   useForm,
@@ -61,25 +63,25 @@ const RENT_PROPERTY_TYPES = [
   "villa",
   "studio",
   "penthouse",
-  "room",        
-  "office",      
-  "shop",        
+  "room",
+  "office",
+  "shop",
 ] as const;
 
 const SALE_PROPERTY_TYPES = [
-  "apartment",   
-  "house",       
-  "land",        
-  "commercial",  
-  "office",      
-  "warehouse",   
+  "apartment",
+  "house",
+  "land",
+  "commercial",
+  "office",
+  "warehouse",
 ] as const;
 
 
 const allPropertyTypes = Array.from(new Set([...RENT_PROPERTY_TYPES, ...SALE_PROPERTY_TYPES])) as [string, ...string[]];
 
 const areaUnits = ["sqft", "sqm", "acres", "hectares"] as const;
-const currencies = ["BDT", "USD", "EUR", "GBP"] as const;
+const currencies = ["BDT"] as const;
 const petPolicies = ["allowed", "not-allowed", "case-by-case"] as const;
 const smokingPolicies = ["allowed", "not-allowed"] as const;
 const propertyConditions = [
@@ -133,10 +135,10 @@ const baseSchema = z.object({
   amenities: z.array(z.string()).optional(),
   tags: z.array(z.string()).optional(),
 
-  
-  
-  
-  
+
+
+
+
   imageFiles: z.any().optional(),
 
   videos: z.array(z.string().url("Must be a valid URL")).optional(),
@@ -250,37 +252,40 @@ const STEPS = [
 
 export function EditPropertyForm({ propertyId }: { propertyId: string }) {
   const [currentStep, setCurrentStep] = useState(1);
+  const [existingImages, setExistingImages] = useState<string[]>([]);
+  const [newImages, setNewImages] = useState<File[]>([]);
   const router = useRouter();
 
-  
+
   const { data: property, isLoading: isFetching, isError } = useGetPropertyByIdQuery(propertyId);
   const [updateProperty, { isLoading: isUpdating }] = useUpdatePropertyMutation();
 
   const form = useForm<PropertyFormData>({
     resolver: zodResolver(propertyFormSchema) as any,
-    defaultValues: {} as any, 
+    defaultValues: {} as any,
     mode: "onBlur",
   });
 
-  
+
   useEffect(() => {
     if (property) {
-      
+      setExistingImages(property.images || []);
+
       const formData = {
         ...property,
         listingType: property.listingType,
 
-        
+
         availableFrom: (property as any).availableFrom ? (property as any).availableFrom.split('T')[0] : undefined,
         offerDeadline: (property as any).offerDeadline ? new Date((property as any).offerDeadline) : undefined,
 
-        
+
         amenities: property.amenities || [],
         utilitiesIncluded: (property as any).utilitiesIncluded || [],
         tags: property.tags || [],
         videos: property.videos || [],
         floorPlans: property.floorPlans || [],
-        imageFiles: [], 
+        imageFiles: [],
       };
 
       form.reset(formData as any);
@@ -300,8 +305,8 @@ export function EditPropertyForm({ propertyId }: { propertyId: string }) {
       case 3:
         isValid = await trigger(["bedrooms", "bathrooms", "areaSize", "areaUnit"]); break;
       case 4:
-        isValid = true; 
-        
+        isValid = true;
+
         break;
       case 5:
         isValid = true; break;
@@ -323,7 +328,7 @@ export function EditPropertyForm({ propertyId }: { propertyId: string }) {
     try {
       const finalData: any = { ...data };
 
-      
+
       if (finalData.listingType === 'rent' && finalData.availableFrom) {
         finalData.availableFrom = new Date(finalData.availableFrom).toISOString();
       }
@@ -334,19 +339,15 @@ export function EditPropertyForm({ propertyId }: { propertyId: string }) {
         delete finalData.offerDeadline;
       }
 
-      
+
       Object.keys(finalData).forEach(key => {
         if (finalData[key] === undefined || finalData[key] === null) {
           delete finalData[key];
         }
       });
 
-      
-      
-      
-      
-      
-      
+      // Preserve existing images
+      finalData.images = existingImages;
       delete finalData.imageFiles;
 
       Swal.fire({
@@ -357,7 +358,7 @@ export function EditPropertyForm({ propertyId }: { propertyId: string }) {
         willOpen: () => Swal.showLoading(),
       });
 
-      await updateProperty({ id: propertyId, data: finalData }).unwrap();
+      await updateProperty({ id: propertyId, data: finalData, images: newImages }).unwrap();
 
       Swal.fire({
         icon: "success",
@@ -410,7 +411,14 @@ export function EditPropertyForm({ propertyId }: { propertyId: string }) {
                 {currentStep === 1 && <Step1 />}
                 {currentStep === 2 && <Step2 />}
                 {currentStep === 3 && <Step3 />}
-                {currentStep === 4 && <Step4 />}
+                {currentStep === 4 && (
+                  <Step4
+                    existingImages={existingImages}
+                    setExistingImages={setExistingImages}
+                    newImages={newImages}
+                    setNewImages={setNewImages}
+                  />
+                )}
                 {currentStep === 5 && <Step5 />}
                 {currentStep === 6 && <Step6 listingType={listingType} />}
               </div>
@@ -461,7 +469,7 @@ function Step1() {
                     else setValue("propertyType", "apartment");
                   }}
                   defaultValue={field.value}
-                  value={field.value} 
+                  value={field.value}
                   className="grid grid-cols-2 gap-4"
                 >
                   <FormItem>
@@ -542,7 +550,7 @@ function Step2() {
   const divisionOptions = getDivisionOptions();
   const districtOptions = getDistrictOptions(watchedDivision);
 
-  
+
   const LocationMap = useMemo(() => dynamic(() => import("../add-property/LocationMap").then((mod) => mod.default), { ssr: false, loading: () => <div className="h-64 w-full bg-gray-200 animate-pulse" /> }), []);
 
   return (
@@ -598,11 +606,63 @@ function Step3() {
   );
 }
 
-function Step4() {
+interface Step4Props {
+  existingImages: string[];
+  setExistingImages: (images: string[]) => void;
+  newImages: File[];
+  setNewImages: (files: File[]) => void;
+}
+
+function Step4({ existingImages, setExistingImages, newImages, setNewImages }: Step4Props) {
+  const handleRemoveExisting = (indexToRemove: number) => {
+    setExistingImages(existingImages.filter((_, index) => index !== indexToRemove));
+  };
+
   return (
-    <div className="text-center py-10 text-gray-500">
-      <p className="mb-4">Image updates are currently handled separately.</p>
-      <p className="text-sm">To update images, please delete and re-upload in the media gallery (Coming Soon).</p>
+    <div className="space-y-6">
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+        <h3 className="font-medium text-blue-800 mb-1">Manage Property Images</h3>
+        <p className="text-sm text-blue-600">
+          You can remove existing images and upload new ones properly.
+        </p>
+      </div>
+
+      {existingImages.length > 0 && (
+        <div className="space-y-3">
+          <label className="text-sm font-medium text-gray-700">Existing Images</label>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {existingImages.map((src, index) => (
+              <div key={index} className="relative aspect-video rounded-lg overflow-hidden group border border-gray-200">
+                <img
+                  src={src}
+                  alt={`Property ${index + 1}`}
+                  className="w-full h-full object-cover transition-transform group-hover:scale-105"
+                />
+                <button
+                  type="button"
+                  onClick={() => handleRemoveExisting(index)}
+                  className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600 shadow-sm"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <div className="space-y-3">
+        <label className="text-sm font-medium text-gray-700">Add New Images</label>
+        <FormImageUpload
+          value={newImages}
+          onChange={setNewImages}
+          maxFiles={10 - existingImages.length}
+          label="Upload New Images"
+        />
+        <p className="text-xs text-gray-500">
+          You can have a maximum of 10 images total. ({existingImages.length + newImages.length}/10)
+        </p>
+      </div>
     </div>
   );
 }
@@ -662,7 +722,7 @@ function Step6({ listingType }: { listingType: "rent" | "sale" }) {
         <FormField control={control} name="mortgageAvailable" render={({ field }) => (<FormItem className="flex flex-row items-center justify-between rounded-lg border p-4"><FormLabel>Mortgage?</FormLabel><FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} /></FormControl></FormItem>)} />
       </div>
 
-      {}
+      { }
       <FormField
         control={control}
         name="offerDeadline"

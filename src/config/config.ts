@@ -1,4 +1,4 @@
-const LOCAL_API = "http://localhost:5000/api";
+const LOCAL_API = "http://127.0.0.1:5000/api";
 const VERCEL_API = "https://hceub.vercel.app/api";
 
 const sanitize = (url: string) => url.replace(/\/+$/, "");
@@ -20,7 +20,7 @@ const resolveApiBaseUrl = () => {
   }
 
   if (process.env.NODE_ENV === "development") {
-    
+
     if (typeof window !== "undefined") {
       const host = window.location.hostname;
       console.log("[Config] resolving API URL:", {

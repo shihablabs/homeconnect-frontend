@@ -1,11 +1,9 @@
 'use client';
 
-import { useState } from 'react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { adminApi } from '@/lib/api/admin-api';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import {
   Dialog,
   DialogContent,
@@ -32,12 +30,14 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { UserPlus, Shield, ShieldOff, Eye, Loader2, RefreshCw } from 'lucide-react';
-import { toast } from 'sonner';
-import Link from 'next/link';
-import { useAppSelector } from '@/redux/hooks';
+import { adminApi } from '@/lib/api/admin-api';
 import { selectCurrentUser } from '@/redux/features/auth/authSlice';
-import { ConfirmDialog } from '@/components/ui/confirm-dialog';
+import { useAppSelector } from '@/redux/hooks';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { Eye, Loader2, RefreshCw, Shield, ShieldOff, UserPlus } from 'lucide-react';
+import Link from 'next/link';
+import { useState } from 'react';
+import { toast } from 'sonner';
 
 export function StaffManagementClient() {
   const currentUser = useAppSelector(selectCurrentUser);
@@ -48,11 +48,11 @@ export function StaffManagementClient() {
     email: '',
     password: '',
     role: 'support' as 'admin' | 'support',
-    phone: '',
+    phoneNumber: '',
   });
   const queryClient = useQueryClient();
 
-  
+
   const { data: adminsData, isLoading: loadingAdmins, error: adminsError } = useQuery({
     queryKey: ['admin', 'users', 'admin'],
     queryFn: async () => {
@@ -110,14 +110,14 @@ export function StaffManagementClient() {
         email: staffForm.email,
         password: staffForm.password,
         role: staffForm.role,
-        phone: staffForm.phone || undefined,
+        phoneNumber: staffForm.phoneNumber || undefined,
       });
 
       toast.success(`${staffForm.role === 'admin' ? 'Admin' : 'Support'} account created successfully`);
       setIsDialogOpen(false);
-      setStaffForm({ name: '', email: '', password: '', role: 'support', phone: '' });
-      
-      
+      setStaffForm({ name: '', email: '', password: '', role: 'support', phoneNumber: '' });
+
+
       queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
       queryClient.invalidateQueries({ queryKey: ['admin', 'users', 'admin'] });
       queryClient.invalidateQueries({ queryKey: ['admin', 'users', 'support'] });
@@ -157,7 +157,7 @@ export function StaffManagementClient() {
         reason: !confirmDialog.currentStatus ? 'Activated by admin' : 'Blocked by admin',
       });
       toast.success(`Staff ${!confirmDialog.currentStatus ? 'activated' : 'blocked'} successfully`);
-      
+
       queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
       queryClient.invalidateQueries({ queryKey: ['admin', 'users', 'admin'] });
       queryClient.invalidateQueries({ queryKey: ['admin', 'users', 'support'] });
@@ -172,7 +172,7 @@ export function StaffManagementClient() {
   };
 
   const refetch = () => {
-    
+
     queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
     queryClient.invalidateQueries({ queryKey: ['admin', 'users', 'admin'] });
     queryClient.invalidateQueries({ queryKey: ['admin', 'users', 'support'] });
@@ -211,235 +211,235 @@ export function StaffManagementClient() {
   return (
     <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
       <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Staff Management</h1>
-          <p className="text-muted-foreground mt-1">
-            Manage admin and support staff members
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={refetch}
-            disabled={loading}
-          >
-            {loading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Refreshing...
-              </>
-            ) : (
-              <>
-                <RefreshCw className="mr-2 h-4 w-4" />
-                Refresh
-              </>
-            )}
-          </Button>
-          {isAdmin && (
-            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-              <DialogTrigger asChild>
-                <Button>
-                  <UserPlus className="mr-2 h-4 w-4" />
-                  Add Staff Member
-                </Button>
-              </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Add New Staff Member</DialogTitle>
-                <DialogDescription>
-                  Create a new admin or support staff account
-                </DialogDescription>
-              </DialogHeader>
-              <form onSubmit={handleCreateStaff} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="name">Name *</Label>
-                  <Input
-                    id="name"
-                    value={staffForm.name}
-                    onChange={(e) => setStaffForm({ ...staffForm, name: e.target.value })}
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email *</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={staffForm.email}
-                    onChange={(e) => setStaffForm({ ...staffForm, email: e.target.value })}
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="password">Password *</Label>
-                  <Input
-                    id="password"
-                    type="password"
-                    value={staffForm.password}
-                    onChange={(e) => setStaffForm({ ...staffForm, password: e.target.value })}
-                    required
-                    minLength={6}
-                    placeholder="Minimum 6 characters"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="role">Role *</Label>
-                  <Select
-                    value={staffForm.role}
-                    onValueChange={(value: 'admin' | 'support') =>
-                      setStaffForm({ ...staffForm, role: value })
-                    }
-                  >
-                    <SelectTrigger id="role">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="admin">Admin</SelectItem>
-                      <SelectItem value="support">Support</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="phone">Phone</Label>
-                  <Input
-                    id="phone"
-                    type="tel"
-                    value={staffForm.phone}
-                    onChange={(e) => setStaffForm({ ...staffForm, phone: e.target.value })}
-                  />
-                </div>
-                <DialogFooter>
-                  <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
-                    Cancel
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold">Staff Management</h1>
+            <p className="text-muted-foreground mt-1">
+              Manage admin and support staff members
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={refetch}
+              disabled={loading}
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Refreshing...
+                </>
+              ) : (
+                <>
+                  <RefreshCw className="mr-2 h-4 w-4" />
+                  Refresh
+                </>
+              )}
+            </Button>
+            {isAdmin && (
+              <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button>
+                    <UserPlus className="mr-2 h-4 w-4" />
+                    Add Staff Member
                   </Button>
-                  <Button type="submit">Create Staff</Button>
-                </DialogFooter>
-              </form>
-            </DialogContent>
-          </Dialog>
-          )}
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Add New Staff Member</DialogTitle>
+                    <DialogDescription>
+                      Create a new admin or support staff account
+                    </DialogDescription>
+                  </DialogHeader>
+                  <form onSubmit={handleCreateStaff} className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="name">Name *</Label>
+                      <Input
+                        id="name"
+                        value={staffForm.name}
+                        onChange={(e) => setStaffForm({ ...staffForm, name: e.target.value })}
+                        required
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="email">Email *</Label>
+                      <Input
+                        id="email"
+                        type="email"
+                        value={staffForm.email}
+                        onChange={(e) => setStaffForm({ ...staffForm, email: e.target.value })}
+                        required
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="password">Password *</Label>
+                      <Input
+                        id="password"
+                        type="password"
+                        value={staffForm.password}
+                        onChange={(e) => setStaffForm({ ...staffForm, password: e.target.value })}
+                        required
+                        minLength={6}
+                        placeholder="Minimum 6 characters"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="role">Role *</Label>
+                      <Select
+                        value={staffForm.role}
+                        onValueChange={(value: 'admin' | 'support') =>
+                          setStaffForm({ ...staffForm, role: value })
+                        }
+                      >
+                        <SelectTrigger id="role">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="admin">Admin</SelectItem>
+                          <SelectItem value="support">Support</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="phoneNumber">Phone</Label>
+                      <Input
+                        id="phoneNumber"
+                        type="tel"
+                        value={staffForm.phoneNumber}
+                        onChange={(e) => setStaffForm({ ...staffForm, phoneNumber: e.target.value })}
+                      />
+                    </div>
+                    <DialogFooter>
+                      <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
+                        Cancel
+                      </Button>
+                      <Button type="submit">Create Staff</Button>
+                    </DialogFooter>
+                  </form>
+                </DialogContent>
+              </Dialog>
+            )}
+          </div>
         </div>
-      </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>All Staff Members</CardTitle>
-          <CardDescription>
-            {loading ? 'Loading...' : `${staff.length} staff member${staff.length !== 1 ? 's' : ''}`}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {loading && staff.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-12">
-              <Loader2 className="h-8 w-8 animate-spin text-primary mb-4" />
-              <p className="text-muted-foreground">Loading staff...</p>
-            </div>
-          ) : staff.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-12 text-center">
-              <Shield className="h-12 w-12 text-muted-foreground mb-4" />
-              <h3 className="text-lg font-semibold mb-2">No staff members</h3>
-              <p className="text-muted-foreground">Add staff members to manage the platform</p>
-            </div>
-          ) : (
-            <div className="rounded-lg border overflow-hidden">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Staff Member</TableHead>
-                    <TableHead>Role</TableHead>
-                    <TableHead>Contact</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Joined</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {staff.map((member) => (
-                    <TableRow key={member.id}>
-                      <TableCell>
-                        <div className="flex items-center gap-3">
-                          <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                            <Shield className="h-5 w-5 text-primary" />
-                          </div>
-                          <div>
-                            <div className="font-medium">{member.name}</div>
-                            <div className="text-sm text-muted-foreground">{member.email}</div>
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="outline" className="capitalize">
-                          {member.role}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <div className="text-sm">
-                          {member.email}
-                          {member.phone && (
-                            <div className="text-muted-foreground">{member.phone}</div>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        {member.isActive ? (
-                          <Badge variant="default" className="gap-1">
-                            <Shield className="h-3 w-3" />
-                            Active
-                          </Badge>
-                        ) : (
-                          <Badge variant="destructive" className="gap-1">
-                            <ShieldOff className="h-3 w-3" />
-                            Blocked
-                          </Badge>
-                        )}
-                      </TableCell>
-                      <TableCell className="text-sm text-muted-foreground">
-                        {new Date(member.createdAt).toLocaleDateString()}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex gap-2 justify-end">
-                          <Link href={`/dashboard/users/${member.id}`}>
-                            <Button variant="outline" size="sm">
-                              <Eye className="mr-2 h-4 w-4" />
-                              View
-                            </Button>
-                          </Link>
-                          {}
-                          {isAdmin && (
-                            <Button
-                              variant={member.isActive ? 'destructive' : 'default'}
-                              size="sm"
-                              onClick={() => handleStatusToggleClick(member.id, member.name, member.email, member.isActive)}
-                              disabled={updatingStatusId === member.id}
-                            >
-                              {member.isActive ? (
-                                <>
-                                  <ShieldOff className="mr-2 h-4 w-4" />
-                                  Block
-                                </>
-                              ) : (
-                                <>
-                                  <Shield className="mr-2 h-4 w-4" />
-                                  Activate
-                                </>
-                              )}
-                            </Button>
-                          )}
-                        </div>
-                      </TableCell>
+        <Card>
+          <CardHeader>
+            <CardTitle>All Staff Members</CardTitle>
+            <CardDescription>
+              {loading ? 'Loading...' : `${staff.length} staff member${staff.length !== 1 ? 's' : ''}`}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {loading && staff.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-12">
+                <Loader2 className="h-8 w-8 animate-spin text-primary mb-4" />
+                <p className="text-muted-foreground">Loading staff...</p>
+              </div>
+            ) : staff.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-12 text-center">
+                <Shield className="h-12 w-12 text-muted-foreground mb-4" />
+                <h3 className="text-lg font-semibold mb-2">No staff members</h3>
+                <p className="text-muted-foreground">Add staff members to manage the platform</p>
+              </div>
+            ) : (
+              <div className="rounded-lg border overflow-hidden">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Staff Member</TableHead>
+                      <TableHead>Role</TableHead>
+                      <TableHead>Contact</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Joined</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+                  </TableHeader>
+                  <TableBody>
+                    {staff.map((member) => (
+                      <TableRow key={member.id}>
+                        <TableCell>
+                          <div className="flex items-center gap-3">
+                            <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                              <Shield className="h-5 w-5 text-primary" />
+                            </div>
+                            <div>
+                              <div className="font-medium">{member.name}</div>
+                              <div className="text-sm text-muted-foreground">{member.email}</div>
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="outline" className="capitalize">
+                            {member.role}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <div className="text-sm">
+                            {member.email}
+                            {member.phoneNumber && (
+                              <div className="text-muted-foreground">{member.phoneNumber}</div>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          {member.isActive ? (
+                            <Badge variant="default" className="gap-1">
+                              <Shield className="h-3 w-3" />
+                              Active
+                            </Badge>
+                          ) : (
+                            <Badge variant="destructive" className="gap-1">
+                              <ShieldOff className="h-3 w-3" />
+                              Blocked
+                            </Badge>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-sm text-muted-foreground">
+                          {new Date(member.createdAt).toLocaleDateString()}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex gap-2 justify-end">
+                            <Link href={`/dashboard/users/${member.id}`}>
+                              <Button variant="outline" size="sm">
+                                <Eye className="mr-2 h-4 w-4" />
+                                View
+                              </Button>
+                            </Link>
+                            { }
+                            {isAdmin && (
+                              <Button
+                                variant={member.isActive ? 'destructive' : 'default'}
+                                size="sm"
+                                onClick={() => handleStatusToggleClick(member.id, member.name, member.email, member.isActive)}
+                                disabled={updatingStatusId === member.id}
+                              >
+                                {member.isActive ? (
+                                  <>
+                                    <ShieldOff className="mr-2 h-4 w-4" />
+                                    Block
+                                  </>
+                                ) : (
+                                  <>
+                                    <Shield className="mr-2 h-4 w-4" />
+                                    Activate
+                                  </>
+                                )}
+                              </Button>
+                            )}
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </div>
 
-      {}
+      { }
       <ConfirmDialog
         open={confirmDialog.open}
         onOpenChange={(open) => setConfirmDialog({ ...confirmDialog, open })}

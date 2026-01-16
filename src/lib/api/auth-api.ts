@@ -6,7 +6,7 @@ export interface RegisterData {
   email: string;
   password: string;
   role: "tenant" | "landlord";
-  phone?: string;
+  phoneNumber?: string;
   avatar?: string;
 }
 
@@ -22,7 +22,8 @@ export interface AuthResponse {
     email: string;
     role: string;
     avatar?: string;
-    phone?: string;
+    phoneNumber?: string;
+    isPhoneVerified?: boolean;
   };
   token: string;
   expiresIn: string;
@@ -35,9 +36,18 @@ interface IChangePasswordRequest {
 }
 
 export interface IUpdateProfileRequest {
-  name?: string;
-  phone?: string;
+  phoneNumber?: string;
   avatar?: string;
+  bio?: string;
+  title?: string;
+  socialLinks?: {
+    linkedin?: string;
+    twitter?: string;
+    instagram?: string;
+    website?: string;
+  };
+  yearsOfExperience?: number;
+  specializedArea?: string;
 }
 
 export const authApi = {
@@ -51,13 +61,34 @@ export const authApi = {
     return response.data.data;
   },
 
-  updateProfile: async (data: IUpdateProfileRequest): Promise<AuthUser> => {
-    const response = await api.patch("/auth/profile", data);
+  updateProfile: async (data: Partial<AuthUser>) => {
+    const response = await api.patch('/auth/profile', data);
     return response.data.data;
   },
 
-  verifyEmail: async (token: string): Promise<{ message: string }> => {
-    const response = await api.post("/auth/verify-email", { token });
+  uploadAvatar: async (file: File) => {
+    const formData = new FormData();
+    formData.append('avatar', file);
+    const response = await api.post('/auth/profile/avatar', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data.data;
+  },
+
+  verifyEmail: async (data: { email: string; otp: string }): Promise<{ message: string }> => {
+    const response = await api.post("/auth/verify-email", data);
+    return response.data;
+  },
+
+  resendVerificationEmail: async (email: string): Promise<{ message: string }> => {
+    const response = await api.post("/auth/resend-verification", { email });
+    return response.data;
+  },
+
+  verifyPhone: async (): Promise<{ message: string }> => {
+    const response = await api.post("/auth/verify-phone", {});
     return response.data;
   },
 
@@ -85,16 +116,16 @@ export const authApi = {
     data: IChangePasswordRequest
   ): Promise<{ message: string }> => {
     const response = await api.post("/auth/change-password", data);
-    return response.data; 
+    return response.data;
   },
 
-  
+
   deleteAccount: async (): Promise<{ message: string }> => {
     const response = await api.delete("/users/me/delete-account");
     return response.data;
   },
 
-  
+
   logout: async (): Promise<{ message: string }> => {
     const response = await api.post("/auth/logout");
     return response.data;

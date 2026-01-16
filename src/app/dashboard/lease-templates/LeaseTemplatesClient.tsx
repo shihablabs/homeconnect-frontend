@@ -23,6 +23,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Textarea } from '@/components/ui/textarea';
+import { confirmDelete } from '@/lib/swal';
 import { Copy, Download, Edit, FileText, Plus, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
@@ -56,11 +57,11 @@ export function LeaseTemplatesClient() {
   const fetchTemplates = async () => {
     try {
       setLoading(true);
-      
-      
-      
 
-      
+
+
+
+
       setTemplates([
         {
           id: '1',
@@ -111,12 +112,12 @@ export function LeaseTemplatesClient() {
 
     try {
       if (isEditMode && selectedTemplate) {
-        
-        
+
+
         toast.success('Template updated successfully');
       } else {
-        
-        
+
+
         toast.success('Template created successfully');
       }
       setIsDialogOpen(false);
@@ -130,23 +131,26 @@ export function LeaseTemplatesClient() {
   };
 
   const handleDelete = async (templateId: string) => {
-    if (!confirm(`Are you sure you want to delete template ${templateId}?`)) return;
+    const result = await confirmDelete(
+      "Delete Template?",
+      `Are you sure you want to delete template ${templateId}? This action cannot be undone.`
+    );
 
-    try {
-      
-      
-      toast.success('Template deleted successfully');
-      fetchTemplates();
-    } catch (error: unknown) {
-      console.error('Failed to delete template:', error);
-      toast.error('Failed to delete template');
+    if (result) {
+      try {
+        toast.success('Template deleted successfully');
+        fetchTemplates();
+      } catch (error: unknown) {
+        console.error('Failed to delete template:', error);
+        toast.error('Failed to delete template');
+      }
     }
   };
 
-  
+
   const handleDownload = async (template: LeaseTemplate) => {
     try {
-      
+
       toast.info('Template download feature coming soon');
     } catch {
       toast.error('Failed to download template');
@@ -160,7 +164,7 @@ export function LeaseTemplatesClient() {
 
   if (loading) {
     return (
-      <div className="space-y-6">
+      <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 space-y-6">
         <Card>
           <CardContent className="py-12">
             <div className="text-center text-muted-foreground">Loading templates...</div>
@@ -171,7 +175,7 @@ export function LeaseTemplatesClient() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Lease Templates</h1>

@@ -61,6 +61,7 @@ export const {
   useGetPublicBlogsQuery,
   useGetAdminBlogsQuery,
   useGetBlogBySlugQuery,
+  useGetBlogByIdQuery,
   useCreateBlogMutation,
   useUpdateBlogMutation,
   useDeleteBlogMutation,

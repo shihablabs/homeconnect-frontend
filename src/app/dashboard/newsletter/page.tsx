@@ -18,16 +18,16 @@ import {
 import { format } from "date-fns";
 import { Loader2, Mail, Search, Trash2 } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import Swal from "sweetalert2";
 import CampaignHistoryTable from "./CampaignHistoryTable";
 
-export default function NewsletterPage() {
+function NewsletterContent() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  
+
   const activeTab = searchParams.get("tab") || "subscribers";
 
   const handleTabChange = (value: string) => {
@@ -36,7 +36,7 @@ export default function NewsletterPage() {
     router.push(`${pathname}?${params.toString()}`);
   };
 
-  
+
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const { data, isLoading, refetch } = useGetAllSubscribersQuery({
@@ -47,7 +47,7 @@ export default function NewsletterPage() {
   const [deleteSubscriber] = useDeleteSubscriberMutation();
   const [updateStatus] = useUpdateSubscriberStatusMutation();
 
-  
+
   const [subject, setSubject] = useState("");
   const [content, setContent] = useState("");
   const [testEmail, setTestEmail] = useState("");
@@ -120,7 +120,7 @@ export default function NewsletterPage() {
       const res = await sendEmail(payload).unwrap();
       Swal.fire("Success", res.message || "Email process started.", "success");
       if (!isTest) {
-        
+
         setSubject("");
         setContent("");
       }
@@ -294,5 +294,17 @@ export default function NewsletterPage() {
         </TabsContent>
       </Tabs>
     </div>
+  );
+}
+
+export default function NewsletterPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex h-96 items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    }>
+      <NewsletterContent />
+    </Suspense>
   );
 }

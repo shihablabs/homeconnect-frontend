@@ -46,7 +46,7 @@ export default function ServiceRequisitionClient() {
 
     try {
       const orderData: CreateOrderRequest = {
-        packageId: selectedPackage.packageId as 'basic' | 'premium' | 'elite', 
+        packageId: selectedPackage.packageId as 'basic' | 'premium' | 'elite',
         listingType,
         preferences: {
           city,
@@ -76,7 +76,7 @@ export default function ServiceRequisitionClient() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+    <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
       <div className="mb-10 text-center">
         <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-blue-600 mb-2">
           Service Requisition

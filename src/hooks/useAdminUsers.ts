@@ -46,9 +46,9 @@ export const useAdminUsers = (options: UseAdminUsersOptions = {}) => {
       };
     },
     enabled,
-    staleTime: 30000, 
+    staleTime: 30000,
     refetchOnWindowFocus: true,
-    refetchInterval: 60000, 
+    refetchInterval: 60000,
     retry: (failureCount, error: unknown) => {
       if (error && typeof error === 'object' && 'response' in error) {
         const err = error as { response?: { status?: number } };
@@ -65,7 +65,7 @@ export const useAdminUsers = (options: UseAdminUsersOptions = {}) => {
       return await adminApi.updateUserStatus(userId, { isActive, reason });
     },
     onSuccess: () => {
-      
+
       queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
     },
   });
@@ -89,7 +89,7 @@ export const useAdminUsers = (options: UseAdminUsersOptions = {}) => {
   });
 
   const createStaffMutation = useMutation({
-    mutationFn: async (data: { name: string; email: string; password: string; role: 'admin' | 'support'; phone?: string }) => {
+    mutationFn: async (data: { name: string; email: string; password: string; role: 'admin' | 'support'; phoneNumber?: string }) => {
       return await adminApi.createStaffAccount(data);
     },
     onSuccess: () => {

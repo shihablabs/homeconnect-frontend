@@ -26,18 +26,25 @@ export interface Booking {
   checkIn: string;
   checkOut: string;
   totalAmount: number;
-  status: 'pending' | 'confirmed' | 'cancelled' | 'completed';
+  securityDeposit?: number;
+  status: 'pending' | 'confirmed' | 'cancelled' | 'completed' | 'reviewing' | 'waiting_for_payment' | 'approved' | 'rejected';
   paymentStatus: 'pending' | 'paid' | 'failed' | 'refunded';
+  payment?: {
+    amountBDT: number;
+    amountUSD: number;
+    currency: string;
+  };
   stripeSessionId?: string;
   specialRequests?: string;
   leaseDurationInMonths?: number;
   leaseDocumentURL?: string;
-  
+
   isRecurringPayment?: boolean;
   stripeSubscriptionId?: string;
   stripeCustomerId?: string;
   nextBillingDate?: string;
   documents?: { name: string; type: string; url: string }[];
+  tour?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -49,7 +56,8 @@ export interface CreateBookingRequest {
   specialRequests?: string;
   leaseDurationInMonths?: number;
   leaseDocumentURL?: string;
-  setupRecurringPayment?: boolean; 
+  setupRecurringPayment?: boolean;
+  tourId?: string;
   documents?: { name: string; type: string; url: string }[];
 }
 
@@ -70,13 +78,13 @@ export interface CancelBookingRequest {
 
 
 export const bookingsApi = {
-  
+
   createBooking: async (data: CreateBookingRequest): Promise<Booking> => {
     const response = await api.post('/bookings', data);
     return response.data.data.booking;
   },
 
-  
+
   createPaymentSession: async (
     data: CreatePaymentSessionRequest
   ): Promise<PaymentSessionResponse> => {
@@ -84,27 +92,27 @@ export const bookingsApi = {
     return response.data.data;
   },
 
-  
+
   getUserBookings: async (
     type: 'tenant' | 'landlord' = 'tenant'
   ): Promise<{ bookings: Booking[] }> => {
     const response = await api.get('/bookings/my-bookings', {
       params: { type },
     });
-    
+
     const bookings = Array.isArray(response.data.data)
       ? response.data.data
       : response.data.data?.bookings || [];
     return { bookings };
   },
 
-  
+
   getBooking: async (id: string): Promise<Booking> => {
     const response = await api.get(`/bookings/${id}`);
     return response.data.data.booking;
   },
 
-  
+
   cancelBooking: async (
     id: string,
     data: CancelBookingRequest

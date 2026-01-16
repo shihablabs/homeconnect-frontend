@@ -2,11 +2,11 @@
 
 import { dashboardApi } from "@/lib/api/dashboard";
 import { useQuery } from "@tanstack/react-query";
-import { useSocket } from "@/contexts/SocketContext";
-import { useEffect, useState } from "react";
+// import { useSocket } from "@/contexts/SocketContext";
+import { useState } from "react";
 
 export const useDashboardCounts = () => {
-  const { notificationCount } = useSocket();
+  // const { notificationCount } = useSocket();
   const [realTimeNotificationCount, setRealTimeNotificationCount] = useState<number | null>(null);
 
   const countsQuery = useQuery({
@@ -28,12 +28,13 @@ export const useDashboardCounts = () => {
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
   });
 
-  
+  /*
   useEffect(() => {
     if (notificationCount !== undefined) {
       setRealTimeNotificationCount(notificationCount);
     }
   }, [notificationCount]);
+  */
 
   
   const unreadNotifications = realTimeNotificationCount !== null 

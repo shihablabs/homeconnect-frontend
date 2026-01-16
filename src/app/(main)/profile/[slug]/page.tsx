@@ -3,9 +3,9 @@ import { ProfileClient } from './ProfileClient';
 export default async function ProfilePage({
   params,
 }: {
-  params: Promise<{ id: string }>;
+  params: Promise<{ slug: string }>;
 }) {
-  
-  const { id } = await params;
-  return <ProfileClient id={id} />;
+
+  const { slug } = await params;
+  return <ProfileClient id={slug} />;
 }

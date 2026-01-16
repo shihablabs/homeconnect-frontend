@@ -26,9 +26,9 @@ export function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) 
   const router = useRouter();
   const pathname = usePathname();
 
-  
+
   const hasAccess = useCallback(() => {
-    if (!requiredRole) return true; 
+    if (!requiredRole) return true;
     if (!user) return false;
 
     const allowedRoles = Array.isArray(requiredRole) ? requiredRole : [requiredRole];
@@ -36,23 +36,25 @@ export function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) 
   }, [requiredRole, user]);
 
   useEffect(() => {
-    
+
     if (!isInitialized) return;
 
-    
+
     if (!isAuthenticated) {
       const returnUrl = encodeURIComponent(pathname);
       router.push(`/login?from=${returnUrl}`);
       return;
     }
 
-    
+
+    // Phone Verification check is now handled via global modal in LayoutWrapper
+
     if (user && requiredRole && !hasAccess()) {
       router.push('/dashboard');
     }
   }, [isAuthenticated, isInitialized, user, requiredRole, router, hasAccess, pathname]);
 
-  
+
   if (!isInitialized) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -62,7 +64,7 @@ export function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) 
     );
   }
 
-  
+
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -72,7 +74,7 @@ export function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) 
     );
   }
 
-  
+
   if (!user) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -82,7 +84,7 @@ export function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) 
     );
   }
 
-  
+
   if (requiredRole && !hasAccess()) {
     const allowedRoles = Array.isArray(requiredRole) ? requiredRole : [requiredRole];
     const rolesText = allowedRoles.length === 1

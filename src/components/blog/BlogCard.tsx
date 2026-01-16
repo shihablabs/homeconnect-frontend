@@ -1,7 +1,6 @@
 "use client";
 
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { BlogResponse } from '@/lib/api/blog-api';
 import { ArrowRight, CalendarDays } from 'lucide-react';
 import Image from 'next/image';
@@ -13,56 +12,66 @@ interface BlogCardProps {
 }
 
 export default function BlogCard({ blog }: BlogCardProps) {
-  
   const [imgSrc, setImgSrc] = useState<string>(
-    (blog.images && blog.images.length > 0 && blog.images[0]) ? blog.images[0] : "/placeholder.jpg"
+    (blog.images && blog.images.length > 0 && blog.images[0]) ? blog.images[0] : "/blog-placeholder.png"
   );
 
   return (
-    <Link href={`/blogs/${blog.slug}`} className="group h-full block">
-      <Card className="h-full border-0 shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden flex flex-col bg-white ring-1 ring-slate-900/5 group-hover:-translate-y-1">
-        <div className="relative h-60 w-full bg-slate-100 overflow-hidden">
+    <Link href={`/blogs/${blog.slug}`} className="group block h-full">
+      <div className="flex flex-col h-full bg-white rounded-2xl overflow-hidden border border-slate-100 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] transition-all duration-500 group-hover:-translate-y-1.5 flex flex-col">
+        {/* Image Section */}
+        <div className="relative aspect-[16/10] w-full overflow-hidden">
           <Image
             src={imgSrc}
             alt={blog.title}
             fill
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-            className="object-cover transition-transform duration-700 group-hover:scale-105"
-            onError={() => setImgSrc("/placeholder.jpg")}
+            className="object-cover transition-transform duration-700 group-hover:scale-110"
+            onError={() => setImgSrc("/blog-placeholder.png")}
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-          <Badge className="absolute top-4 left-4 bg-white/95 text-slate-900 backdrop-blur-md shadow-sm font-bold border-0 hover:bg-white">
-            {blog.tags?.[0] || 'Article'}
-          </Badge>
+          {/* Overlay gradient */}
+          <div className="absolute inset-0 bg-gradient-to-t from-slate-900/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+
+          {/* Tag Badge */}
+          <div className="absolute top-3 left-3">
+            <Badge className="bg-white/90 hover:bg-white text-slate-800 backdrop-blur-md border-0 text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 shadow-sm">
+              {blog.tags?.[0] || 'Real Estate'}
+            </Badge>
+          </div>
         </div>
 
-        <CardHeader className="pb-3 pt-5 px-6">
-          <div className="flex items-center gap-2 text-xs text-slate-500 mb-3 font-medium uppercase tracking-wide">
-            <CalendarDays className="w-3.5 h-3.5 text-blue-600" />
+        {/* Content Section */}
+        <div className="flex flex-col flex-grow p-5 md:p-6">
+          <div className="flex items-center gap-2 text-[11px] font-semibold text-blue-600/80 uppercase tracking-widest mb-3">
+            <CalendarDays className="w-3.5 h-3.5" />
             <span>
-              {new Date(blog.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+              {new Date(blog.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}
             </span>
           </div>
-          <h3 className="text-xl font-bold text-slate-900 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-cyan-600 group-hover:to-blue-600 transition-all duration-300 line-clamp-2 leading-tight">
+
+          <h3 className="text-lg md:text-xl font-bold text-slate-900 mb-3 line-clamp-2 leading-tight group-hover:text-blue-600 transition-colors duration-300">
             {blog.title}
           </h3>
-        </CardHeader>
 
-        <CardContent className="flex-grow px-6 pb-2">
           <div
-            className="text-slate-600 text-sm line-clamp-3 leading-relaxed"
+            className="text-slate-500 text-sm line-clamp-2 leading-relaxed mb-4"
             dangerouslySetInnerHTML={{
-              __html: blog.content.replace(/<[^>]*>?/gm, '').substring(0, 150) + "..."
+              __html: blog.content.replace(/<[^>]*>?/gm, '').substring(0, 120) + "..."
             }}
           />
-        </CardContent>
 
-        <CardFooter className="pt-4 px-6 pb-6">
-          <div className="text-sm font-bold text-blue-600 flex items-center gap-2 group-hover:gap-3 transition-all">
-            Read Article <ArrowRight className="w-4 h-4" />
+          <div className="mt-auto pt-4 flex items-center justify-between border-t border-slate-50">
+            <span className="text-sm font-bold text-slate-900 group-hover:text-blue-600 transition-colors inline-flex items-center gap-1.5">
+              Read Story
+              <ArrowRight className="w-3.5 h-3.5 transition-transform duration-300 group-hover:translate-x-1" />
+            </span>
+            <div className="w-8 h-8 rounded-full bg-slate-50 group-hover:bg-blue-50 flex items-center justify-center transition-colors">
+              <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-blue-600" />
+            </div>
           </div>
-        </CardFooter>
-      </Card>
+        </div>
+      </div>
     </Link>
   );
 }
+

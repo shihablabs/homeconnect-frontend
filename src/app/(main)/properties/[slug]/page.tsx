@@ -11,7 +11,7 @@ import { PropertySkeleton } from "./PropertySkeleton";
 
 export default function Page() {
   const params = useParams();
-  const id = Array.isArray(params.id) ? params.id[0] : params.id;
+  const id = Array.isArray(params.slug) ? params.slug[0] : params.slug;
 
   const {
     data: apiResponse,

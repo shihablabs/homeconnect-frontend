@@ -31,6 +31,7 @@ import {
 } from '@/components/ui/table';
 import { Textarea } from '@/components/ui/textarea';
 import { userGuideApi, type CreateUserGuideRequest, type GuideCategory, type UserGuide } from '@/lib/api/support-api';
+import { confirmDelete } from "@/lib/swal";
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { AlertCircle, Book, Edit, Eye, Loader2, Plus, RefreshCw, Search, Trash2 } from 'lucide-react';
 import { useState } from 'react';
@@ -69,9 +70,9 @@ export function UserGuidesClient() {
       });
       return response.data;
     },
-    staleTime: 60000, 
+    staleTime: 60000,
     refetchOnWindowFocus: false,
-    refetchInterval: false, 
+    refetchInterval: false,
     retry: (failureCount, error: unknown) => {
       if (error && typeof error === 'object' && 'response' in error) {
         const err = error as { response?: { status?: number } };
@@ -192,8 +193,14 @@ export function UserGuidesClient() {
   };
 
   const handleDelete = async (guideId: string) => {
-    if (!confirm('Are you sure you want to delete this guide?')) return;
-    deleteMutation.mutate(guideId);
+    const result = await confirmDelete(
+      "Delete Guide?",
+      "Are you sure you want to delete this guide? This action cannot be undone."
+    );
+
+    if (result) {
+      deleteMutation.mutate(guideId);
+    }
   };
 
   const filteredGuides = guides.filter((guide) => {

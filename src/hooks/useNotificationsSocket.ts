@@ -1,238 +1,183 @@
-'use client';
-
-import { useEffect, useCallback, useState } from 'react';
-import { useSocket } from '@/contexts/SocketContext';
-import { notificationsApi, type Notification, type NotificationStats, type NotificationParams } from '@/lib/api/notifications-api';
-import { toast } from 'sonner';
+import {
+    notificationsApi,
+    type Notification,
+    type NotificationParams,
+    type NotificationStats
+} from '@/lib/api/notifications-api';
+import { getSocket } from '@/lib/socket';
+import { selectCurrentUser } from '@/redux/features/auth/authSlice';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { useSelector } from 'react-redux';
 
 interface UseNotificationsSocketOptions {
   autoFetch?: boolean;
   onNewNotification?: (notification: Notification) => void;
-  onNotificationRead?: (notificationId: string) => void;
 }
 
-export function useNotificationsSocket(options: UseNotificationsSocketOptions = {}) {
-  const { socket, isConnected, notificationCount } = useSocket();
-  const { autoFetch = true, onNewNotification, onNotificationRead } = options;
-  
+interface UseNotificationsSocketReturn {
+  notifications: Notification[];
+  stats: NotificationStats | null;
+  loading: boolean;
+  isConnected: boolean;
+  fetchNotifications: (params?: NotificationParams) => Promise<void>;
+  markAsRead: (id: string) => Promise<void>;
+  markAllAsRead: () => Promise<void>;
+  deleteNotification: (id: string) => Promise<void>;
+}
+
+export const useNotificationsSocket = (
+  options: UseNotificationsSocketOptions = {}
+): UseNotificationsSocketReturn => {
+  const user = useSelector(selectCurrentUser);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [stats, setStats] = useState<NotificationStats | null>(null);
   const [loading, setLoading] = useState(false);
+  const [isConnected, setIsConnected] = useState(false);
+  const socketRef = useRef(getSocket());
 
-  
   const fetchNotifications = useCallback(async (params?: NotificationParams) => {
     try {
       setLoading(true);
       const [notificationsData, statsData] = await Promise.all([
         notificationsApi.getNotifications(params),
-        notificationsApi.getStats(),
+        notificationsApi.getStats()
       ]);
       setNotifications(notificationsData.notifications);
       setStats(statsData);
-    } catch (error: unknown) {
-      console.error('[NotificationsSocket] Error fetching notifications:', error);
-      toast.error('Failed to fetch notifications');
+    } catch (error) {
+      console.error('Failed to fetch notifications:', error);
     } finally {
       setLoading(false);
     }
   }, []);
 
-  
+  // Initial Fetch
   useEffect(() => {
-    if (autoFetch) {
+    if (options.autoFetch && user) {
       fetchNotifications();
     }
-  }, [autoFetch, fetchNotifications]);
+  }, [options.autoFetch, user, fetchNotifications]);
 
-  
+  // Socket Connection and Event Listeners
   useEffect(() => {
-    if (!socket || !isConnected) return;
+    if (!user) return;
 
-    const handleNewNotification = (notification: Notification) => {
-      console.log('[NotificationsSocket] New notification:', notification);
-      
-      
-      setNotifications((prev) => {
-        
-        if (prev.some((n) => n.id === notification.id)) {
-          return prev;
-        }
-        return [notification, ...prev];
-      });
+    const socket = socketRef.current;
 
-      
+    const onConnect = () => setIsConnected(true);
+    const onDisconnect = () => setIsConnected(false);
+
+    const onNewNotification = (notification: Notification) => {
+      // Update stats locally
       setStats((prev) => {
-        if (!prev) return prev;
-        return {
-          ...prev,
-          total: prev.total + 1,
-          unread: prev.unread + 1,
-          byType: {
-            ...prev.byType,
-            [notification.type]: (prev.byType[notification.type] || 0) + 1,
-          },
-        };
+        if (!prev) return null;
+        const newStats = { ...prev };
+        newStats.total += 1;
+        newStats.unread += 1;
+        if (newStats.byType[notification.type] !== undefined) {
+          newStats.byType[notification.type] += 1;
+        }
+        return newStats;
       });
 
-      if (onNewNotification) {
-        onNewNotification(notification);
+      // Update notifications list
+      setNotifications((prev) => [notification, ...prev]);
+
+      // Callback
+      if (options.onNewNotification) {
+        options.onNewNotification(notification);
       }
     };
 
-    socket.on('new_notification', handleNewNotification);
-
-    return () => {
-      socket.off('new_notification', handleNewNotification);
-    };
-  }, [socket, isConnected, onNewNotification]);
-
-  
-  useEffect(() => {
-    if (!socket || !isConnected) return;
-
-    const handleNotificationCount = (data: { count: number }) => {
-      console.log('[NotificationsSocket] Notification count:', data.count);
-      
-      setStats((prev) => {
-        if (!prev) return prev;
-        return {
-          ...prev,
-          unread: data.count,
-        };
-      });
-    };
-
-    socket.on('notification_count', handleNotificationCount);
-
-    return () => {
-      socket.off('notification_count', handleNotificationCount);
-    };
-  }, [socket, isConnected]);
-
-  
-  const requestNotifications = useCallback(() => {
-    if (!socket || !isConnected) {
-      
-      fetchNotifications();
-      return;
+    if (socket.connected) {
+      onConnect();
     }
 
-    socket.emit('get_notifications');
-  }, [socket, isConnected, fetchNotifications]);
+    socket.on('connect', onConnect);
+    socket.on('disconnect', onDisconnect);
+    socket.on('notification', onNewNotification);
 
-  
-  const markAsRead = useCallback(
-    async (notificationId: string) => {
-      try {
-        if (socket && isConnected) {
-          
-          socket.emit('mark_notification_read', { notificationId });
-        } else {
-          
-          await notificationsApi.markAsRead(notificationId);
-        }
+    return () => {
+      socket.off('connect', onConnect);
+      socket.off('disconnect', onDisconnect);
+      socket.off('notification', onNewNotification);
+    };
+  }, [user, options.onNewNotification]);
 
-        
-        setNotifications((prev) =>
-          prev.map((n) =>
-            n.id === notificationId ? { ...n, isRead: true, readAt: new Date() } : n
-          )
-        );
-
-        
-        setStats((prev) => {
-          if (!prev) return prev;
-          return {
-            ...prev,
-            unread: Math.max(0, prev.unread - 1),
-          };
-        });
-
-        if (onNotificationRead) {
-          onNotificationRead(notificationId);
-        }
-      } catch (error: unknown) {
-        console.error('[NotificationsSocket] Error marking as read:', error);
-        toast.error('Failed to mark notification as read');
-      }
-    },
-    [socket, isConnected, onNotificationRead]
-  );
-
-  
-  const markAllAsRead = useCallback(async () => {
+  const markAsRead = async (id: string) => {
     try {
-      if (socket && isConnected) {
-        socket.emit('mark_all_notifications_read');
-      } else {
-        await notificationsApi.markAllAsRead();
-      }
-
+      await notificationsApi.markAsRead(id);
       
-      setNotifications((prev) =>
-        prev.map((n) => ({ ...n, isRead: true, readAt: new Date() }))
+      // Optimistic Update
+      setNotifications(prev => 
+        prev.map(n => n.id === id ? { ...n, isRead: true } : n)
       );
-
       
-      setStats((prev) => {
-        if (!prev) return prev;
+      setStats(prev => {
+        if (!prev) return null;
         return {
           ...prev,
-          unread: 0,
+          unread: Math.max(0, prev.unread - 1)
         };
       });
-
-      toast.success('All notifications marked as read');
-    } catch (error: unknown) {
-      console.error('[NotificationsSocket] Error marking all as read:', error);
-      toast.error('Failed to mark all as read');
+    } catch (error) {
+      console.error('Failed to mark as read:', error);
+      throw error;
     }
-  }, [socket, isConnected]);
+  };
 
-  
-  const deleteNotification = useCallback(
-    async (notificationId: string) => {
-      try {
-        await notificationsApi.deleteNotification(notificationId);
+  const markAllAsRead = async () => {
+    try {
+      await notificationsApi.markAllAsRead();
+      
+      // Optimistic Update
+      setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
+      setStats(prev => {
+        if (!prev) return null;
+        return { ...prev, unread: 0 };
+      });
+    } catch (error) {
+      console.error('Failed to mark all as read:', error);
+      throw error;
+    }
+  };
 
-        
-        const deleted = notifications.find((n) => n.id === notificationId);
-        setNotifications((prev) => prev.filter((n) => n.id !== notificationId));
-
-        
-        if (deleted) {
-          setStats((prev) => {
-            if (!prev) return prev;
-            return {
-              ...prev,
-              total: Math.max(0, prev.total - 1),
-              unread: deleted.isRead ? prev.unread : Math.max(0, prev.unread - 1),
-              byType: {
-                ...prev.byType,
-                [deleted.type]: Math.max(0, (prev.byType[deleted.type] || 0) - 1),
-              },
-            };
-          });
-        }
-      } catch (error: unknown) {
-        console.error('[NotificationsSocket] Error deleting notification:', error);
-        toast.error('Failed to delete notification');
+  const deleteNotification = async (id: string) => {
+    try {
+      await notificationsApi.deleteNotification(id);
+      
+      // Optimistic Update
+      const notifToDelete = notifications.find(n => n.id === id);
+      setNotifications(prev => prev.filter(n => n.id !== id));
+      
+      if (notifToDelete) {
+        setStats(prev => {
+          if (!prev) return null;
+          const newStats = { ...prev };
+          newStats.total = Math.max(0, newStats.total - 1);
+          if (!notifToDelete.isRead) {
+            newStats.unread = Math.max(0, newStats.unread - 1);
+          }
+           if (newStats.byType[notifToDelete.type] !== undefined) {
+            newStats.byType[notifToDelete.type] = Math.max(0, newStats.byType[notifToDelete.type] - 1);
+          }
+          return newStats;
+        });
       }
-    },
-    [notifications]
-  );
+    } catch (error) {
+      console.error('Failed to delete notification:', error);
+      throw error;
+    }
+  };
 
   return {
     notifications,
     stats,
     loading,
-    notificationCount,
     isConnected,
     fetchNotifications,
-    requestNotifications,
     markAsRead,
     markAllAsRead,
-    deleteNotification,
+    deleteNotification
   };
-}
-
+};

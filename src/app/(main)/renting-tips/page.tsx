@@ -1,63 +1,73 @@
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { CheckSquare, FileSignature, Key, Search, Truck } from "lucide-react";
+import { CheckSquare, FileSignature, Search, ShieldAlert, Truck, Zap } from "lucide-react";
 import Link from "next/link";
 
 export const metadata = {
   title: "Renting Tips | HomeConnect",
-  description: "Essential advice for tenants looking to rent in Dhaka.",
+  description: "Essential insights for securing a premium rental property with confidence.",
 };
 
 const tips = [
   {
-    title: "1. The Search",
+    title: "1. Advanced Market Research",
     icon: Search,
-    content: "Start looking at least 1 month before your move. Check listing photos carefully and always request a physical tour. Verify if utility bills (Gas/Water/Electricity) are included in the rent or separate."
+    content: "The best rentals move fast. Start your search 30-45 days before your target move date. Use HomeConnect's filters to analyze price trends in specific zones. Always prioritize listings with 'Verified' badges to avoid ghost listings and bait-and-switch tactics."
   },
   {
-    title: "2. The Agreement",
-    icon: FileSignature,
-    content: "Never rent without a written agreement. It should clearly state: Rent amount, Advance/Security Deposit (usually 1-2 months), notice period for leaving, and who pays for major repairs."
-  },
-  {
-    title: "3. Inspection",
+    id: "tip-2",
+    title: "2. Comprehensive Inspection",
     icon: CheckSquare,
-    content: "Before moving in, inspect the property with the landlord. Take photos of any existing damage (cracks, broken fittings) and share them via email/WhatsApp as proof to avoid deductions from your security deposit later."
+    content: "Conduct a 'Move-in Audit'. Check all electrical outlets, plumbing pressure, and appliance conditions. Document every minor scratch or paint chip with timestamps and photos. Sharing this document with the landlord at the start of your lease is your best defense against unfair security deposit deductions."
   },
   {
-    title: "4. Moving In",
+    id: "tip-3",
+    title: "3. Decoding the Lease Agreement",
+    icon: FileSignature,
+    content: "A professional lease is your legal shield. Ensure it clearly outlines: the exact security deposit amount, notice periods (HomeConnect recommends 60 days), utility responsibilities (DESCO/WASA/TITAS), and maintenance protocols for structural vs. cosmetic repairs."
+  },
+  {
+    id: "tip-4",
+    title: "4. Protecting Your Rights",
+    icon: ShieldAlert,
+    content: "Know the local laws. In Bangladesh, landlords must provide a rent receipt and cannot increase rent without mutual consent within the lease term. If you encounter issues, HomeConnect provides templates for professional communication with property management."
+  },
+  {
+    id: "tip-5",
+    title: "5. Seamless Transition & Move",
     icon: Truck,
-    content: "Notify your current landlord 1 month in advance. Arrange a moving truck early, especially if moving at the end of the month when demand is high. Check if the building has specific moving hours."
+    content: "Coordinate your move-in date with the building's management office (Society). Check for elevator usage fees or truck entry restrictions. Ensure all utility meters are read and cleared by the previous tenant to avoid inheriting their unpaid bills."
   },
   {
-    title: "5. Tenant Rights",
-    icon: Key,
-    content: "Landlords cannot evict you without proper notice or increase rent arbitrarily in the middle of a contract. You have the right to a receipt for every rent payment made."
+    id: "tip-6",
+    title: "6. Building a Renter Profile",
+    icon: Zap,
+    content: "Stand out to high-quality landlords by maintaining a complete HomeConnect profile. Professional references and verified income details accelerate the approval process and may even give you leverage for better rental terms."
   }
 ];
 
 export default function RentingTipsPage() {
   return (
-    <main className="min-h-screen bg-background pb-20">
+    <main className="min-h-screen bg-slate-50 pb-20">
       <PageHeader
-        title="Renting Smart"
-        description="Navigate the rental market with confidence. Tips for a hassle-free tenancy."
-        badge="Tenant Guide"
+        title="Elevate Your Renting Experience"
+        description="From discovery to move-in, our expert tips ensure you secure the perfect home while protecting your rights as a tenant."
+        badge="Tenant Intelligence"
       />
 
-      <div className="container mx-auto px-4 -mt-8 relative z-10">
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 max-w-7xl mx-auto">
+      <div className="container mx-auto px-4 -mt-12 relative z-10">
+        <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 max-w-7xl mx-auto">
           {tips.map((tip, idx) => {
             const Icon = tip.icon;
             return (
-              <Card key={idx} className="shadow-lg hover:shadow-xl transition-all border-t-4 border-t-primary/50">
-                <CardContent className="p-6">
-                  <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center text-primary mb-4">
-                    <Icon className="w-6 h-6" />
+              <Card key={idx} className="border-0 shadow-lg shadow-blue-500/5 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 rounded-[2rem] bg-white group overflow-hidden">
+                <CardContent className="p-10">
+                  <div className="h-14 w-14 rounded-2xl bg-blue-50 flex items-center justify-center text-blue-600 mb-6 group-hover:bg-blue-600 group-hover:text-white transition-colors duration-300">
+                    <Icon className="w-7 h-7" />
                   </div>
-                  <h3 className="text-xl font-bold mb-3">{tip.title}</h3>
-                  <p className="text-muted-foreground text-sm leading-relaxed">
+                  <h3 className="text-2xl font-black text-slate-900 mb-4 tracking-tight">{tip.title}</h3>
+                  <p className="text-slate-500 text-sm leading-relaxed">
                     {tip.content}
                   </p>
                 </CardContent>
@@ -66,13 +76,20 @@ export default function RentingTipsPage() {
           })}
         </div>
 
-        <div className="mt-16 text-center bg-muted/30 p-10 rounded-3xl">
-          <h3 className="text-2xl font-bold mb-4">Looking for a rental?</h3>
-          <p className="text-muted-foreground mb-8">We have verified listings tailored for students and families.</p>
-          <div className="flex justify-center gap-4">
-            <Badge className="px-6 py-2 text-base cursor-pointer bg-blue-600 hover:bg-blue-700">
-              <Link href="/properties?type=rent">Find Rentals</Link>
-            </Badge>
+        <div className="mt-20 text-center bg-white border border-slate-100 p-12 md:p-16 rounded-[3rem] shadow-xl shadow-slate-200/50 max-w-5xl mx-auto relative overflow-hidden">
+          <div className="absolute -top-10 -right-10 w-40 h-40 bg-indigo-50 rounded-full blur-3xl opacity-50" />
+          <div className="relative z-10">
+            <h3 className="text-3xl font-black text-slate-900 mb-6">Ready for Hassle-Free Renting?</h3>
+            <p className="text-slate-500 text-lg mb-10 max-w-2xl mx-auto leading-relaxed">
+              Explore our curated selection of verified rental properties across the most sought-after neighborhoods.
+            </p>
+            <div className="flex flex-wrap justify-center gap-6">
+              <Link href="/properties?type=rent">
+                <Badge className="px-10 py-4 text-lg font-bold bg-blue-600 hover:bg-blue-700 text-white rounded-2xl border-0 shadow-xl shadow-blue-900/40 transition-all cursor-pointer">
+                  Find Your Next Home
+                </Badge>
+              </Link>
+            </div>
           </div>
         </div>
       </div>

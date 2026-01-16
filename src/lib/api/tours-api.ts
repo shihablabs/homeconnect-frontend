@@ -42,8 +42,8 @@ export const toursApi = {
   },
 
   
-  getMyTours: async (): Promise<TourRequest[]> => {
-    const response = await api.get('/tours/my');
+  getMyTours: async (params?: { status?: string; search?: string }): Promise<TourRequest[]> => {
+    const response = await api.get('/tours/my', { params });
     return response.data.data;
   },
 

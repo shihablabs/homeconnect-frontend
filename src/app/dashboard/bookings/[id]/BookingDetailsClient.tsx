@@ -16,7 +16,8 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useAuthState } from '@/hooks/useAuthState';
 import { bookingsApi, type Booking } from '@/lib/api/bookings-api';
-import { ArrowLeft, Calendar, CheckCircle2, Clock, CreditCard, Home, MapPin, User, XCircle } from 'lucide-react';
+import { convertBDTtoUSD, formatBDT, formatUSD } from '@/lib/utils/currencyHelper';
+import { AlertCircle, ArrowLeft, Calendar, CheckCircle2, Clock, CreditCard, Home, MapPin, User, XCircle } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -54,7 +55,7 @@ export function BookingDetailsClient({ bookingId }: BookingDetailsClientProps) {
 
   useEffect(() => {
     fetchBooking();
-    
+
   }, [bookingId]);
 
   const handlePay = async () => {
@@ -181,7 +182,7 @@ export function BookingDetailsClient({ bookingId }: BookingDetailsClientProps) {
       </div>
 
       <div className="grid gap-6 md:grid-cols-3">
-        {}
+        { }
         <div className="md:col-span-2 space-y-6">
           <Card>
             <CardHeader>
@@ -198,7 +199,7 @@ export function BookingDetailsClient({ bookingId }: BookingDetailsClientProps) {
                     className="rounded-lg object-cover"
                   />
                 ) : (
-                  <div className="h-30 w-30 rounded-lg bg-muted flex items-center justify-center">
+                  <div className="h-[120px] w-[120px] rounded-lg bg-muted flex items-center justify-center">
                     <Home className="h-12 w-12 text-muted-foreground" />
                   </div>
                 )}
@@ -254,7 +255,7 @@ export function BookingDetailsClient({ bookingId }: BookingDetailsClientProps) {
           )}
         </div>
 
-        {}
+        { }
         <div className="space-y-6">
           <Card>
             <CardHeader>
@@ -275,7 +276,7 @@ export function BookingDetailsClient({ bookingId }: BookingDetailsClientProps) {
               </div>
               <div>
                 <Label className="text-muted-foreground">Total Amount</Label>
-                <p className="text-2xl font-bold mt-1">৳{booking.totalAmount.toLocaleString()}</p>
+                <p className="text-2xl font-bold mt-1">{formatBDT(booking.totalAmount)}</p>
               </div>
             </CardContent>
           </Card>
@@ -312,10 +313,27 @@ export function BookingDetailsClient({ bookingId }: BookingDetailsClientProps) {
             </CardHeader>
             <CardContent className="space-y-2">
               {canPay && (
-                <Button onClick={handlePay} className="w-full">
-                  <CreditCard className="mr-2 h-4 w-4" />
-                  Pay Now
-                </Button>
+                <div className="space-y-3">
+                  <div className="bg-primary/5 border border-primary/20 rounded-lg p-3 flex gap-2 items-start">
+                    <AlertCircle className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+                    <div className="text-[11px] text-muted-foreground">
+                      <p className="font-semibold text-primary/80">Payment Disclaimer</p>
+                      <p>Rent & Deposit: <span className="font-bold">{formatBDT(booking.totalAmount + (booking.securityDeposit || 0))}</span></p>
+                      <p>Service Fee (5%): <span className="font-bold">{formatBDT(booking.totalAmount * 0.05)}</span></p>
+                      <p className="text-sm border-t border-primary/10 mt-1 pt-1 text-foreground font-semibold">
+                        Total BDT: <span>{formatBDT((booking.totalAmount * 1.05) + (booking.securityDeposit || 0))}</span>
+                      </p>
+                      <p className="text-foreground font-semibold">
+                        Equivalent USD: <span>{formatUSD(convertBDTtoUSD((booking.totalAmount * 1.05) + (booking.securityDeposit || 0)))}</span>
+                      </p>
+                      <p className="mt-1 italic">* You will be charged in USD based on the fixed rate (1 USD = 120 BDT).</p>
+                    </div>
+                  </div>
+                  <Button onClick={handlePay} className="w-full">
+                    <CreditCard className="mr-2 h-4 w-4" />
+                    Pay Now
+                  </Button>
+                </div>
               )}
               {canCancel && (
                 <Dialog open={isCancelDialogOpen} onOpenChange={setIsCancelDialogOpen}>

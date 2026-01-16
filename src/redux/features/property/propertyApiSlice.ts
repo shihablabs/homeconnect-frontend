@@ -1,11 +1,11 @@
 
 import { apiSlice } from '@/redux/api/apiSlice';
 import {
-  CreatePropertyData,
-  PropertyFilters,
-  PropertyResponse,
-  PropertySearchResult,
-  UpdatePropertyData,
+    CreatePropertyData,
+    PropertyFilters,
+    PropertyResponse,
+    PropertySearchResult,
+    UpdatePropertyData,
 } from '@/types/property.types';
 
 export interface AvailableFiltersResponse {
@@ -61,6 +61,7 @@ interface CreatePropertyArgs {
 interface UpdatePropertyArgs {
   id: string;
   data: UpdatePropertyData;
+  images?: File[];
 }
 
 const transformListResponse = (
@@ -223,11 +224,35 @@ export const propertyApiSlice = apiSlice.injectEndpoints({
     }),
 
     updateProperty: builder.mutation<PropertyResponse, UpdatePropertyArgs>({
-      query: ({ id, data }) => ({
-        url: `/properties/${id}`,
-        method: 'PATCH',
-        body: data,
-      }),
+      query: ({ id, data, images }) => {
+        const formData = new FormData();
+        
+        // Append all data fields
+        (Object.entries(data) as [string, any][]).forEach(([key, value]) => {
+          if (value !== undefined && value !== null) {
+            if (value instanceof Date) {
+              formData.append(key, value.toISOString());
+            } else if (Array.isArray(value) || typeof value === 'object') {
+              formData.append(key, JSON.stringify(value));
+            } else {
+              formData.append(key, value.toString());
+            }
+          }
+        });
+
+        // Append new images
+        if (images && images.length > 0) {
+          images.forEach((image) => {
+            formData.append('images', image);
+          });
+        }
+
+        return {
+          url: `/properties/${id}`,
+          method: 'PATCH',
+          body: formData,
+        };
+      },
       transformResponse(
         response: ApiSingleResponse<PropertyResponse>
       ): PropertyResponse {
