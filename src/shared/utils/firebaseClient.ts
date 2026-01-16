@@ -1,5 +1,5 @@
 import { getApp, getApps, initializeApp } from "firebase/app";
-import { getAuth } from "firebase/auth";
+import { getAuth, GoogleAuthProvider } from "firebase/auth";
 import { getMessaging, isSupported, Messaging } from "firebase/messaging";
 
 const firebaseConfig = {
@@ -15,6 +15,7 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 const auth = getAuth(app);
+const googleProvider = new GoogleAuthProvider();
 
 let messaging: Messaging | null = null;
 
@@ -26,4 +27,5 @@ export const initializeMessaging = async (): Promise<Messaging | null> => {
   return null;
 };
 
-export { app, auth, messaging };
+export { app, auth, googleProvider, messaging };
+

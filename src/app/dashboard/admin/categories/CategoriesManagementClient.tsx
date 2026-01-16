@@ -3,7 +3,6 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import {
   Dialog,
   DialogContent,
@@ -25,6 +24,7 @@ import {
 } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { propertiesApi } from '@/lib/api/properties-api';
+import { confirmDelete, showError } from "@/lib/swal";
 import { useQuery } from '@tanstack/react-query';
 import { Building, Edit, Loader2, Plus, RefreshCw, Tag, Trash2 } from 'lucide-react';
 import { useState } from 'react';
@@ -65,7 +65,7 @@ export function CategoriesManagementClient() {
       const response = await propertiesApi.getAvailableFilters();
       return response;
     },
-    staleTime: 300000, 
+    staleTime: 300000,
     refetchOnWindowFocus: false,
     retry: (failureCount, error: unknown) => {
       if (error && typeof error === 'object' && 'response' in error) {
@@ -76,12 +76,12 @@ export function CategoriesManagementClient() {
     },
   });
 
-  
+
   const propertyTypes: Category[] = (filtersData?.propertyTypes || []).map((type, index) => ({
     id: `type-${index}`,
     name: type,
     slug: type.toLowerCase().replace(/\s+/g, '-'),
-    propertyCount: undefined, 
+    propertyCount: undefined,
     createdAt: new Date().toISOString(),
   }));
 
@@ -110,10 +110,10 @@ export function CategoriesManagementClient() {
 
     try {
       if (isEditMode && selectedCategory) {
-        
+
         toast.info('Category update feature coming soon');
       } else {
-        
+
         toast.info('Category creation feature coming soon');
       }
       setIsDialogOpen(false);
@@ -124,24 +124,25 @@ export function CategoriesManagementClient() {
     }
   };
 
-  const handleDeleteClick = (categoryId: string, categoryName: string) => {
-    setDeleteConfirm({
-      open: true,
-      categoryId,
-      categoryName,
-    });
+  const handleDeleteClick = async (categoryId: string, categoryName: string) => {
+    const result = await confirmDelete(
+      "Delete Category?",
+      `Are you sure you want to delete "${categoryName}"? This action cannot be undone.`
+    );
+
+    if (result) {
+      try {
+        // Category deletion feature coming soon
+        toast.info('Category deletion feature coming soon');
+        refetch();
+      } catch {
+        showError('Error!', 'Failed to delete category');
+      }
+    }
   };
 
   const handleDeleteConfirm = async () => {
-    if (!deleteConfirm.categoryId) return;
-
-    try {
-      
-      toast.info('Category deletion feature coming soon');
-      refetch();
-    } catch {
-      toast.error('Failed to delete category');
-    }
+    // No longer needed
   };
 
   if (loading && !filtersData) {
@@ -372,22 +373,6 @@ export function CategoriesManagementClient() {
         </Tabs>
       </div>
 
-      {}
-      <ConfirmDialog
-        open={deleteConfirm.open}
-        onOpenChange={(open) => setDeleteConfirm({ ...deleteConfirm, open })}
-        title="Delete Category"
-        description={
-          deleteConfirm.categoryName
-            ? `Are you sure you want to delete "${deleteConfirm.categoryName}"? This action cannot be undone.`
-            : 'Are you sure you want to delete this category? This action cannot be undone.'
-        }
-        confirmText="Delete"
-        cancelText="Cancel"
-        variant="destructive"
-        onConfirm={handleDeleteConfirm}
-      />
     </div>
   );
 }
-

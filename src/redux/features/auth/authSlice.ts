@@ -1,4 +1,7 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { auth } from "@/lib/firebase.config";
+import { authService } from "@/services/authService";
+import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { signOut } from "firebase/auth";
 
 export interface AuthUser {
   id: string;
@@ -6,11 +9,11 @@ export interface AuthUser {
   email: string;
   role: 'tenant' | 'landlord' | 'admin' | 'support';
   avatar?: string;
-  phone?: string;
+  phoneNumber?: string;
   gender?: 'male' | 'female' | 'other';
   isPhoneVerified?: boolean;
   isEmailVerified?: boolean;
-  isVerified?: boolean;
+  isActive?: boolean;
   bio?: string;
   title?: string;
   yearsOfExperience?: number;
@@ -35,53 +38,94 @@ interface AuthState {
   token: string | null;
   isAuthenticated: boolean;
   isInitialized: boolean;
+  isLoading: boolean;
+  status: 'idle' | 'loading' | 'authenticated';
+  error: string | null;
 }
-
-const getInitialState = (): AuthState => {
-  if (typeof window === "undefined") {
-    return { user: null, token: null, isAuthenticated: false, isInitialized: false };
-  }
-
-  try {
-    const token = localStorage.getItem("token");
-    const userJson = localStorage.getItem("user");
-
-    if (token && userJson) {
-      const user: AuthUser = JSON.parse(userJson);
-      return {
-        user: user,
-        token: token,
-        isAuthenticated: true,
-        isInitialized: true,
-      };
-    }
-  } catch (error) {
-    console.error("Failed to parse auth state from localStorage:", error);
-  }
-
-  return { user: null, token: null, isAuthenticated: false, isInitialized: true };
-};
 
 const initialState: AuthState = {
   user: null,
   token: null,
   isAuthenticated: false,
   isInitialized: false,
+  isLoading: true, // Start loading until Firebase confirms state
+  status: 'loading',
+  error: null,
 };
+
+export const logoutUser = createAsyncThunk(
+  'auth/logout',
+  async (_, { dispatch }) => {
+    // 1. Backend Logout (Clear HttpOnly Cookie)
+    try {
+      await authService.logout();
+    } catch (error) {
+      // Ignore network errors
+    }
+
+    // 2. Firebase Logout
+    try {
+      if (auth?.currentUser) {
+        await signOut(auth);
+      }
+    } catch (error) {
+      // Ignore firebase errors
+    }
+
+    // 3. Clear Client Storage
+    if (typeof window !== "undefined") {
+      // Clear all local storage
+      localStorage.clear();
+
+      // Clear all session storage
+      sessionStorage.clear();
+
+      // Clear all visible cookies (non-HttpOnly)
+      document.cookie.split(";").forEach((c) => {
+        document.cookie = c
+          .replace(/^ +/, "")
+          .replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+      });
+    }
+
+    // 4. Reset Redux API State (Clear RTK Query Cache)
+    // We can dispatch this if we import apiSlice, but let's stick to auth reset here
+    // The extraReducer will handle auth state reset.
+
+    // 5. Hard Redirect to Login
+    if (typeof window !== "undefined") {
+      window.location.href = '/login';
+    }
+
+    return;
+  }
+);
 
 const authSlice = createSlice({
   name: "auth",
   initialState,
   reducers: {
-    setCredentials: (
-      state,
-      action: PayloadAction<{ user: AuthUser; token: string }>
-    ) => {
+    setUser: (state, action: PayloadAction<AuthUser | null>) => {
+      state.user = action.payload;
+      state.isAuthenticated = !!action.payload;
+      state.status = action.payload ? 'authenticated' : 'idle';
+      state.isLoading = false;
+      state.isInitialized = true;
+      state.error = null;
+    },
+    setToken: (state, action: PayloadAction<string | null>) => {
+      state.token = action.payload;
+      if (typeof window !== "undefined" && action.payload) {
+        localStorage.setItem("token", action.payload);
+      }
+    },
+    setCredentials: (state, action: PayloadAction<{ user: AuthUser; token: string }>) => {
       const { user, token } = action.payload;
       state.user = user;
       state.token = token;
       state.isAuthenticated = true;
-
+      state.status = 'authenticated';
+      state.isInitialized = true;
       if (typeof window !== "undefined") {
         localStorage.setItem("token", token);
         localStorage.setItem("user", JSON.stringify(user));
@@ -91,18 +135,21 @@ const authSlice = createSlice({
       state.user = null;
       state.token = null;
       state.isAuthenticated = false;
-
+      state.status = 'idle';
+      state.isLoading = false;
       if (typeof window !== "undefined") {
-        localStorage.removeItem("token");
-        localStorage.removeItem("user");
+        localStorage.clear();
+        sessionStorage.clear();
+        document.cookie.split(";").forEach((c) => {
+          document.cookie = c
+            .replace(/^ +/, "")
+            .replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+        });
       }
     },
-    hydrateAuth: (state) => {
-      const hydratedState = getInitialState();
-      state.user = hydratedState.user;
-      state.token = hydratedState.token;
-      state.isAuthenticated = hydratedState.isAuthenticated;
-      state.isInitialized = true;
+    setLoading: (state, action: PayloadAction<boolean>) => {
+      state.isLoading = action.payload;
+      state.status = action.payload ? 'loading' : state.isAuthenticated ? 'authenticated' : 'idle';
     },
     updateUserProfile: (state, action: PayloadAction<Partial<AuthUser>>) => {
       if (state.user) {
@@ -112,17 +159,37 @@ const authSlice = createSlice({
         }
       }
     },
+    setError: (state, action: PayloadAction<string | null>) => {
+      state.error = action.payload;
+      state.isLoading = false;
+    },
   },
+  extraReducers: (builder) => {
+    builder.addCase(logoutUser.fulfilled, (state) => {
+      state.user = null;
+      state.token = null;
+      state.isAuthenticated = false;
+      state.status = 'idle';
+      state.isLoading = false;
+      state.isInitialized = true;
+    });
+  }
 });
 
-export const { setCredentials, logout, hydrateAuth, updateUserProfile } =
-  authSlice.actions;
+export const {
+  setUser,
+  setToken,
+  setCredentials,
+  logout,
+  updateUserProfile,
+  setLoading,
+  setError,
+} = authSlice.actions;
 
 export default authSlice.reducer;
 
-export const selectCurrentUser = (state: { auth: AuthState }) =>
-  state.auth.user;
-export const selectIsAuthenticated = (state: { auth: AuthState }) =>
-  state.auth.isAuthenticated;
-export const selectIsInitialized = (state: { auth: AuthState }) =>
-  state.auth.isInitialized;
+export const selectCurrentUser = (state: { auth: AuthState }) => state.auth.user;
+export const selectIsAuthenticated = (state: { auth: AuthState }) => state.auth.isAuthenticated;
+export const selectIsInitialized = (state: { auth: AuthState }) => state.auth.isInitialized;
+export const selectAuthLoading = (state: { auth: AuthState }) => state.auth.isLoading;
+export const selectAuthStatus = (state: { auth: AuthState }) => state.auth.status;

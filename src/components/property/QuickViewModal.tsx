@@ -60,7 +60,7 @@ export function QuickViewModal({ property, isOpen, onClose }: QuickViewModalProp
     if (isRentalResponse(property) && property.pricePerMonth) {
       return `৳ ${property.pricePerMonth.toLocaleString()} /mo`;
     }
-    
+
     if ('totalPrice' in property && property.totalPrice) {
       return `৳ ${property.totalPrice.toLocaleString()} (Total)`;
     }
@@ -70,9 +70,9 @@ export function QuickViewModal({ property, isOpen, onClose }: QuickViewModalProp
   return (
     <>
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="max-w-[95vw] w-full sm:max-w-[80rem] p-0 border-none rounded-3xl overflow-hidden shadow-2xl">
-          <div className="w-full grid grid-cols-1 md:grid-cols-2">
-            {}
+        <DialogContent className="max-w-[95vw] w-full max-w-4xl p-0 border-none rounded-3xl overflow-hidden shadow-2xl">
+          <div className="w-full grid grid-cols-1 md:grid-cols-[1.1fr_1fr]">
+            { }
             <div className="relative aspect-[4/3] md:aspect-auto h-full min-h-[300px] bg-gray-100 group">
               {property.images && property.images.length > 0 ? (
                 <div className="h-full w-full cursor-zoom-in" ref={emblaRef} onClick={() => setLightboxOpen(true)}>
@@ -85,7 +85,7 @@ export function QuickViewModal({ property, isOpen, onClose }: QuickViewModalProp
                           fill
                           className="object-cover"
                           onError={() => {
-                            
+
                           }}
                         />
                       </div>
@@ -104,7 +104,7 @@ export function QuickViewModal({ property, isOpen, onClose }: QuickViewModalProp
                 </div>
               )}
 
-              {}
+              { }
               {property.images && property.images.length > 1 && (
                 <>
                   <Button
@@ -124,7 +124,7 @@ export function QuickViewModal({ property, isOpen, onClose }: QuickViewModalProp
                     <ChevronRight className="h-6 w-6" />
                   </Button>
 
-                  {}
+                  { }
                   <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-10">
                     {property.images.map((_, index) => (
                       <div
@@ -143,7 +143,7 @@ export function QuickViewModal({ property, isOpen, onClose }: QuickViewModalProp
               </div>
             </div>
 
-            {}
+            { }
             <div className="p-8 space-y-6 flex flex-col justify-center">
               <DialogHeader className="space-y-3">
                 <div className="flex items-center gap-1.5 text-xs font-bold text-primary uppercase tracking-widest">

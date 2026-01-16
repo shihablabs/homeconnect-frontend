@@ -69,7 +69,6 @@ export function PropertySidebar({
 
       if (!user.isPhoneVerified) {
         toast.error("Please verify your phone number to proceed.");
-        router.push('/verify-phone');
         return;
       }
 

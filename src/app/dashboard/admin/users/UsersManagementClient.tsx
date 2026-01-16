@@ -30,6 +30,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { useAdminUsers } from '@/hooks/useAdminUsers';
+import { confirmDelete, showError, showSuccess } from "@/lib/swal";
 import { selectCurrentUser } from '@/redux/features/auth/authSlice';
 import { useAppSelector } from '@/redux/hooks';
 import { Eye, Loader2, RefreshCw, Search, Shield, ShieldOff, Trash2, Users } from 'lucide-react';
@@ -62,7 +63,7 @@ export function UsersManagementClient() {
     name: '',
     email: '',
     password: '',
-    phone: '',
+    phoneNumber: '',
     role: 'support' as 'support' | 'admin',
   });
 
@@ -117,27 +118,24 @@ export function UsersManagementClient() {
     }
   };
 
-  const handleDeleteClick = (userId: string, userName: string, userEmail: string) => {
-    setConfirmDialog({
-      open: true,
-      type: 'delete',
-      userId,
-      userName,
-      userEmail,
-    });
+  const handleDeleteClick = async (userId: string, userName: string, userEmail: string) => {
+    const result = await confirmDelete(
+      "Delete User?",
+      `Are you sure you want to delete ${userName} (${userEmail})? This action will soft-delete the user account. The user will not be able to access their account, but their data will be preserved.`
+    );
+
+    if (result) {
+      try {
+        await deleteUserAsync({ userId, reason: 'Deleted by admin' });
+        showSuccess('Deleted!', 'User deleted successfully.');
+      } catch (error: any) {
+        showError('Error!', error.response?.data?.message || 'Failed to delete user.');
+      }
+    }
   };
 
   const handleDeleteConfirm = async () => {
-    if (!confirmDialog.userId) return;
-    try {
-      await deleteUserAsync({ userId: confirmDialog.userId, reason: 'Deleted by admin' });
-      toast.success('User deleted successfully');
-    } catch (error: unknown) {
-      const errorMessage = error && typeof error === 'object' && 'response' in error
-        ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
-        : undefined;
-      toast.error(errorMessage || 'Failed to delete user');
-    }
+    // This is no longer needed but kept empty to avoid breaking other logic if any
   };
 
   const handleCreateStaff = async () => {
@@ -152,7 +150,7 @@ export function UsersManagementClient() {
         email: createStaffDialog.email,
         password: createStaffDialog.password,
         role: createStaffDialog.role,
-        phone: createStaffDialog.phone,
+        phoneNumber: createStaffDialog.phoneNumber,
       });
 
       toast.success(`${createStaffDialog.role === 'admin' ? 'Admin' : 'Support'} account created successfully`);
@@ -161,7 +159,7 @@ export function UsersManagementClient() {
         name: '',
         email: '',
         password: '',
-        phone: '',
+        phoneNumber: '',
         role: 'support',
       });
     } catch (error: unknown) {
@@ -254,7 +252,7 @@ export function UsersManagementClient() {
           )}
         </div>
 
-        {}
+        { }
         <Card>
           <CardHeader>
             <CardTitle>Filters & Search</CardTitle>
@@ -269,7 +267,7 @@ export function UsersManagementClient() {
                     value={searchQuery}
                     onChange={(e) => {
                       setSearchQuery(e.target.value);
-                      setPage(1); 
+                      setPage(1);
                     }}
                     className="pl-10"
                   />
@@ -318,7 +316,7 @@ export function UsersManagementClient() {
           </CardContent>
         </Card>
 
-        {}
+        { }
         <Card>
           <CardHeader>
             <CardTitle>Users</CardTitle>
@@ -410,7 +408,7 @@ export function UsersManagementClient() {
                                   View
                                 </Button>
                               </Link>
-                              {}
+                              { }
                               {((isAdmin) || (isSupport && user.role !== 'admin' && user.role !== 'support')) && (
                                 <Button
                                   variant="outline"
@@ -431,7 +429,7 @@ export function UsersManagementClient() {
                                   )}
                                 </Button>
                               )}
-                              {}
+                              { }
                               {isAdmin && user.role !== 'admin' && user.role !== 'support' && (
                                 <Button
                                   variant="outline"
@@ -450,7 +448,7 @@ export function UsersManagementClient() {
                     </TableBody>
                   </Table>
                 </div>
-                {}
+                { }
                 {pagination.totalPages > 1 && (
                   <div className="flex items-center justify-between mt-4">
                     <div className="text-sm text-muted-foreground">
@@ -482,7 +480,7 @@ export function UsersManagementClient() {
         </Card>
       </div>
 
-      {}
+      { }
       <ConfirmDialog
         open={confirmDialog.open && confirmDialog.type === 'status'}
         onOpenChange={(open) => setConfirmDialog({ ...confirmDialog, open })}
@@ -499,24 +497,8 @@ export function UsersManagementClient() {
         isLoading={isUpdatingStatus}
       />
 
-      {}
-      <ConfirmDialog
-        open={confirmDialog.open && confirmDialog.type === 'delete'}
-        onOpenChange={(open) => setConfirmDialog({ ...confirmDialog, open })}
-        title="Delete User"
-        description={
-          confirmDialog.userName && confirmDialog.userEmail
-            ? `Are you sure you want to delete ${confirmDialog.userName} (${confirmDialog.userEmail})? This action will soft-delete the user account. The user will not be able to access their account, but their data will be preserved. You can restore the user later if needed.`
-            : 'Are you sure you want to delete this user? This action cannot be undone.'
-        }
-        confirmText="Delete User"
-        cancelText="Cancel"
-        variant="destructive"
-        onConfirm={handleDeleteConfirm}
-        isLoading={isDeleting}
-      />
 
-      {}
+      { }
       <Dialog
         open={createStaffDialog.open}
         onOpenChange={(open) => setCreateStaffDialog({ ...createStaffDialog, open })}
@@ -568,13 +550,13 @@ export function UsersManagementClient() {
               />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="phone" className="text-right">
+              <Label htmlFor="phoneNumber" className="text-right">
                 Phone
               </Label>
               <Input
-                id="phone"
-                value={createStaffDialog.phone}
-                onChange={(e) => setCreateStaffDialog({ ...createStaffDialog, phone: e.target.value })}
+                id="phoneNumber"
+                value={createStaffDialog.phoneNumber}
+                onChange={(e) => setCreateStaffDialog({ ...createStaffDialog, phoneNumber: e.target.value })}
                 className="col-span-3"
                 placeholder="+1234567890"
               />

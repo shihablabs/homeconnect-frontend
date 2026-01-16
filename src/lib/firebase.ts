@@ -1,5 +1,11 @@
 import { getApp, getApps, initializeApp } from "firebase/app";
-import { getAuth } from "firebase/auth";
+import {
+  getAuth,
+  GoogleAuthProvider,
+  PhoneAuthProvider,
+  RecaptchaVerifier,
+  signInWithPhoneNumber
+} from "firebase/auth";
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -18,7 +24,7 @@ const initFirebase = () => {
     if (typeof window !== 'undefined') {
       console.warn("Firebase API Key is missing. Phone verification will be disabled. Check .env to enable.");
     }
-    
+
     return { app: null, auth: null };
   }
 
@@ -28,6 +34,14 @@ const initFirebase = () => {
 }
 
 const { app, auth } = initFirebase();
+const googleProvider = new GoogleAuthProvider();
 
-export { app, auth };
+export {
+  app,
+  auth,
+  googleProvider,
+  PhoneAuthProvider,
+  RecaptchaVerifier,
+  signInWithPhoneNumber
+};
 

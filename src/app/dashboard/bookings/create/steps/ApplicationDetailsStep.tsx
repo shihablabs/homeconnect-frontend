@@ -3,6 +3,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { confirmDelete } from '@/lib/swal';
 import type { PropertyResponse } from '@/types/property.types';
 import { Check, Loader2, Upload, X } from 'lucide-react';
 import Image from 'next/image';
@@ -63,25 +64,25 @@ export function ApplicationDetailsStep({
 
       {currentStep === 2 && (
         <CardContent className="p-6 space-y-8">
-          
+
           {selectedProperty && (
             <div className="bg-muted/30 p-4 rounded-xl border flex gap-4 items-center">
-               <div className="h-16 w-20 relative rounded-lg overflow-hidden shrink-0 bg-gray-100">
-                  {selectedProperty.images?.[0] ? (
-                    <Image src={selectedProperty.images[0]} alt={selectedProperty.title} fill className="object-cover" />
-                  ) : (
-                    <div className="h-full w-full bg-gray-200" />
-                  )}
+              <div className="h-16 w-20 relative rounded-lg overflow-hidden shrink-0 bg-gray-100">
+                {selectedProperty.images?.[0] ? (
+                  <Image src={selectedProperty.images[0]} alt={selectedProperty.title} fill className="object-cover" />
+                ) : (
+                  <div className="h-full w-full bg-gray-200" />
+                )}
+              </div>
+              <div>
+                <h3 className="font-semibold text-sm text-gray-900">{selectedProperty.title}</h3>
+                <p className="text-xs text-muted-foreground">{selectedProperty.address}</p>
+                <div className="flex gap-2 mt-1">
+                  <span className="text-xs font-bold text-primary">
+                    ৳{selectedProperty.listingType === 'rent' ? (selectedProperty as any).pricePerMonth?.toLocaleString() : 'N/A'}/mo
+                  </span>
                 </div>
-                <div>
-                  <h3 className="font-semibold text-sm text-gray-900">{selectedProperty.title}</h3>
-                  <p className="text-xs text-muted-foreground">{selectedProperty.address}</p>
-                   <div className="flex gap-2 mt-1">
-                    <span className="text-xs font-bold text-primary">
-                      ৳{selectedProperty.listingType === 'rent' ? (selectedProperty as any).pricePerMonth?.toLocaleString() : 'N/A'}/mo
-                    </span>
-                   </div>
-                </div>
+              </div>
             </div>
           )}
 
@@ -188,22 +189,26 @@ export function ApplicationDetailsStep({
           </div>
 
           <div className="flex justify-between pt-4">
-             <Button 
-               variant="outline" 
-               onClick={() => {
-                 if (isLocked) {
-                   if (window.confirm("Changing property will unlink this booking from your tour. Continue?")) {
-                      if (onBack) onBack();
-                      else setCurrentStep(1);
-                   }
-                 } else {
-                   if (onBack) onBack();
-                   else setCurrentStep(1);
-                 }
-               }}
-             >
-               Back to Selection
-             </Button>
+            <Button
+              variant="outline"
+              onClick={async () => {
+                if (isLocked) {
+                  const result = await confirmDelete(
+                    "Changing Property?",
+                    "Changing property will unlink this booking from your tour. Continue?"
+                  );
+                  if (result) {
+                    if (onBack) onBack();
+                    else setCurrentStep(1);
+                  }
+                } else {
+                  if (onBack) onBack();
+                  else setCurrentStep(1);
+                }
+              }}
+            >
+              Back to Selection
+            </Button>
             <Button onClick={() => validateStep2() && setCurrentStep(3)}>Review Application</Button>
           </div>
         </CardContent>

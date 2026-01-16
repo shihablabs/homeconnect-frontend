@@ -18,6 +18,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { confirmDelete, showError, showSuccess } from "@/lib/swal";
 import { selectCurrentUser } from "@/redux/features/auth/authSlice";
 import { useDeletePropertyMutation } from "@/redux/features/property/propertyApiSlice";
 import { useAppSelector } from "@/redux/hooks";
@@ -73,21 +74,23 @@ export function PropertiesListTable({ properties }: PropertiesListTableProps) {
   const [deleteProperty, { isLoading: isDeleting }] =
     useDeletePropertyMutation();
 
-  
+
   const isAdminOrSupport = user?.role === 'admin' || user?.role === 'support';
 
   const handleDelete = async (id: string) => {
-    toast.promise(
-      async () => {
-        await deleteProperty(id).unwrap();
-        return { id };
-      },
-      {
-        loading: "Deleting property...",
-        success: `Property deleted successfully.`,
-        error: "Failed to delete property.",
-      }
+    const result = await confirmDelete(
+      "Delete Property?",
+      "Are you sure you want to delete this property? This action cannot be undone."
     );
+
+    if (result) {
+      try {
+        await deleteProperty(id).unwrap();
+        showSuccess("Deleted!", "Property has been deleted successfully.");
+      } catch (error: any) {
+        showError("Error!", error.data?.message || "Failed to delete property.");
+      }
+    }
   };
 
   const copyLink = (identifier: string) => {
@@ -181,7 +184,7 @@ export function PropertiesListTable({ properties }: PropertiesListTableProps) {
                       <Copy className="mr-2 h-4 w-4" /> Copy Link
                     </DropdownMenuItem>
 
-                    {}
+                    { }
                     {(property.owner?.id === user?.id || isAdminOrSupport) && (
                       <>
                         <DropdownMenuSeparator />

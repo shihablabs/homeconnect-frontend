@@ -47,10 +47,7 @@ export function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) 
     }
 
 
-    if (user && !user.isPhoneVerified && pathname !== '/verify-phone') {
-      router.push('/verify-phone');
-      return;
-    }
+    // Phone Verification check is now handled via global modal in LayoutWrapper
 
     if (user && requiredRole && !hasAccess()) {
       router.push('/dashboard');

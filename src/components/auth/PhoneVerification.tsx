@@ -10,6 +10,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { API_BASE_URL } from "@/config/config";
 import { auth } from "@/lib/firebase";
 import { setCredentials } from "@/redux/features/auth/authSlice";
 import { RootState } from "@/redux/store";
@@ -49,7 +50,7 @@ export const PhoneVerification: React.FC<PhoneVerificationProps> = ({
       window.recaptchaVerifier = new RecaptchaVerifier(auth, "recaptcha-container", {
         size: "invisible",
         callback: () => {
-          
+
         },
       });
     }
@@ -60,6 +61,11 @@ export const PhoneVerification: React.FC<PhoneVerificationProps> = ({
       toast.error("Authentication service unavailable (Missing Configuration)");
       return;
     }
+    console.log("[Firebase Debug] Attempting phone verification with:", {
+      phoneNumber,
+      authConfigured: !!auth,
+      apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY ? "Found" : "Missing"
+    });
     if (!phoneNumber) {
       toast.error("Please enter a valid phone number");
       return;
@@ -73,9 +79,14 @@ export const PhoneVerification: React.FC<PhoneVerificationProps> = ({
       setStep("otp");
       toast.success("OTP sent successfully!");
     } catch (error: any) {
-      console.error("Error sending OTP:", error);
+      console.error("Error sending OTP Detail:", {
+        code: error.code,
+        message: error.message,
+        customData: error.customData,
+        fullError: error
+      });
       toast.error(error.message || "Failed to send OTP. Please try again.");
-      
+
       if (window.recaptchaVerifier) {
         window.recaptchaVerifier.clear();
         window.recaptchaVerifier = new RecaptchaVerifier(auth, "recaptcha-container", {
@@ -100,9 +111,9 @@ export const PhoneVerification: React.FC<PhoneVerificationProps> = ({
       const result = await confirmationResult.confirm(otp);
       const idToken = await result.user.getIdToken();
 
-      
+      // Sync with Backend
       const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/users/verify-phone`,
+        `${API_BASE_URL}/users/verify-phone`,
         { idToken },
         {
           headers: { Authorization: `Bearer ${token}` },
@@ -112,7 +123,7 @@ export const PhoneVerification: React.FC<PhoneVerificationProps> = ({
       if (response.data.success) {
         toast.success("Phone verified successfully! ✅");
 
-        
+
         if (user && token) {
           dispatch(setCredentials({
             token,

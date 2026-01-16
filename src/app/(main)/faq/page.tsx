@@ -1,61 +1,67 @@
-
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Card, CardContent } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
-import { HelpCircle } from "lucide-react";
+import { CreditCard, Home, MessageCircle, UserCheck } from "lucide-react";
 import type { Metadata } from "next";
+import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "FAQ | HomeConnect",
-  description: "Answers to common questions about renting, listing, payments, and support on HomeConnect.",
+  title: "FAQ | HomeConnect Support",
+  description: "Common questions about the HomeConnect real estate ecosystem for landlords, tenants, and buyers.",
 };
 
-const faqs = [
+const faqCategories = [
   {
-    q: "How do I schedule a property viewing?",
-    a: "Open a listing and click “Request a tour” or use the Contact page. We’ll confirm via email or phone within one business day.",
+    title: "Account & Verification",
+    icon: UserCheck,
+    items: [
+      {
+        q: "Why do I need to verify my phone and email?",
+        a: "Verification is a critical security layer. It ensures that every user on HomeConnect is a real person, which helps prevent fraudulent listings and builds trust between owners and seekers.",
+      },
+      {
+        q: "How long does the verification process take?",
+        a: "Phone and email verification are instantaneous. Once you provide the codes sent to you, your account status is updated immediately.",
+      },
+    ],
   },
   {
-    q: "What documents are needed for a rental application?",
-    a: "Typically ID, proof of income, references, and credit/guarantor details if required. Requirements vary by property.",
+    title: "Listings & Bookings",
+    icon: Home,
+    items: [
+      {
+        q: "How do I schedule a professional property tour?",
+        a: "Within any listing, use the 'Request Tour' feature. You can select your preferred dates, and the landlord will coordinate with our team to confirm a time that works for you.",
+      },
+      {
+        q: "What does a 'Verified Listing' mean?",
+        a: "A 'Verified' badge means our team has manually checked the property details, ownership documents, and location accuracy to ensure the listing is authentic.",
+      },
+    ],
   },
   {
-    q: "Do you charge application fees?",
-    a: "Application fees are shown on the listing if applicable. We only charge disclosed fees and never take cash outside the platform.",
-  },
-  {
-    q: "How are maintenance requests handled?",
-    a: "Tenants can submit a support request via the Contact page (type: Support). Urgent issues are triaged 24/7; non-urgent within support hours.",
-  },
-  {
-    q: "Are pets allowed?",
-    a: "Pet policies vary by property. Check the listing details or ask our team; some properties require an additional deposit.",
-  },
-  {
-    q: "How do I list my property on HomeConnect?",
-    a: "Use the Contact page (type: Landlord) and share basic details. Our team will verify and help you onboard.",
-  },
-  {
-    q: "How do you screen tenants?",
-    a: "We use a standard screening flow aligned with local regulations, with landlord approval before finalizing any lease.",
-  },
-  {
-    q: "Is my payment information secure?",
-    a: "Payments are processed by reputable third-party providers over encrypted connections. We do not store raw card data.",
-  },
-  {
-    q: "How fast do you respond to inquiries?",
-    a: "Within one business day for general inquiries. Emergencies for tenants are handled 24/7.",
+    title: "Payments & Security",
+    icon: CreditCard,
+    items: [
+      {
+        q: "How secure is my payment information?",
+        a: "We use Stripe, a global leader in payment processing. HomeConnect never stores your raw credit card data. All transactions are encrypted and compliant with PCI-DSS standards.",
+      },
+      {
+        q: "What is the escrow system for security deposits?",
+        a: "For rental agreements, your security deposit is held in a secure escrow account until move-in. This protects you from dishonest landlords and ensures funds are available for return at the end of the tenancy.",
+      },
+    ],
   },
 ];
 
 export default function FAQPage() {
-  
+  const allFaqs = faqCategories.flatMap(c => c.items);
+
   const faqLd = {
     "@context": "https://schema.org",
     "@type": "FAQPage",
-    mainEntity: faqs.map((f) => ({
+    mainEntity: allFaqs.map((f) => ({
       "@type": "Question",
       name: f.q,
       acceptedAnswer: {
@@ -66,45 +72,70 @@ export default function FAQPage() {
   };
 
   return (
-    <main className="pb-24">
+    <main className="min-h-screen bg-slate-50 pb-24 text-slate-900">
       <PageHeader
-        title="Frequently Asked Questions"
-        description="Quick answers for renters, buyers, and landlords. Can’t find it? Reach out to our team."
+        title="Help Center"
+        description="Find answers to common questions about our platform, services, and policies."
         badge="Support"
       />
 
-      <section className="container mx-auto max-w-5xl px-4 -mt-8 relative z-10">
-        <Card className="shadow-sm">
-          <CardContent className="p-6 md:p-10">
-            <div className="flex items-start gap-3 rounded-md border p-4 bg-muted/30 mb-6">
-              <HelpCircle className="h-5 w-5 text-primary mt-0.5" />
-              <p className="text-sm text-muted-foreground">
-                This FAQ is a starting point for the academic project. We’ll expand it based on user feedback during testing.
-              </p>
-            </div>
+      <section className="container mx-auto px-4 -mt-12 relative z-10 max-w-5xl">
+        <div className="grid gap-8 mb-16">
+          {faqCategories.map((category, idx) => {
+            const Icon = category.icon;
+            return (
+              <div key={idx} className="space-y-6">
+                <div className="flex items-center gap-3">
+                  <div className="p-3 rounded-2xl bg-blue-600 text-white shadow-lg shadow-blue-500/20">
+                    <Icon className="w-6 h-6" />
+                  </div>
+                  <h2 className="text-2xl font-black tracking-tight">{category.title}</h2>
+                </div>
+                <Card className="border-0 shadow-xl shadow-slate-200/50 rounded-[2rem] overflow-hidden bg-white">
+                  <CardContent className="p-4 md:p-8">
+                    <Accordion type="single" collapsible className="w-full">
+                      {category.items.map((item, i) => (
+                        <AccordionItem key={i} value={`item-${idx}-${i}`} className="border-slate-100 last:border-0 hover:border-blue-100 transition-colors">
+                          <AccordionTrigger className="text-left font-bold py-6 text-lg hover:text-blue-600 hover:no-underline px-4">
+                            {item.q}
+                          </AccordionTrigger>
+                          <AccordionContent className="text-slate-500 leading-relaxed px-4 pb-6 mt-1">
+                            {item.a}
+                          </AccordionContent>
+                        </AccordionItem>
+                      ))}
+                    </Accordion>
+                  </CardContent>
+                </Card>
+              </div>
+            );
+          })}
+        </div>
 
-            <Accordion type="single" collapsible className="w-full">
-              {faqs.map((item, i) => (
-                <AccordionItem key={i} value={`item-${i}`}>
-                  <AccordionTrigger className="text-left">{item.q}</AccordionTrigger>
-                  <AccordionContent className="text-muted-foreground">{item.a}</AccordionContent>
-                </AccordionItem>
-              ))}
-            </Accordion>
-
-            <Separator className="my-8" />
-            <div className="text-sm text-muted-foreground">
-              Still stuck? Contact us at{" "}
-              <a href="/contact" className="underline underline-offset-4">Contact</a>.
+        {/* Support Section */}
+        <div className="rounded-[3rem] bg-slate-900 p-12 text-center text-white relative overflow-hidden">
+          <div className="absolute top-0 left-0 w-64 h-64 bg-indigo-600 rounded-full blur-[100px] opacity-20 -translate-x-1/2 -translate-y-1/2" />
+          <div className="relative z-10 flex flex-col items-center">
+            <div className="w-16 h-16 rounded-[1.5rem] bg-white text-slate-900 flex items-center justify-center mb-6 shadow-xl shadow-white/5">
+              <MessageCircle className="w-8 h-8" />
             </div>
-          </CardContent>
-        </Card>
+            <h3 className="text-3xl font-black mb-4">Still have questions?</h3>
+            <p className="text-slate-400 mb-10 max-w-lg leading-relaxed text-lg">
+              Our support team is available 24/7 to assist you with any inquiries or technical issues.
+            </p>
+            <div className="flex flex-wrap justify-center gap-4">
+              <Link href="/contact">
+                <button className="px-10 py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-bold transition-all shadow-xl shadow-blue-600/20">
+                  Contact Support
+                </button>
+              </Link>
+            </div>
+          </div>
+        </div>
       </section>
 
-      {}
       <script
         type="application/ld+json"
-
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqLd) }}
       />
     </main>

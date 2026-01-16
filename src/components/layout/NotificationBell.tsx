@@ -10,6 +10,8 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { notificationsApi, type Notification } from "@/lib/api/notifications-api";
 import { connectSocket, getSocket } from "@/lib/socket";
+import { selectIsAuthenticated } from "@/redux/features/auth/authSlice";
+import { useAppSelector } from "@/redux/hooks";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Bell,
@@ -24,6 +26,7 @@ import {
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { NotificationDetailsDialog } from "./NotificationDetailsDialog";
 
 interface NotificationBellProps {
   userId: string;
@@ -32,10 +35,11 @@ interface NotificationBellProps {
 export function NotificationBell({ userId }: NotificationBellProps) {
   const [isOpen, setIsOpen] = useState(false);
   const queryClient = useQueryClient();
+  const isAuthenticated = useAppSelector(selectIsAuthenticated);
 
   // Socket Integration
   useEffect(() => {
-    if (userId) {
+    if (userId && isAuthenticated) {
       connectSocket(userId);
       const socket = getSocket();
 
@@ -58,21 +62,23 @@ export function NotificationBell({ userId }: NotificationBellProps) {
         // disconnectSocket(); 
       };
     }
-  }, [userId, queryClient]);
+  }, [userId, isAuthenticated, queryClient]);
 
 
   const { data: notificationsResponse } = useQuery({
     queryKey: ['notifications'],
     queryFn: () => notificationsApi.getNotifications({ limit: 10 }),
-    enabled: !!userId,
+    enabled: !!userId && isAuthenticated,
     refetchInterval: 30000 // Fallback polling
   });
   const notifications = notificationsResponse?.notifications || [];
 
+
+
   const { data: stats } = useQuery({
     queryKey: ['notifications', 'stats'],
     queryFn: notificationsApi.getStats,
-    enabled: !!userId,
+    enabled: !!userId && isAuthenticated,
     refetchInterval: 30000
   });
 
@@ -133,119 +139,113 @@ export function NotificationBell({ userId }: NotificationBellProps) {
     }
   };
 
+  // ... inside component ...
+  const [selectedNotification, setSelectedNotification] = useState<Notification | null>(null);
+
+  // ... (keep existing mutations and hooks) ...
+
   return (
-    <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
-      <DropdownMenuTrigger asChild>
-        <button className="relative p-1.5 md:p-2 hover:bg-gray-100 rounded-lg outline-none transition-colors">
-          <Bell className="h-5 w-5 text-gray-600" />
-          {unreadCount > 0 && (
-            <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 bg-red-500 text-white text-[10px] sm:text-xs font-bold rounded-full flex items-center justify-center animate-in zoom-in duration-200">
-              {unreadCount > 9 ? '9+' : unreadCount}
-            </span>
-          )}
-        </button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-80 md:w-96 p-0 shadow-xl border-gray-100">
-        <div className="flex items-center justify-between p-4 border-b bg-gray-50/50">
-          <div className="flex items-center gap-2">
-            <h4 className="font-semibold text-sm text-gray-900">Notifications</h4>
+    <>
+      <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
+        <DropdownMenuTrigger asChild>
+          <button className="relative p-1.5 md:p-2 hover:bg-gray-100 rounded-lg outline-none transition-colors">
+            <Bell className="h-5 w-5 text-gray-600" />
             {unreadCount > 0 && (
-              <Badge variant="secondary" className="h-5 px-1.5 text-[10px] bg-blue-50 text-blue-700 hover:bg-blue-100">
-                {unreadCount} New
-              </Badge>
+              <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 bg-red-500 text-white text-[10px] sm:text-xs font-bold rounded-full flex items-center justify-center animate-in zoom-in duration-200">
+                {unreadCount > 9 ? '9+' : unreadCount}
+              </span>
+            )}
+          </button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-80 md:w-96 p-0 shadow-xl border-gray-100">
+          <div className="flex items-center justify-between p-4 border-b bg-gray-50/50">
+            <div className="flex items-center gap-2">
+              <h4 className="font-semibold text-sm text-gray-900">Notifications</h4>
+              {unreadCount > 0 && (
+                <Badge variant="secondary" className="h-5 px-1.5 text-[10px] bg-blue-50 text-blue-700 hover:bg-blue-100">
+                  {unreadCount} New
+                </Badge>
+              )}
+            </div>
+            {unreadCount > 0 && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 px-2 text-xs text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                onClick={(e) => {
+                  e.preventDefault();
+                  markAllAsReadMutation.mutate();
+                }}
+                disabled={markAllAsReadMutation.isPending}
+              >
+                <CheckCheck className="h-3 w-3 mr-1" /> Mark all read
+              </Button>
             )}
           </div>
-          {unreadCount > 0 && (
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-7 px-2 text-xs text-blue-600 hover:text-blue-700 hover:bg-blue-50"
-              onClick={(e) => {
-                e.preventDefault();
-                markAllAsReadMutation.mutate();
-              }}
-              disabled={markAllAsReadMutation.isPending}
-            >
-              <CheckCheck className="h-3 w-3 mr-1" /> Mark all read
-            </Button>
-          )}
-        </div>
-        <ScrollArea className="h-[400px]">
-          {notifications && notifications.length > 0 ? (
-            <div className="divide-y divide-gray-100">
-              {notifications.map((notification) => (
-                <div
-                  key={notification.id}
-                  className={`p-4 hover:bg-gray-50 transition-colors group relative ${!notification.isRead ? 'bg-blue-50/40' : ''}`}
-                >
-                  <div className="flex items-start gap-3">
-                    <div className={`p-2 rounded-full shrink-0 ${getNotificationColor(notification.type)}`}>
-                      {getNotificationIcon(notification.type)}
-                    </div>
-                    <div className="flex-1 min-w-0 space-y-1">
-                      <div className="flex justify-between items-start gap-2">
-                        <p className={`text-sm ${!notification.isRead ? 'font-semibold text-gray-900' : 'font-medium text-gray-700'}`}>
-                          {notification.title}
-                        </p>
-                        <span className="text-[10px] text-gray-400 whitespace-nowrap shrink-0">
-                          {new Date(notification.createdAt).toLocaleDateString()}
-                        </span>
+          <ScrollArea className="h-[400px]">
+            {notifications && notifications.length > 0 ? (
+              <div className="divide-y divide-gray-100">
+                {notifications.map((notification) => (
+                  <div
+                    key={notification.id}
+                    className={`p-4 hover:bg-gray-50 transition-colors group relative cursor-pointer ${!notification.isRead ? 'bg-blue-50/40' : ''}`}
+                    onClick={() => {
+                      setSelectedNotification(notification);
+                      if (!notification.isRead) {
+                        handleMarkAsRead(notification.id, false); // Mark read on click
+                      }
+                    }}
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className={`p-2 rounded-full shrink-0 ${getNotificationColor(notification.type)}`}>
+                        {getNotificationIcon(notification.type)}
                       </div>
-                      <p className="text-xs text-gray-500 line-clamp-2 leading-relaxed">
-                        {notification.message}
-                      </p>
-
-                      <div className="flex items-center gap-3 pt-1">
-                        {!notification.isRead && (
-                          <button
-                            className="text-[10px] font-medium text-blue-600 hover:underline"
-                            onClick={() => handleMarkAsRead(notification.id, notification.isRead)}
-                          >
-                            Mark as read
-                          </button>
-                        )}
-                        {/* Add action buttons/links if data.entityId exists */}
-                        {(notification.data as any)?.entityId && (
-                          <Link
-                            href={
-                              notification.type === 'booking' ? `/dashboard/bookings/${(notification.data as any).entityId}` :
-                                notification.type === 'payment' ? `/dashboard/payments/${(notification.data as any).entityId}` :
-                                  notification.type === 'property' ? `/properties/${(notification.data as any).entityId}` :
-                                    notification.type === 'inquiry' ? `/dashboard/inquiries/${(notification.data as any).entityId}` :
-                                      '#'
-                            }
-                            className="text-[10px] font-medium text-gray-500 hover:text-gray-900 flex items-center gap-1"
-                            onClick={() => setIsOpen(false)}
-                          >
-                            View Details
-                          </Link>
-                        )}
+                      <div className="flex-1 min-w-0 space-y-1">
+                        <div className="flex justify-between items-start gap-2">
+                          <p className={`text-sm ${!notification.isRead ? 'font-semibold text-gray-900' : 'font-medium text-gray-700'}`}>
+                            {notification.title || "No Title"}
+                          </p>
+                          <span className="text-[10px] text-gray-400 whitespace-nowrap shrink-0">
+                            {new Date(notification.createdAt).toLocaleDateString()}
+                          </span>
+                        </div>
+                        <p className="text-xs text-gray-500 line-clamp-2 leading-relaxed">
+                          {notification.message || "No content available."}
+                        </p>
                       </div>
                     </div>
                   </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="flex flex-col items-center justify-center h-[300px] text-center text-gray-500">
-              <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-3">
-                <Bell className="h-6 w-6 text-gray-400" />
+                ))}
               </div>
-              <p className="text-sm font-medium text-gray-900">No notifications</p>
-              <p className="text-xs text-gray-500 mt-1">You're all caught up!</p>
-            </div>
-          )}
-        </ScrollArea>
-        <div className="p-2 border-t bg-gray-50/50 text-center">
-          <Link
-            href="/dashboard/notifications"
-            className="text-xs text-blue-600 hover:underline hover:text-blue-700 font-medium block w-full py-1.5 transition-colors"
-            onClick={() => setIsOpen(false)}
-          >
-            View All Notifications
-          </Link>
-        </div>
-      </DropdownMenuContent>
-    </DropdownMenu>
+            ) : (
+              <div className="flex flex-col items-center justify-center h-[300px] text-center text-gray-500">
+                <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-3">
+                  <Bell className="h-6 w-6 text-gray-400" />
+                </div>
+                <p className="text-sm font-medium text-gray-900">No notifications</p>
+                <p className="text-xs text-gray-500 mt-1">You're all caught up!</p>
+              </div>
+            )}
+          </ScrollArea>
+          <div className="p-2 border-t bg-gray-50/50 text-center">
+            <Link
+              href="/dashboard/notifications"
+              className="text-xs text-blue-600 hover:underline hover:text-blue-700 font-medium block w-full py-1.5 transition-colors"
+              onClick={() => setIsOpen(false)}
+            >
+              View All Notifications
+            </Link>
+          </div>
+        </DropdownMenuContent>
+      </DropdownMenu>
+
+      <NotificationDetailsDialog
+        notification={selectedNotification}
+        isOpen={!!selectedNotification}
+        onClose={() => setSelectedNotification(null)}
+        onMarkAsRead={(id) => markAsReadMutation.mutate(id)}
+        onDelete={(id) => deleteNotificationMutation.mutate(id)}
+      />
+    </>
   );
 }

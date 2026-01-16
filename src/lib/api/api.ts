@@ -5,6 +5,7 @@ import axios from 'axios';
 
 export const api = axios.create({
   baseURL: API_BASE_URL,
+  withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -13,13 +14,13 @@ export const api = axios.create({
 
 api.interceptors.request.use(
   (config) => {
-    
+
     if (typeof window !== 'undefined') {
       const token = localStorage.getItem('token');
       const requestUrl = config.url || '';
 
-      
-      
+
+
       const publicEndpoints = [
         '/properties',
         '/properties/featured',
@@ -27,11 +28,11 @@ api.interceptors.request.use(
       ];
 
       const optionalAuthEndpoints: RegExp[] = [
-        /^\/properties/, 
+        /^\/properties/,
       ];
 
       const isPublicEndpoint =
-        requestUrl.match(/^\/properties\/[^\/]+$/) || 
+        requestUrl.match(/^\/properties\/[^\/]+$/) ||
         publicEndpoints.some(endpoint =>
           requestUrl.includes(endpoint) &&
           !requestUrl.includes('/user/') &&
@@ -46,22 +47,22 @@ api.interceptors.request.use(
         pattern.test(requestUrl)
       );
 
-      
-      
-      
+
+
+
       if (token) {
-        
+
         const isAdminEndpoint = requestUrl.startsWith('/admin');
-        
+
         const isDashboardEndpoint = requestUrl.includes('/dashboard') || requestUrl.includes('/my-');
-        
+
         const isUserEndpoint = requestUrl.includes('/user/') || requestUrl.includes('/me');
 
-        
-        
-        
-        
-        
+
+
+
+
+
         const shouldSendToken =
           isAdminEndpoint ||
           isDashboardEndpoint ||
@@ -69,7 +70,7 @@ api.interceptors.request.use(
           !isPublicEndpoint ||
           isOptionalAuthEndpoint;
 
-        if (shouldSendToken) {
+        if (shouldSendToken && !config.headers.Authorization) {
           config.headers.Authorization = `Bearer ${token}`;
         }
       }
@@ -86,74 +87,35 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    
-    if (typeof window !== 'undefined') {
-      if (error.response?.status === 401) {
-        
-        
-        const publicEndpoints = [
-          '/properties',
-          '/properties/featured',
-          '/properties/filters',
-        ];
+    // Handle 401 Unauthorized
+    if (typeof window !== 'undefined' && error.response?.status === 401) {
+      const requestUrl = error.config?.url || '';
 
-        
-        
-        const optionalAuthEndpoints: RegExp[] = [
-          /^\/properties/, 
-        ];
+      // Define patterns for Public and Optional Auth endpoints
+      const publicEndpoints = ['/properties', '/properties/featured', '/properties/filters'];
+      const optionalAuthPatterns = [/^\/properties/];
 
-        const requestUrl = error.config?.url || '';
+      const isPublic = publicEndpoints.some(ep => requestUrl.includes(ep)) || requestUrl.match(/^\/properties\/[^\/]+$/);
+      const isOptional = optionalAuthPatterns.some(p => p.test(requestUrl));
 
-        
-        const isOptionalAuthEndpoint = optionalAuthEndpoints.some(pattern =>
-          pattern.test(requestUrl)
-        );
+      const isIgnored = isPublic || isOptional;
 
-        
-        
-        const isPublicEndpoint =
-          requestUrl.match(/^\/properties\/[^\/]+$/) || 
-          publicEndpoints.some(endpoint =>
-            requestUrl.includes(endpoint) &&
-            !requestUrl.includes('/user/') &&
-            !requestUrl.includes('/dashboard') &&
-            !requestUrl.includes('/my-properties') &&
-            !requestUrl.includes('/favorite') &&
-            !requestUrl.includes('/tour') &&
-            !requestUrl.includes('/inquiry')
-          );
+      // Clear persistent storage only if we strictly need to
+      if (!isIgnored) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+      }
 
-        
-        if (isOptionalAuthEndpoint && error.config && !error.config._retry) {
-          
-          error.config._retry = true;
-          delete error.config.headers.Authorization;
-          return api.request(error.config);
-        }
+      // Check if current page is protected
+      const currentPath = window.location.pathname;
+      const isProtectedPage =
+        currentPath.startsWith('/dashboard') ||
+        currentPath.startsWith('/admin') ||
+        currentPath.startsWith('/profile');
 
-        
-        
-        if (!isPublicEndpoint && !isOptionalAuthEndpoint) {
-          
-          localStorage.removeItem('token');
-          localStorage.removeItem('user');
-          window.location.href = '/login';
-        } else {
-          
-          
-          const token = localStorage.getItem('token');
-          if (token) {
-            
-            
-            try {
-              
-              localStorage.removeItem('token');
-            } catch {
-              
-            }
-          }
-        }
+      if (isProtectedPage && !isIgnored) {
+        // Force redirect to login
+        window.location.href = '/login';
       }
     }
     return Promise.reject(error);

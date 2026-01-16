@@ -6,7 +6,7 @@ export interface RegisterData {
   email: string;
   password: string;
   role: "tenant" | "landlord";
-  phone?: string;
+  phoneNumber?: string;
   avatar?: string;
 }
 
@@ -22,7 +22,8 @@ export interface AuthResponse {
     email: string;
     role: string;
     avatar?: string;
-    phone?: string;
+    phoneNumber?: string;
+    isPhoneVerified?: boolean;
   };
   token: string;
   expiresIn: string;
@@ -35,8 +36,7 @@ interface IChangePasswordRequest {
 }
 
 export interface IUpdateProfileRequest {
-  name?: string;
-  phone?: string;
+  phoneNumber?: string;
   avatar?: string;
   bio?: string;
   title?: string;
@@ -61,13 +61,29 @@ export const authApi = {
     return response.data.data;
   },
 
-  updateProfile: async (data: IUpdateProfileRequest): Promise<AuthUser> => {
-    const response = await api.patch("/auth/profile", data);
+  updateProfile: async (data: Partial<AuthUser>) => {
+    const response = await api.patch('/auth/profile', data);
+    return response.data.data;
+  },
+
+  uploadAvatar: async (file: File) => {
+    const formData = new FormData();
+    formData.append('avatar', file);
+    const response = await api.post('/auth/profile/avatar', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
     return response.data.data;
   },
 
   verifyEmail: async (data: { email: string; otp: string }): Promise<{ message: string }> => {
     const response = await api.post("/auth/verify-email", data);
+    return response.data;
+  },
+
+  resendVerificationEmail: async (email: string): Promise<{ message: string }> => {
+    const response = await api.post("/auth/resend-verification", { email });
     return response.data;
   },
 

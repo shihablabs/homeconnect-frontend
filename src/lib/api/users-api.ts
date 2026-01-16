@@ -13,6 +13,7 @@ export interface User {
   avatar?: string;
   isActive: boolean;
   isEmailVerified: boolean;
+  isPhoneVerified?: boolean;
   isVerified?: boolean;
   createdAt: string;
   updatedAt: string;
@@ -61,19 +62,19 @@ export interface UsersResponse {
 
 
 export const usersApi = {
-  
+
   getUsers: async (params?: GetUsersParams): Promise<UsersResponse> => {
     const response = await api.get('/users', { params });
     return response.data.data;
   },
 
-  
+
   getUserById: async (id: string): Promise<User> => {
     const response = await api.get(`/users/${id}`);
     return response.data.data;
   },
 
-  
+
   updateUser: async (
     id: string,
     data: UpdateUserRequest

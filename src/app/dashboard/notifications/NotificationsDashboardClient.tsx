@@ -1,5 +1,6 @@
 'use client';
 
+import { NotificationDetailsDialog } from '@/components/layout/NotificationDetailsDialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -35,6 +36,7 @@ export function NotificationsDashboardClient() {
   const [activeTab, setActiveTab] = useState('all');
   const [typeFilter, setTypeFilter] = useState<string>('all');
   const [markingAll, setMarkingAll] = useState(false);
+  const [selectedNotification, setSelectedNotification] = useState<Notification | null>(null);
   const { fcmToken, notificationPermission, requestPermission } = useFCM();
 
   const {
@@ -52,6 +54,8 @@ export function NotificationsDashboardClient() {
       console.log('New notification received:', notification);
     },
   });
+
+
 
 
   useEffect(() => {
@@ -182,7 +186,7 @@ export function NotificationsDashboardClient() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between pt-10">
         <div>
           <h1 className="text-3xl font-bold">Notifications</h1>
           <p className="text-muted-foreground mt-1">
@@ -324,7 +328,8 @@ export function NotificationsDashboardClient() {
                     const link = getNotificationLink(notification);
                     const NotificationContent = (
                       <div
-                        className={`p-4 border rounded-lg ${!notification.isRead ? 'bg-primary/5 border-primary/20' : ''
+                        onClick={() => setSelectedNotification(notification)}
+                        className={`p-4 border rounded-lg cursor-pointer hover:shadow-md transition-shadow ${!notification.isRead ? 'bg-primary/5 border-primary/20' : ''
                           }`}
                       >
                         <div className="flex items-start gap-4">
@@ -336,9 +341,9 @@ export function NotificationsDashboardClient() {
                           <div className="flex-1">
                             <div className="flex items-start justify-between">
                               <div>
-                                <h4 className="font-semibold">{notification.title}</h4>
+                                <h4 className="font-semibold">{notification.title || "No Title"}</h4>
                                 <p className="text-sm text-muted-foreground mt-1">
-                                  {notification.message}
+                                  {notification.message || "No content available."}
                                 </p>
                                 <div className="flex items-center gap-2 mt-2">
                                   <span className="text-xs text-muted-foreground">
@@ -415,7 +420,10 @@ export function NotificationsDashboardClient() {
                     .map((notification) => {
                       const link = getNotificationLink(notification);
                       const NotificationContent = (
-                        <div className="p-4 border rounded-lg bg-primary/5 border-primary/20">
+                        <div
+                          onClick={() => setSelectedNotification(notification)}
+                          className="p-4 border rounded-lg bg-primary/5 border-primary/20 cursor-pointer hover:shadow-md transition-shadow"
+                        >
                           <div className="flex items-start gap-4">
                             <div
                               className={`p-2 rounded-lg ${getNotificationColor(notification.type)}`}
@@ -425,9 +433,9 @@ export function NotificationsDashboardClient() {
                             <div className="flex-1">
                               <div className="flex items-start justify-between">
                                 <div>
-                                  <h4 className="font-semibold">{notification.title}</h4>
+                                  <h4 className="font-semibold">{notification.title || "No Title"}</h4>
                                   <p className="text-sm text-muted-foreground mt-1">
-                                    {notification.message}
+                                    {notification.message || "No content available."}
                                   </p>
                                   <div className="flex items-center gap-2 mt-2">
                                     <span className="text-xs text-muted-foreground">
@@ -474,6 +482,13 @@ export function NotificationsDashboardClient() {
           </Card>
         </TabsContent>
       </Tabs>
+      <NotificationDetailsDialog
+        notification={selectedNotification}
+        isOpen={!!selectedNotification}
+        onClose={() => setSelectedNotification(null)}
+        onMarkAsRead={(id) => handleMarkAsRead(id)}
+        onDelete={(id) => handleDelete(id)}
+      />
     </div>
   );
 }

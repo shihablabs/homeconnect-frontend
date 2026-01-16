@@ -136,6 +136,70 @@ export function ProfileEditForm({ user }: ProfileEditFormProps) {
           )}
         </div>
 
+        {/* Avatar Upload Section */}
+        <div className="flex flex-col items-center justify-center space-y-4 mb-8">
+          <div className="relative group">
+            <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-white shadow-lg bg-gray-100">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={user.avatar || "https://github.com/shadcn.png"}
+                alt="Profile"
+                className="w-full h-full object-cover"
+              />
+            </div>
+            {isEditing && (
+              <>
+                <label
+                  htmlFor="avatar-upload"
+                  className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                >
+                  <div className="text-white text-xs font-medium text-center">
+                    Change<br />Photo
+                  </div>
+                </label>
+
+                {/* Visible Button for better UX */}
+                <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 z-20">
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="secondary"
+                    className="h-7 text-xs shadow-md rounded-full px-3"
+                    onClick={() => document.getElementById("avatar-upload")?.click()}
+                  >
+                    Upload
+                  </Button>
+                </div>
+
+                <input
+                  id="avatar-upload"
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+
+                    const toastId = toast.loading("Uploading avatar...");
+                    try {
+                      const result = await authApi.uploadAvatar(file);
+                      dispatch(updateUserProfile({ ...user, avatar: result.avatarUrl }));
+                      toast.success("Avatar updated!", { id: toastId });
+                    } catch (error: any) {
+                      console.error("Avatar upload failed:", error);
+                      toast.error("Failed to upload avatar", { id: toastId });
+                    }
+                  }}
+                />
+              </>
+            )}
+          </div>
+          <div className="text-center">
+            <h3 className="font-bold text-xl text-gray-900">{user.name}</h3>
+            <p className="text-sm text-gray-500 capitalize">{user.role}</p>
+          </div>
+        </div>
+
         <GeneralInfo form={form} disabled={!isEditing} />
 
         <RoleBasedFields form={form} role={user.role} disabled={!isEditing} />

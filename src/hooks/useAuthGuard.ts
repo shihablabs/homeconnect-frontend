@@ -19,8 +19,8 @@ export const useAuthGuard = () => {
         showCancelButton: true,
         confirmButtonText: 'Login / Sign Up',
         cancelButtonText: 'Cancel',
-        confirmButtonColor: '#0f172a', 
-        cancelButtonColor: '#64748b',  
+        confirmButtonColor: '#0f172a',
+        cancelButtonColor: '#64748b',
         background: '#ffffff',
         customClass: {
           popup: 'rounded-xl border border-gray-100 shadow-2xl',
@@ -30,7 +30,8 @@ export const useAuthGuard = () => {
         },
       }).then((result) => {
         if (result.isConfirmed) {
-          router.push('/login');
+          const returnUrl = encodeURIComponent(window.location.pathname);
+          router.push(`/login?from=${returnUrl}`);
         }
       });
     }

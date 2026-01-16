@@ -1,5 +1,8 @@
 'use client';
+import { VerifyEmailDialog } from "@/components/auth/VerifyEmailDialog";
 import { NotificationBell } from "@/components/layout/NotificationBell";
+import { GlobalLoader } from "@/components/ui/GlobalLoader";
+import { authApi } from "@/lib/api/auth-api";
 
 import Breadcrumb from "@/components/layout/Breadcrumb";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -13,7 +16,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useLogoutMutation } from "@/redux/features/auth/authApiSlice";
-import { selectCurrentUser, selectIsAuthenticated } from "@/redux/features/auth/authSlice";
+import { selectAuthStatus, selectCurrentUser, selectIsAuthenticated } from "@/redux/features/auth/authSlice";
 import { useAppSelector } from '@/redux/hooks';
 import {
   Heart,
@@ -25,22 +28,29 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from 'next/navigation';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { toast } from "sonner";
 import DashboardSidebar from './DashboardSidebar';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [showVerifyDialog, setShowVerifyDialog] = useState(false);
   const router = useRouter();
   const user = useAppSelector(selectCurrentUser);
+  const isAuthenticated = useAppSelector(selectIsAuthenticated);
+  const authStatus = useAppSelector(selectAuthStatus); // Assuming you have this selector or use status from state
 
   const [logoutUser, { isLoading: isLoggingOut }] = useLogoutMutation();
 
+  // Protect the route
+  useEffect(() => {
+    if (authStatus === 'idle' || authStatus === 'loading') return;
 
-  const isAuthenticated = useAppSelector(selectIsAuthenticated);
-
-
-
+    if (!isAuthenticated) {
+      toast.error("Please login to access the dashboard.");
+      router.push('/login');
+    }
+  }, [isAuthenticated, authStatus, router]);
 
   const handleLogout = async () => {
     try {
@@ -60,9 +70,17 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     return (parts[0]?.[0] ?? "U").toUpperCase() + (parts[1]?.[0]?.toUpperCase() ?? "");
   }, [user?.name]);
 
+  if (authStatus === 'loading') {
+    return <GlobalLoader message="Initializing Dashboard..." />;
+  }
+
+  if (!isAuthenticated) {
+    return null; // Or return loading until redirect happens
+  }
+
   return (
     <div className="flex h-screen overflow-hidden bg-gray-50">
-      { }
+      {/* Sidebar */}
       <div className="fixed inset-y-0 left-0 z-50 w-80 h-full">
         <DashboardSidebar
           isOpen={sidebarOpen}
@@ -71,9 +89,41 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         />
       </div>
 
-      { }
+      {/* Main Content Wrapper */}
       <div className="flex-1 flex flex-col ml-0 lg:ml-80">
-        { }
+
+        {/* Email Verification Warning */}
+        {!user?.isEmailVerified && (
+          <>
+            <div className="bg-red-50 text-red-600 h-[30px] flex justify-center items-center text-xs font-medium sticky top-0 z-50 shadow-sm">
+              <span>Email not verified. </span>
+              <button
+                onClick={async () => {
+                  const loadingToast = toast.loading("Sending verification code...");
+                  try {
+                    await authApi.resendVerificationEmail(user?.email || "");
+                    toast.dismiss(loadingToast);
+                    toast.success("OTP sent to your email!");
+                    setShowVerifyDialog(true);
+                  } catch (err: any) {
+                    toast.dismiss(loadingToast);
+                    toast.error(err?.message || "Failed to send OTP");
+                  }
+                }}
+                className="ml-2 underline hover:text-red-800 focus:outline-none"
+              >
+                Send OTP to your mail
+              </button>
+            </div>
+            <VerifyEmailDialog
+              isOpen={showVerifyDialog}
+              onOpenChange={setShowVerifyDialog}
+              email={user?.email || ""}
+            />
+          </>
+        )}
+
+        {/* Top Navigation */}
         <header className="flex-shrink-0 bg-white border-b border-gray-200 h-20 z-40 sticky top-0 w-full">
           <div className="flex items-center justify-between px-6 py-4 w-full">
             <div className="flex items-center">
@@ -201,7 +251,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </div>
         </header>
 
-        { }
+        {/* Main Content */}
         <main className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 flex-1 overflow-y-auto scroll-smooth w-full">
           <div className="w-full h-full">
             <Breadcrumb />
