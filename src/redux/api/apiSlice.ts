@@ -1,5 +1,6 @@
 
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import { BaseQueryFn, createApi, FetchArgs, fetchBaseQuery, FetchBaseQueryError } from "@reduxjs/toolkit/query/react";
+import { toast } from "sonner";
 import type { RootState } from "../store";
 
 const sanitizeUrl = (url: string) => (url.endsWith("/") ? url : `${url}/`);
@@ -46,9 +47,31 @@ const baseQuery = fetchBaseQuery({
   },
 });
 
+const baseQueryWithGlobalErrorHandling: BaseQueryFn<
+  string | FetchArgs,
+  unknown,
+  FetchBaseQueryError
+> = async (args, api, extraOptions) => {
+  const result = await baseQuery(args, api, extraOptions);
+
+  if (result.error) {
+    const status = result.error.status;
+    const data = result.error.data as any;
+
+    if (status === 429) {
+      toast.error("Too many requests. Please try again later.");
+    } else if (status === 401 && (data?.message === "Invalid refresh token" || data?.message === "Refresh token expired")) {
+      // Optionally handle automatic logout or redirect here if needed,
+      // but usually the authSlice/AuthGuard handles the state clearing.
+    }
+  }
+
+  return result;
+};
+
 export const apiSlice = createApi({
   reducerPath: "api",
-  baseQuery: baseQuery,
+  baseQuery: baseQueryWithGlobalErrorHandling,
   tagTypes: [
     "Property",
     "User",

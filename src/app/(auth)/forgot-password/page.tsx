@@ -1,6 +1,8 @@
 "use client";
 
+import { auth } from "@/lib/firebase.config";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { sendPasswordResetEmail } from "firebase/auth";
 import { ArrowLeft, Mail } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
@@ -26,7 +28,6 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { authApi } from "@/lib/api/auth-api";
 import { pacifico } from "@/lib/fonts";
 
 
@@ -55,17 +56,25 @@ export default function ForgotPasswordPage() {
     const toastId = toast.loading("Sending password reset link...");
 
     try {
-      await authApi.forgotPassword(data.email);
+      if (!auth) throw new Error("Firebase is not initialized");
+
+      await sendPasswordResetEmail(auth, data.email);
+
       setIsSuccess(true);
       toast.success("Password reset link sent! Check your email.", {
         id: toastId,
       });
-    } catch (error: unknown) {
+    } catch (error: any) {
       console.error("Forgot password error:", error);
-      const errorMessage = error && typeof error === 'object' && 'response' in error
-        ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
-        : undefined;
-      toast.error(errorMessage || "Failed to send reset link. Please try again.", { id: toastId });
+      let errorMessage = "Failed to send reset link. Please try again.";
+
+      if (error?.code === 'auth/user-not-found') {
+        errorMessage = "No account found with this email address.";
+      } else if (error?.code === 'auth/invalid-email') {
+        errorMessage = "Invalid email address.";
+      }
+
+      toast.error(errorMessage, { id: toastId });
     } finally {
       setIsSubmitting(false);
     }

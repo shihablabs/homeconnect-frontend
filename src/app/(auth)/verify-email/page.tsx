@@ -18,6 +18,8 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { authApi } from "@/lib/api/auth-api";
+import { setCredentials } from "@/redux/features/auth/authSlice";
+import { useAppDispatch } from "@/redux/hooks";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CheckCircle2, Loader2 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -35,6 +37,7 @@ type VerifyEmailValues = z.infer<typeof verifyEmailSchema>;
 
 function VerifyEmailContent() {
   const router = useRouter();
+  const dispatch = useAppDispatch();
   const searchParams = useSearchParams();
   const emailParam = searchParams.get("email");
   const otpParam = searchParams.get("otp");
@@ -63,7 +66,8 @@ function VerifyEmailContent() {
       if (emailParam && otpParam && !isSuccess && !isVerifying) {
         setIsVerifying(true);
         try {
-          await authApi.verifyEmail({ email: emailParam, otp: otpParam });
+          const result = await authApi.verifyEmail({ email: emailParam, otp: otpParam });
+          dispatch(setCredentials({ user: result.user as any, token: result.token }));
           setIsSuccess(true);
           toast.success("Email verified successfully!");
         } catch (error: any) {
@@ -86,7 +90,8 @@ function VerifyEmailContent() {
   async function onSubmit(data: VerifyEmailValues) {
     setIsLoading(true);
     try {
-      await authApi.verifyEmail(data);
+      const result = await authApi.verifyEmail(data);
+      dispatch(setCredentials({ user: result.user as any, token: result.token }));
       setIsSuccess(true);
       toast.success("Email verified successfully!");
     } catch (error: any) {

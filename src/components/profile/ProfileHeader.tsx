@@ -42,7 +42,7 @@ export function ProfileHeader({ profile, stats }: ProfileHeaderProps) {
                 </AvatarFallback>
               </Avatar>
             </div>
-            {profile.isVerified && (
+            {profile.verificationStatus === 'verified' && (
               <div className="absolute bottom-1 right-1 bg-white p-1 rounded-full shadow-md">
                 <div className="bg-gradient-to-r from-cyan-500 to-blue-500 text-white p-1 rounded-full" title="Verified Identity">
                   <ShieldCheck className="h-3.5 w-3.5" />
@@ -103,8 +103,8 @@ export function ProfileHeader({ profile, stats }: ProfileHeaderProps) {
               <span className="text-gray-500 flex items-center gap-2">
                 <ShieldCheck className="w-4 h-4" /> Status
               </span>
-              <span className={`font-semibold ${profile.isVerified ? 'text-emerald-600' : 'text-gray-400'}`}>
-                {profile.isVerified ? 'Verified' : 'Unverified'}
+              <span className={`font-semibold ${profile.verificationStatus === 'verified' ? 'text-emerald-600' : 'text-gray-400'}`}>
+                {profile.verificationStatus === 'verified' ? 'Verified' : 'Unverified'}
               </span>
             </div>
           </div>
@@ -125,7 +125,7 @@ export function ProfileHeader({ profile, stats }: ProfileHeaderProps) {
       </div>
 
       {/* Verifications Card */}
-      {(profile.isVerified || profile.isEmailVerified) && (
+      {(profile.verificationStatus === 'verified' || profile.isEmailVerified) && (
         <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100/50">
           <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Verifications</h3>
           <div className="space-y-2.5">
@@ -135,7 +135,7 @@ export function ProfileHeader({ profile, stats }: ProfileHeaderProps) {
                 <span>Email Verified</span>
               </div>
             )}
-            {profile.isVerified && (
+            {profile.verificationStatus === 'verified' && (
               <div className="flex items-center gap-2.5 text-sm text-gray-700">
                 <BadgeCheck className="w-4 h-4 text-blue-600" />
                 <span>Identity Verified</span>

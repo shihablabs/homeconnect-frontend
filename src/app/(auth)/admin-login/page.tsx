@@ -11,8 +11,11 @@ import {
 import { GlobalLoader } from "@/components/ui/GlobalLoader";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PasswordInput } from "@/components/ui/password-input";
 import { pacifico } from "@/lib/fonts";
-import { useAppSelector } from "@/redux/hooks";
+import { useLoginMutation } from "@/redux/features/auth/authApiSlice";
+import { logout, logoutUser } from "@/redux/features/auth/authSlice";
+import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2, Lock, LogIn, Mail } from "lucide-react";
 import Link from "next/link";
@@ -20,11 +23,12 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
+import Swal from "sweetalert2";
 import { z } from "zod";
 
 const loginSchema = z.object({
-  email: z.string().email("Invalid email address"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
+  identifier: z.string().min(1, "Email or phone number is required"),
+  password: z.string().min(1, "Password is required"),
 });
 
 type LoginFormData = z.infer<typeof loginSchema>;
@@ -37,17 +41,21 @@ function AdminLoginContent() {
 
   const { isAuthenticated, isLoading, user } = useAppSelector((state) => state.auth);
 
+  const dispatch = useAppDispatch();
+
   useEffect(() => {
     if (!isLoading && isAuthenticated && user?.role) {
-      // Check if user is actually admin/support/super-admin
       if (['admin', 'super-admin', 'support'].includes(user.role)) {
         router.replace("/dashboard/admin");
       } else {
-        // If tenant/landlord tries to access admin login page while logged in, maybe redirect to main dashboard
-        router.replace("/dashboard");
+        dispatch(logoutUser()).unwrap().then(() => {
+          toast.error("Access Denied: Admin privileges required.");
+        }).catch(() => {
+          // force redirect even if api fail
+        });
       }
     }
-  }, [isLoading, isAuthenticated, router, user]);
+  }, [isLoading, isAuthenticated, router, user, logout]);
 
 
   const {
@@ -58,24 +66,36 @@ function AdminLoginContent() {
     resolver: zodResolver(loginSchema),
   });
 
-  const [login, { isLoading: isLoginLoading }] = useAdminLoginMutation();
+  const [login, { isLoading: isLoginLoading }] = useLoginMutation();
 
   const onSubmit = async (data: LoginFormData) => {
     setLoading(true);
     try {
-      // Attempt Backend Login
-      // This calls the custom JWT backend endpoint
-      await login(data).unwrap();
+      const isEmail = data.identifier.includes("@");
+      const loginPayload = isEmail
+        ? { email: data.identifier, password: data.password }
+        : { phoneNumber: data.identifier, password: data.password };
 
-      toast.success("Admin Login successful!");
-      // Redirect to Admin Dashboard
+      await login(loginPayload).unwrap();
+
+      Swal.fire({
+        title: "Admin Login Successful!",
+        text: "Accessing dashboard...",
+        icon: "success",
+        timer: 1500,
+        showConfirmButton: false,
+        didOpen: () => {
+          const container = Swal.getContainer();
+          if (container) {
+            container.style.backdropFilter = 'blur(8px)';
+          }
+        }
+      });
+
       router.push(returnUrl ? decodeURIComponent(returnUrl) : "/dashboard/admin");
     } catch (error: any) {
       console.log("Admin Login failed", error);
-      // Simplify error message for user
       const message = error?.data?.message || "Login failed. Please check your credentials.";
-
-      // If the backend specifically says "Use Client Interface", it means they are a Tenant trying to login here.
       if (error?.status === 403 || message.includes("client interface")) {
         toast.error("This portal is for Staff only. Please use the main Login page.");
       } else {
@@ -87,119 +107,122 @@ function AdminLoginContent() {
   };
 
   return (
-    <div className="w-full min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-800 to-slate-900 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="w-full max-w-6xl">
-        <Card className="flex flex-col lg:flex-row shadow-2xl overflow-hidden border-0 bg-white/95 backdrop-blur-sm p-0">
+    <div className="w-full min-h-screen flex items-center justify-center bg-white py-12 px-4 sm:px-6 lg:px-8">
+      <div className="w-full max-w-md">
+        {/* Mobile Header */}
+        <div className="flex items-center justify-center pb-8">
+          <Link
+            href="/"
+            className={`${pacifico.className} text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent`}
+          >
+            HomeConnect
+          </Link>
+        </div>
 
-          {/* Brand Section - Darker for Admin */}
-          <div className="lg:w-1/2 bg-slate-900 p-8 lg:p-12 flex flex-col justify-center items-center text-white relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-br from-slate-900 to-slate-800 opacity-90" />
-            <div className="relative z-10 text-center">
-              <Link href="/" className={`${pacifico.className} text-4xl lg:text-5xl font-bold mb-4 block`}>
-                HomeConnect
-              </Link>
-              <div className="text-xl lg:text-2xl font-light tracking-wide mb-8 bg-slate-800/50 px-4 py-1 rounded-full border border-slate-700 inline-block">
-                Admin Portal
-              </div>
-              <p className="text-slate-300 max-w-md mx-auto leading-relaxed">
-                Secure access for System Administrators and Support Staff.
-              </p>
-            </div>
-          </div>
+        <Card className="shadow-2xl overflow-hidden border-0 bg-white/80 backdrop-blur-sm p-8">
+          <CardHeader className="p-0 pb-8 text-center">
+            <CardTitle className="text-2xl font-bold text-gray-900 mb-2">
+              Staff Access
+            </CardTitle>
+            <CardDescription className="text-base text-gray-600">
+              Authenticate using your staff credentials
+            </CardDescription>
+          </CardHeader>
 
-
-          <div className="lg:w-1/2 flex items-center justify-center p-8 lg:p-12">
-            <div className="w-full max-w-md">
-              <div className="flex lg:hidden items-center justify-center pb-8">
-                <Link
-                  href="/"
-                  className={`${pacifico.className} text-3xl font-bold text-slate-900`}
+          <CardContent className="p-0">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+              <div className="space-y-2">
+                <Label
+                  htmlFor="identifier"
+                  className="text-sm font-semibold text-gray-700 flex items-center space-x-2"
                 >
-                  HomeConnect Admin
-                </Link>
+                  <Mail className="w-4 h-4 text-blue-500" />
+                  <span>Email or Phone Number</span>
+                </Label>
+                <Input
+                  id="identifier"
+                  type="text"
+                  placeholder="admin@homeconnect.com or +880..."
+                  {...register("identifier")}
+                  className={`h-11 bg-gray-50/50 border-gray-200 focus:ring-blue-500/20 ${errors.identifier ? "border-red-500" : ""}`}
+                />
+                {errors.identifier && (
+                  <p className="text-xs text-red-500">
+                    {errors.identifier.message}
+                  </p>
+                )}
               </div>
 
-              <CardHeader className="p-0 pb-8 text-center lg:text-left">
-                <CardTitle className="text-3xl font-bold text-gray-900 mb-2">
-                  Staff Access
-                </CardTitle>
-                <CardDescription className="text-lg text-gray-600">
-                  Authenticate using your staff credentials
-                </CardDescription>
-              </CardHeader>
+              <div className="space-y-2">
+                <Label
+                  htmlFor="password"
+                  className="text-sm font-semibold text-gray-700 flex items-center space-x-2"
+                >
+                  <Lock className="w-4 h-4 text-blue-500" />
+                  <span>Password</span>
+                </Label>
+                <PasswordInput
+                  id="password"
+                  placeholder="••••••••"
+                  {...register("password")}
+                  className={`h-11 bg-gray-50/50 border-gray-200 focus:ring-blue-500/20 ${errors.password ? "border-red-500" : ""}`}
+                />
+                {errors.password && (
+                  <p className="text-xs text-red-500">
+                    {errors.password.message}
+                  </p>
+                )}
+              </div>
 
-              <CardContent className="p-0">
-                <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label
-                      htmlFor="email"
-                      className="text-sm font-semibold text-gray-700 flex items-center space-x-2"
-                    >
-                      <Mail className="w-4 h-4 text-slate-800" />
-                      <span>Email Address</span>
-                    </Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      placeholder="admin@homeconnect.com"
-                      {...register("email")}
-                      className={`h-11 bg-gray-50/50 border-gray-200 focus:ring-slate-500/20 ${errors.email ? "border-red-500" : ""}`}
-                    />
-                    {errors.email && (
-                      <p className="text-xs text-red-500">
-                        {errors.email.message}
-                      </p>
-                    )}
-                  </div>
+              <Button
+                type="submit"
+                className="w-full h-12 text-base font-bold bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 transition-all duration-300 shadow-lg hover:shadow-xl rounded-xl"
+                disabled={loading || isLoginLoading}
+              >
+                {loading || isLoginLoading ? (
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                ) : (
+                  <LogIn className="mr-2 h-5 w-5" />
+                )}
+                Authorize Session
+              </Button>
+            </form>
 
-                  <div className="space-y-2">
-                    <Label
-                      htmlFor="password"
-                      className="text-sm font-semibold text-gray-700 flex items-center space-x-2"
-                    >
-                      <Lock className="w-4 h-4 text-slate-800" />
-                      <span>Password</span>
-                    </Label>
-                    <Input
-                      id="password"
-                      type="password"
-                      placeholder="••••••••"
-                      {...register("password")}
-                      className={`h-11 bg-gray-50/50 border-gray-200 focus:ring-slate-500/20 ${errors.password ? "border-red-500" : ""}`}
-                    />
-                    {errors.password && (
-                      <p className="text-xs text-red-500">
-                        {errors.password.message}
-                      </p>
-                    )}
-                  </div>
-
-                  <Button
-                    type="submit"
-                    className="w-full h-12 text-base font-bold bg-slate-900 hover:bg-slate-800 transition-all duration-300 shadow-lg hover:shadow-xl rounded-xl"
-                    disabled={loading || isLoginLoading}
-                  >
-                    {loading || isLoginLoading ? (
-                      <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                    ) : (
-                      <LogIn className="mr-2 h-5 w-5" />
-                    )}
-                    Authorize Session
-                  </Button>
-                </form>
-
-                <div className="text-center pt-6">
-                  <Link
-                    href="/login"
-                    className="text-sm text-slate-500 hover:text-slate-800 hover:underline transition-colors"
-                  >
-                    Return to Main Login
-                  </Link>
-                </div>
-              </CardContent>
+            <div className="text-center pt-6">
+              <Link
+                href="/login"
+                className="text-sm text-gray-500 hover:text-gray-800 hover:underline transition-colors"
+              >
+                Return to Main Login
+              </Link>
             </div>
-          </div>
+
+            <div className="mt-8 bg-gray-50 p-4 rounded-lg border border-gray-100">
+              <p className="text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wider">Test Credentials</p>
+              <div className="grid grid-cols-2 gap-2 text-xs">
+                <div className="flex justify-between items-center bg-white p-2 rounded border border-gray-100">
+                  <div>
+                    <div className="font-bold text-gray-700">System Admin</div>
+                    <div className="font-mono text-gray-500 truncate w-32">admin@homeconnect.com</div>
+                    <div className="font-mono text-gray-400 truncate w-32">HomeConnectAdmin2024!</div>
+                  </div>
+                </div>
+                <div className="flex justify-between items-center bg-white p-2 rounded border border-gray-100">
+                  <div>
+                    <div className="font-bold text-gray-700">Support Specialist</div>
+                    <div className="font-mono text-gray-500 truncate w-32">support@homeconnect.com</div>
+                    <div className="font-mono text-gray-400 truncate w-32">HomeConnectSupport2024!</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </CardContent>
         </Card>
+
+        {/* Footer */}
+        <p className="text-center mt-8 text-sm text-gray-500 font-medium">
+          © {new Date().getFullYear()} HomeConnect. All rights reserved.
+        </p>
       </div>
     </div>
   );

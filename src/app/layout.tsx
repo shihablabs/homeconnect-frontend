@@ -1,3 +1,4 @@
+import AuthInitializer from "@/components/auth/AuthInitializer";
 import LayoutWrapper from "@/components/layout/LayoutWrapper";
 import { CompareTray } from "@/components/property/CompareTray";
 import { lato, merriweather, pacifico } from "@/lib/fonts";
@@ -29,6 +30,7 @@ export default function RootLayout({
       >
         <ReactQueryProvider>
           <ReduxProvider>
+            <AuthInitializer />
             <FirebaseAuthProvider>
               <LayoutWrapper>{children}</LayoutWrapper>
             </FirebaseAuthProvider>

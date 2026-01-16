@@ -19,7 +19,13 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
   });
 
   const isDashboard = pathname?.startsWith('/dashboard');
-  const isAuthPage = pathname?.startsWith('/login') || pathname?.startsWith('/register');
+  const isAuthPage =
+    pathname?.startsWith('/login') ||
+    pathname?.startsWith('/register') ||
+    pathname?.startsWith('/admin-login') ||
+    pathname?.startsWith('/forgot-password') ||
+    pathname?.startsWith('/reset-password') ||
+    pathname?.startsWith('/verify-email');
   const isHome = pathname === "/";
 
   let content;

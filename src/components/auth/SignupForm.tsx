@@ -1,5 +1,6 @@
 "use client";
 
+import { OTPModal } from "@/components/auth/OTPModal";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -11,31 +12,19 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PasswordInput } from "@/components/ui/password-input";
 import {
   RadioGroup,
   RadioGroupItem
 } from "@/components/ui/radio-group";
-import { API_BASE_URL } from "@/config/config";
-import { auth } from "@/lib/firebase";
-import { setCredentials } from "@/redux/features/auth/authSlice";
+import { authApi } from "@/lib/api/auth-api";
+import { auth, RecaptchaVerifier, signInWithPhoneNumber } from "@/lib/firebase";
 import { useAppDispatch } from "@/redux/hooks";
 import { zodResolver } from "@hookform/resolvers/zod";
-import axios from "axios";
-import {
-  ConfirmationResult,
-  EmailAuthProvider,
-  linkWithCredential,
-  RecaptchaVerifier,
-  sendEmailVerification,
-  signInWithPhoneNumber,
-  updateProfile,
-  UserCredential,
-} from "firebase/auth";
+import { ConfirmationResult, UserCredential } from "firebase/auth";
 import {
   ArrowRight,
   Briefcase,
-  Eye,
-  EyeOff,
   Home,
   Key,
   Lock,
@@ -47,11 +36,11 @@ import {
 } from "lucide-react";
 import Link from 'next/link';
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
+import Swal from "sweetalert2";
 import { z } from "zod";
-import { OTPModal } from "./OTPModal";
 
 declare global {
   interface Window {
@@ -83,27 +72,6 @@ export function SignupForm() {
   const [modalOpen, setModalOpen] = useState(false);
   const [confirmationResult, setConfirmationResult] = useState<ConfirmationResult | null>(null);
   const [verifying, setVerifying] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-
-  // Initialize Recaptcha
-  useEffect(() => {
-    if (!auth) {
-      console.error("Firebase auth not initialized");
-      return;
-    }
-    if (!window.recaptchaVerifier) {
-      window.recaptchaVerifier = new RecaptchaVerifier(auth, "recaptcha-container", {
-        size: "invisible",
-      });
-    }
-    return () => {
-      if (window.recaptchaVerifier) {
-        window.recaptchaVerifier.clear();
-        window.recaptchaVerifier = undefined;
-      }
-    };
-  }, []);
 
   const form = useForm<SignupValues>({
     resolver: zodResolver(signupSchema),
@@ -111,12 +79,48 @@ export function SignupForm() {
       firstName: "",
       lastName: "",
       email: "",
-      phoneNumber: "",
+      phoneNumber: "+880",
       password: "",
       confirmPassword: "",
       role: "tenant",
     },
   });
+
+  const handleVerify = async (result: UserCredential) => {
+    setVerifying(true);
+    const data = form.getValues();
+    try {
+      // Trigger Backend Registration using authApi for consistency and cookie handling
+      // We pass the firebaseUid from the result
+      await authApi.register({
+        name: `${data.firstName} ${data.lastName}`,
+        email: data.email,
+        phoneNumber: data.phoneNumber,
+        password: data.password,
+        role: data.role,
+      });
+
+      // Trigger Backend OTP Email (optional, since phone is verified, but user liked it)
+      await authApi.resendVerificationEmail(data.email);
+
+      setModalOpen(false);
+
+      Swal.fire({
+        title: "Registration Complete!",
+        text: "Your account has been successfully created and verified.",
+        icon: "success",
+        timer: 1500,
+        showConfirmButton: false,
+      });
+
+      router.push(`/verify-email?email=${data.email}`);
+    } catch (error: any) {
+      console.error("Registration Error after Phone Verify:", error);
+      toast.error(error.response?.data?.message || error.message || "Failed to complete registration.");
+    } finally {
+      setVerifying(false);
+    }
+  };
 
   const onSubmit = async (data: SignupValues) => {
     if (!auth) {
@@ -136,124 +140,27 @@ export function SignupForm() {
     }
     setLoading(true);
     try {
-      // Trigger early email verification in the background
-      axios.post(`${API_BASE_URL}/auth/send-verification-early`, {
-        email: data.email,
-        password: data.password
-      }).catch(err => console.error("Early email error:", err));
+      // Initialize reCAPTCHA
+      if (!window.recaptchaVerifier) {
+        window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+          size: 'invisible',
+        });
+      }
 
-      const appVerifier = window.recaptchaVerifier;
-      // Sanitize phone number (remove spaces/dashes)
-      const formattedPhoneNumber = data.phoneNumber.replace(/[\s-]/g, '');
-      const confirmation = await signInWithPhoneNumber(auth, formattedPhoneNumber, appVerifier);
+      // Trigger Firebase Phone Verification
+      const confirmation = await signInWithPhoneNumber(auth, data.phoneNumber, window.recaptchaVerifier);
       setConfirmationResult(confirmation);
       setModalOpen(true);
-      toast.info("OTP sent to your phone");
-    } catch (error: any) {
-      if (error.code === 'auth/billing-not-enabled') {
-        try {
-          const { createUserWithEmailAndPassword } = await import("firebase/auth");
-          const userCredential = await createUserWithEmailAndPassword(auth, data.email, data.password);
-
-          const fakeConfirmation: any = {
-            confirm: async (code: string) => {
-              if (code === '123456') return userCredential;
-              throw new Error("Invalid code (Use 123456 for Dev Mode)");
-            },
-            verificationId: "dev-mode-verification-id"
-          };
-
-          setConfirmationResult(fakeConfirmation);
-          setModalOpen(true);
-          toast.warning("Billing Mock Enabled: Use code 123456", {
-            description: "Phone verification bypassed for development."
-          });
-          return;
-
-        } catch (createUserError: any) {
-          console.error("Fallback creation failed:", createUserError);
-          toast.error(createUserError.message);
-          setLoading(false);
-          return;
-        }
-      }
-
-      console.error("Signup/OTP Error Detail:", {
-        code: error.code,
-        message: error.message,
-        customData: error.customData,
-        fullError: error
-      });
-      toast.error(error.message || "Failed to send OTP. Check your phone number.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleVerify = async (result: UserCredential) => {
-    setVerifying(true);
-    try {
-      const user = result.user;
-      const { firstName, lastName, email, role, phoneNumber } = form.getValues();
-      const password = form.getValues("password");
-
-      // Fix: Link Email/Password credential instead of just updating email
-      // This solves "OPERATION_NOT_ALLOWED" and also sets the password for the user.
-      try {
-        const credential = EmailAuthProvider.credential(email, password);
-        await linkWithCredential(user, credential);
-      } catch (linkError: any) {
-        if (linkError.code === 'auth/provider-already-linked') {
-          // Already linked, proceed (idempotent)
-        } else if (linkError.code === 'auth/credential-already-in-use') {
-          throw new Error("This email is already linked to another account.");
-        } else {
-          // Rethrow other errors to be caught by outer catch
-          throw linkError;
-        }
-      }
-      await updateProfile(user, { displayName: `${firstName} ${lastName}` });
-
-      // Refresh token after profile updates to ensure claims are current
-      const idToken = await user.getIdToken(true);
-
-      // Sync with Backend
-      const response = await axios.post(
-        `${API_BASE_URL}/auth/sync-user`,
-        {
-          name: `${firstName} ${lastName}`.trim(),
-          email,
-          role,
-          phoneNumber,
-          firebaseUid: user.uid,
-          password: form.getValues("password"),
-        },
-        {
-          headers: { Authorization: `Bearer ${idToken}` },
-        }
-      );
-
-      // Fix: Manually update Redux state to avoid race condition with FirebaseAuthProvider
-      // This ensures token is available immediately for /dashboard calls
-      if (response.data?.data?.token && response.data?.data?.user) {
-        dispatch(setCredentials({
-          user: response.data.data.user,
-          token: response.data.data.token
-        }));
-      }
-
-      // Trigger Email Verification
-      await sendEmailVerification(user);
-
-      toast.success("Account created successfully!");
-      setModalOpen(false);
-      router.push("/dashboard");
-
+      toast.success("Verification code sent to your phone!");
     } catch (error: any) {
       console.error("Verification Error:", error);
-      toast.error(error.message || "Failed to verify/sync account.");
+      toast.error(error.message || "Failed to send verification code.");
+      if (window.recaptchaVerifier) {
+        window.recaptchaVerifier.clear();
+        window.recaptchaVerifier = null;
+      }
     } finally {
-      setVerifying(false);
+      setLoading(false);
     }
   };
 
@@ -279,7 +186,6 @@ export function SignupForm() {
                   <FormControl>
                     <Input placeholder="John" {...field} className="h-11 bg-gray-50/50 border-gray-200 focus:ring-blue-500/20" />
                   </FormControl>
-                  <p className="text-[10px] text-gray-400">Enter your official first name</p>
                   <FormMessage />
                 </FormItem>
               )}
@@ -296,7 +202,6 @@ export function SignupForm() {
                   <FormControl>
                     <Input placeholder="Doe" {...field} className="h-11 bg-gray-50/50 border-gray-200 focus:ring-blue-500/20" />
                   </FormControl>
-                  <p className="text-[10px] text-gray-400">Enter your legal last name</p>
                   <FormMessage />
                 </FormItem>
               )}
@@ -315,7 +220,6 @@ export function SignupForm() {
                 <FormControl>
                   <Input placeholder="john@example.com" {...field} className="h-11 bg-gray-50/50 border-gray-200 focus:ring-blue-500/20" />
                 </FormControl>
-                <p className="text-[10px] text-gray-400">We'll send a verification link to this email</p>
                 <FormMessage />
               </FormItem>
             )}
@@ -350,21 +254,11 @@ export function SignupForm() {
                     <span>Password</span>
                   </FormLabel>
                   <FormControl>
-                    <div className="relative">
-                      <Input
-                        type={showPassword ? "text" : "password"}
-                        placeholder="••••••••"
-                        {...field}
-                        className="h-11 bg-gray-50/50 border-gray-200 focus:ring-blue-500/20 pr-10"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
-                      >
-                        {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                      </button>
-                    </div>
+                    <PasswordInput
+                      placeholder="••••••••"
+                      {...field}
+                      className="h-11 bg-gray-50/50 border-gray-200 focus:ring-blue-500/20"
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -380,21 +274,11 @@ export function SignupForm() {
                     <span>Confirm Password</span>
                   </FormLabel>
                   <FormControl>
-                    <div className="relative">
-                      <Input
-                        type={showConfirmPassword ? "text" : "password"}
-                        placeholder="••••••••"
-                        {...field}
-                        className="h-11 bg-gray-50/50 border-gray-200 focus:ring-blue-500/20 pr-10"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
-                      >
-                        {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                      </button>
-                    </div>
+                    <PasswordInput
+                      placeholder="••••••••"
+                      {...field}
+                      className="h-11 bg-gray-50/50 border-gray-200 focus:ring-blue-500/20"
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -464,7 +348,7 @@ export function SignupForm() {
             )}
           />
 
-          <div id="recaptcha-container" className="flex justify-center"></div>
+
 
           <Button
             type="submit"
@@ -494,6 +378,8 @@ export function SignupForm() {
           </div>
         </form>
       </Form>
+
+      <div id="recaptcha-container"></div>
 
       <OTPModal
         isOpen={modalOpen}

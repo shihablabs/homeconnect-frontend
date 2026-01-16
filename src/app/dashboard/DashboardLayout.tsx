@@ -15,9 +15,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useLogoutMutation } from "@/redux/features/auth/authApiSlice";
-import { selectAuthStatus, selectCurrentUser, selectIsAuthenticated } from "@/redux/features/auth/authSlice";
-import { useAppSelector } from '@/redux/hooks';
+import { logoutUser, selectAuthStatus, selectCurrentUser, selectIsAuthenticated } from "@/redux/features/auth/authSlice";
+import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import {
   Heart,
   Home,
@@ -38,9 +37,20 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const router = useRouter();
   const user = useAppSelector(selectCurrentUser);
   const isAuthenticated = useAppSelector(selectIsAuthenticated);
-  const authStatus = useAppSelector(selectAuthStatus); // Assuming you have this selector or use status from state
+  const authStatus = useAppSelector(selectAuthStatus);
 
-  const [logoutUser, { isLoading: isLoggingOut }] = useLogoutMutation();
+  const dispatch = useAppDispatch();
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+  // DEBUG: Check why banner is showing/hiding
+  useEffect(() => {
+    console.log("🔍 Dashboard Verification Debug:", {
+      userFromRedux: user,
+      isEmailVerified: user?.isEmailVerified,
+      role: user?.role,
+      conditionResult: !user?.isEmailVerified && user?.role !== 'admin' && user?.role !== 'support'
+    });
+  }, [user]);
 
   // Protect the route
   useEffect(() => {
@@ -54,12 +64,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   const handleLogout = async () => {
     try {
-      await logoutUser().unwrap();
+      setIsLoggingOut(true);
+      await dispatch(logoutUser()).unwrap();
       toast.success("Logged out successfully.");
-      router.push('/login');
     } catch (err) {
       toast.error("Failed to log out. Please try again.");
       console.error('Failed to log out:', err);
+    } finally {
+      setIsLoggingOut(false);
     }
   };
 
@@ -92,8 +104,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       {/* Main Content Wrapper */}
       <div className="flex-1 flex flex-col ml-0 lg:ml-80">
 
-        {/* Email Verification Warning */}
-        {!user?.isEmailVerified && (
+        {/* Email Verification Warning - Hide for Admin/Support */}
+        {!user?.isEmailVerified && user?.role !== 'admin' && user?.role !== 'support' && (
           <>
             <div className="bg-red-50 text-red-600 h-[30px] flex justify-center items-center text-xs font-medium sticky top-0 z-50 shadow-sm">
               <span>Email not verified. </span>

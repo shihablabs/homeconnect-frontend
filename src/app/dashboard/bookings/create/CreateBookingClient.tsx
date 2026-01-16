@@ -57,28 +57,28 @@ export function CreateBookingClient() {
     // If we have a URL property ID, we MUST fetch and init
     if (paramPropertyId) {
       console.log('Commander Init: Fetching Property', paramPropertyId);
-      
+
       const initFlow = async () => {
         try {
           // Note: using local var here, but the Guard Clause handles the visual loading
           const res = await propertiesApi.getProperty(paramPropertyId);
           // Handle potential different response structures (unwrapped vs wrapped)
           // The API fix should return the object directly, but we add safety here.
-          const property = (res as any)?.data || res; 
-          
+          const property = (res as any)?.data || res;
+
           console.log('Commander Init: Data received:', property);
 
           if (property && property._id || property.id) {
-             // -- ATOMIC UPDATE BLOCK --
-             setSelectedProperty(property);
-             setFormData(prev => ({ ...prev, propertyId: property.id || property._id }));
-             // Initialize activeTourId from param if present
-             if (paramTourId) setActiveTourId(paramTourId);
-             setCurrentStep(2);
-             // -------------------------
+            // -- ATOMIC UPDATE BLOCK --
+            setSelectedProperty(property);
+            setFormData(prev => ({ ...prev, propertyId: property.id || property._id }));
+            // Initialize activeTourId from param if present
+            if (paramTourId) setActiveTourId(paramTourId);
+            setCurrentStep(2);
+            // -------------------------
           } else {
-             console.error('Property data missing _id/id or is null', property);
-             toast.error('Failed to load property details');
+            console.error('Property data missing _id/id or is null', property);
+            toast.error('Failed to load property details');
           }
         } catch (error) {
           console.error('Commander Init: Error', error);
@@ -93,10 +93,10 @@ export function CreateBookingClient() {
       // No property ID in URL -> Allow Step 1 to render immediately
       setIsInitializing(false);
     }
-    
+
     // Explicitly excluding dependencies to run ONCE mainly, or when param changes
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [paramPropertyId]); 
+  }, [paramPropertyId]);
 
 
   // -- Handlers --
@@ -129,11 +129,11 @@ export function CreateBookingClient() {
   };
 
   const handleBackToSelection = () => {
-      // If we are going back, we might be unlinking.
-      // The confirmation logic is in the Child (ApplicationDetailsStep).
-      // If this is called, confirms we go back and clear tour.
-      setActiveTourId(null);
-      setCurrentStep(1);
+    // If we are going back, we might be unlinking.
+    // The confirmation logic is in the Child (ApplicationDetailsStep).
+    // If this is called, confirms we go back and clear tour.
+    setActiveTourId(null);
+    setCurrentStep(1);
   };
 
   useEffect(() => {
@@ -143,7 +143,7 @@ export function CreateBookingClient() {
       }
     }, 500);
     return () => clearTimeout(timer);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchQuery]);
 
   const calculateTotalDays = () => {
@@ -180,6 +180,10 @@ export function CreateBookingClient() {
 
   const handleRemoveDocument = (docId: string) => {
     setDocuments(prev => prev.map(d => d.id === docId ? { ...d, url: '', file: undefined } : d));
+  };
+
+  const handleSetDocument = (docId: string, url: string, name: string) => {
+    setDocuments(prev => prev.map(d => d.id === docId ? { ...d, url, name, file: undefined, uploading: false } : d));
   };
 
   const validateStep2 = () => {
@@ -220,7 +224,7 @@ export function CreateBookingClient() {
         checkOut: formData.checkOut,
         specialRequests: formData.specialRequests || undefined,
         leaseDurationInMonths: leaseDuration,
-        setupRecurringPayment: false, 
+        setupRecurringPayment: false,
         documents: uploadedDocs,
         tourId: activeTourId || undefined, // Use state-based tourId
       });
@@ -242,11 +246,11 @@ export function CreateBookingClient() {
   if (isInitializing && paramPropertyId) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] animate-in fade-in">
-          <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
-          <h3 className="text-xl font-semibold text-gray-900">Configuring Application...</h3>
-          <p className="text-gray-500 max-w-sm text-center mt-2">
-            Verifying property availability...
-          </p>
+        <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
+        <h3 className="text-xl font-semibold text-gray-900">Configuring Application...</h3>
+        <p className="text-gray-500 max-w-sm text-center mt-2">
+          Verifying property availability...
+        </p>
       </div>
     );
   }
@@ -301,6 +305,7 @@ export function CreateBookingClient() {
             documents={documents}
             handleFileUpload={handleFileUpload}
             handleRemoveDocument={handleRemoveDocument}
+            handleSetDocument={handleSetDocument}
             validateStep2={validateStep2}
             isLocked={!!activeTourId}
             onBack={handleBackToSelection}

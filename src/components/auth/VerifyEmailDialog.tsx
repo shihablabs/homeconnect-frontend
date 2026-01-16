@@ -10,6 +10,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { authApi } from "@/lib/api/auth-api";
+import { updateUserProfile } from "@/redux/features/auth/authSlice";
+import { useAppDispatch } from "@/redux/hooks";
 import { Loader2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -27,6 +29,7 @@ export function VerifyEmailDialog({
   email,
   onSuccess,
 }: VerifyEmailDialogProps) {
+  const dispatch = useAppDispatch();
   const [otp, setOtp] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
@@ -40,10 +43,12 @@ export function VerifyEmailDialog({
     try {
       await authApi.verifyEmail({ email, otp });
       toast.success("Email verified successfully!");
+
+      // Update Redux state immediately to remove the banner
+      dispatch(updateUserProfile({ isEmailVerified: true }));
+
       onOpenChange(false);
       onSuccess?.();
-      // Force reload to update user state if needed, or rely on Redux update if implemented
-      window.location.reload();
     } catch (error: any) {
       toast.error(error?.message || "Verification failed. Please try again.");
     } finally {

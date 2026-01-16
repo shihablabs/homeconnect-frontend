@@ -16,6 +16,7 @@ export default function SignupPage() {
 
   useEffect(() => {
     if (!isLoading && isAuthenticated) {
+      console.log("🚀 [SignupPage] Authenticated user on register page. Redirecting to dashboard...");
       router.replace("/dashboard");
     }
   }, [isLoading, isAuthenticated, router]);

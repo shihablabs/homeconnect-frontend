@@ -3,7 +3,8 @@
 import { navigationConfig } from '@/config/navigationConfig';
 import { useDashboardCounts } from '@/hooks/useDashboardCounts';
 import { pacifico } from '@/lib/fonts';
-import { useLogoutMutation } from '@/redux/features/auth/authApiSlice';
+import { logoutUser } from '@/redux/features/auth/authSlice';
+import { useAppDispatch } from '@/redux/hooks';
 import { clsx } from 'clsx';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
@@ -25,43 +26,47 @@ interface DashboardSidebarProps {
 export default function DashboardSidebar({ isOpen, onClose, role }: DashboardSidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
+  const dispatch = useAppDispatch();
   const { unreadMessages, unreadNotifications, pendingMaintenance } = useDashboardCounts();
-  const [logoutUser, { isLoading: isLoggingOut }] = useLogoutMutation();
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const handleLogout = async () => {
     try {
-      await logoutUser().unwrap();
+      setIsLoggingOut(true);
+      await dispatch(logoutUser()).unwrap();
       toast.success("Logged out successfully.");
-      router.push('/login');
+      // Redirect handled by thunk
     } catch (err) {
       toast.error("Failed to log out. Please try again.");
       console.error('Failed to log out:', err);
+    } finally {
+      setIsLoggingOut(false);
     }
   };
 
-  
-  
+
+
   const [openDropdowns, setOpenDropdowns] = useState<Set<string>>(new Set());
   const [isMounted, setIsMounted] = useState(false);
 
-  
-  
+
+
   const isPathActive = useCallback((targetPath: string) => {
     if (!pathname || !targetPath) return false;
 
-    
+
     if (pathname === targetPath) return true;
 
-    
+
     if (targetPath === '/dashboard' && pathname !== '/dashboard') return false;
 
-    
-    
+
+
     return pathname.startsWith(targetPath + '/');
   }, [pathname]);
 
-  
-  
+
+
   useEffect(() => {
     setIsMounted(true);
     if (typeof window !== 'undefined') {
@@ -74,16 +79,23 @@ export default function DashboardSidebar({ isOpen, onClose, role }: DashboardSid
           initialDropdowns = new Set(Array.isArray(parsed) ? parsed : []);
         }
 
-        
-        const currentMenu = navigationConfig[role] || navigationConfig['tenant'];
+        // Defensive check for navigationConfig
+        if (!navigationConfig) {
+          console.error("Navigation config is undefined");
+          return;
+        }
+
+        const safeRole = role || 'tenant';
+        const currentMenu = navigationConfig[safeRole] || navigationConfig['tenant'];
+
         if (currentMenu) {
           const findActiveDropdowns = (items: any[]) => {
             items.forEach(item => {
               if (item.type === 'dropdown' && item.items) {
-                
+
                 if (checkActiveRecursive(item.items, isPathActive)) {
                   initialDropdowns.add(item.label);
-                  
+
                   findActiveDropdowns(item.items);
                 }
               }
@@ -98,9 +110,9 @@ export default function DashboardSidebar({ isOpen, onClose, role }: DashboardSid
         console.error('Failed to load dropdown state:', error);
       }
     }
-  }, [role, pathname, isPathActive]); 
+  }, [role, pathname, isPathActive]);
 
-  
+
   useEffect(() => {
     if (typeof window !== 'undefined') {
       try {
@@ -124,17 +136,17 @@ export default function DashboardSidebar({ isOpen, onClose, role }: DashboardSid
     setOpenDropdowns(newDropdowns);
   };
 
-  
+
   const getMenuItemsWithBadges = () => {
-    
+
     const items = navigationConfig[role] || navigationConfig['tenant'];
 
-    if (!items) return []; 
+    if (!items) return [];
 
     return items.map(item => {
       if (item.type === 'link') {
         const itemHref = item.href || '';
-        
+
         if (itemHref === '/dashboard/messages') {
           return { ...item, badge: unreadMessages > 0 ? unreadMessages.toString() : null };
         }
@@ -144,20 +156,20 @@ export default function DashboardSidebar({ isOpen, onClose, role }: DashboardSid
         if (itemHref === '/dashboard/maintenance') {
           return { ...item, badge: pendingMaintenance > 0 ? pendingMaintenance.toString() : null };
         }
-        
+
         if (role === 'support') {
           if (itemHref === '/dashboard/support/tickets') {
-            
+
             return item;
           }
           if (itemHref === '/dashboard/support/escalations') {
-            
+
             return item;
           }
         }
-        
+
         if (role === 'admin' && itemHref === '/dashboard/admin/support') {
-          
+
           return item;
         }
       }
@@ -169,7 +181,7 @@ export default function DashboardSidebar({ isOpen, onClose, role }: DashboardSid
 
   return (
     <>
-      {}
+      { }
       {isOpen && (
         <div
           className="fixed h-full inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
@@ -177,12 +189,12 @@ export default function DashboardSidebar({ isOpen, onClose, role }: DashboardSid
         />
       )}
 
-      {}
+      { }
       <div className={clsx(
         "fixed h-full inset-y-0 left-0 z-50 w-80 bg-gradient-to-b from-white to-gray-50/80 border-r border-gray-200/60 backdrop-blur-lg transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0 flex flex-col",
         isOpen ? "translate-x-0" : "-translate-x-full"
       )}>
-        {}
+        { }
         <div className="flex items-center justify-between h-24 p-6 border-b border-gray-200/40 bg-white/50 backdrop-blur-sm flex-shrink-0">
           <Link
             href="/"
@@ -207,7 +219,7 @@ export default function DashboardSidebar({ isOpen, onClose, role }: DashboardSid
           </button>
         </div>
 
-        {}
+        { }
         <nav className="flex-1 overflow-y-auto mt-8 px-4 pb-24">
           <div className="space-y-1">
             {menuItems.map((item, idx) => (
@@ -224,7 +236,7 @@ export default function DashboardSidebar({ isOpen, onClose, role }: DashboardSid
           </div>
         </nav>
 
-        {}
+        { }
         <div className="absolute bottom-0 left-0 right-0 p-6 border-t border-gray-200/40 bg-white/50 backdrop-blur-sm">
           <div className="space-y-3">
             <button
@@ -272,11 +284,11 @@ function SidebarItem({
   const isActive = item.href ? isPathActive(item.href) : false;
   const isDropdownOpen = openDropdowns.has(item.label);
 
-  
+
   const paddingLeft = depth > 0 ? `${depth * 1 + 1}rem` : '1rem';
 
   if (item.type === 'dropdown') {
-    
+
     const isChildActive = checkActiveRecursive(item.items, isPathActive);
 
     return (
@@ -288,7 +300,7 @@ function SidebarItem({
             isChildActive
               ? "text-blue-600"
               : "text-gray-700 hover:text-gray-900",
-            depth === 0 ? "px-4" : "pr-4" 
+            depth === 0 ? "px-4" : "pr-4"
           )}
           style={{ paddingLeft: depth === 0 ? undefined : paddingLeft }}
         >

@@ -1,7 +1,7 @@
 import { getAuthToken } from '@/lib/auth';
 import axios from 'axios';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
 
 export const clearCache = async (): Promise<any> => {
   const token = getAuthToken();

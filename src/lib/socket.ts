@@ -17,9 +17,15 @@ export const getSocket = (): Socket => {
 export const connectSocket = (userId: string) => {
   const s = getSocket();
   if (!s.connected) {
+    // Get token from storage
+    const token = localStorage.getItem('token');
+
+    // Update socket options with token
+    s.auth = { token };
     s.io.opts.query = { userId };
+
     s.connect();
-    console.log('🔌 Socket connecting...');
+    console.log('🔌 Socket connecting with token...');
   }
   return s;
 };

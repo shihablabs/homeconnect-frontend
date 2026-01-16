@@ -7,11 +7,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { ConfirmDialogWithInput } from '@/components/ui/confirm-dialog-with-input';
 import { adminApi, type PropertyWithVerification } from '@/lib/api/admin-api';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import useEmblaCarousel from 'embla-carousel-react';
 import { ArrowLeft, CheckCircle2, ChevronLeft, ChevronRight, Clock, FileText, Loader2, XCircle } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import Lightbox from "yet-another-react-lightbox";
 import "yet-another-react-lightbox/styles.css";
@@ -31,7 +32,7 @@ export function PropertyReviewClient({ propertyId }: PropertyReviewClientProps) 
     newStatus?: string;
   }>({ open: false, type: 'status' });
 
-  
+
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true });
   const [currentSlide, setCurrentSlide] = useState(0);
   const [lightboxIndex, setLightboxIndex] = useState(-1);
@@ -52,14 +53,14 @@ export function PropertyReviewClient({ propertyId }: PropertyReviewClientProps) 
     }
   }, [emblaApi]);
 
-  
+
   const fetchProperty = async () => {
     try {
       setLoading(true);
       const data = await adminApi.getPropertyForReview(propertyId);
       setProperty(data);
     } catch (error: unknown) {
-      
+
       const errorMessage = error && typeof error === 'object' && 'response' in error
         ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
         : undefined;
@@ -97,10 +98,10 @@ export function PropertyReviewClient({ propertyId }: PropertyReviewClientProps) 
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin', 'properties'] }); 
+      queryClient.invalidateQueries({ queryKey: ['admin', 'properties'] });
       toast.success('Status updated successfully');
       setConfirmDialog({ ...confirmDialog, open: false });
-      fetchProperty(); 
+      fetchProperty();
     },
     onError: (error: unknown) => {
       const errorMessage = error && typeof error === 'object' && 'response' in error
@@ -182,7 +183,7 @@ export function PropertyReviewClient({ propertyId }: PropertyReviewClientProps) 
         </div>
 
         <div className="grid gap-6 md:grid-cols-3">
-          {}
+          { }
           <div className="md:col-span-2 space-y-6">
             <Card>
               <CardHeader>
@@ -338,9 +339,9 @@ export function PropertyReviewClient({ propertyId }: PropertyReviewClientProps) 
             </Card>
           </div>
 
-          {}
+          { }
           <div className="space-y-6">
-            {}
+            { }
             {property.verificationStatus === 'approved' && (
               <Card className="border-green-200 bg-gradient-to-br from-green-50 to-green-50/50">
                 <CardHeader>
@@ -387,7 +388,7 @@ export function PropertyReviewClient({ propertyId }: PropertyReviewClientProps) 
               </Card>
             )}
 
-            {}
+            { }
             {property.verificationStatus === 'rejected' && (
               <Card className="border-red-200 bg-gradient-to-br from-red-50 to-red-50/50">
                 <CardHeader>
@@ -432,7 +433,7 @@ export function PropertyReviewClient({ propertyId }: PropertyReviewClientProps) 
               </Card>
             )}
 
-            {}
+            { }
             {(property.verificationStatus === 'pending' || property.verificationStatus === 'under_review') && (
               <Card className="border-blue-200 bg-gradient-to-br from-blue-50 to-blue-50/50">
                 <CardHeader>
@@ -517,7 +518,7 @@ export function PropertyReviewClient({ propertyId }: PropertyReviewClientProps) 
         </div>
       </div>
 
-      {}
+      { }
       <ConfirmDialogWithInput
         open={confirmDialog.open}
         onOpenChange={(open) => setConfirmDialog({ ...confirmDialog, open })}

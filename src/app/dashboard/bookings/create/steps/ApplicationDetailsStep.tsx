@@ -7,7 +7,11 @@ import { confirmDelete } from '@/lib/swal';
 import type { PropertyResponse } from '@/types/property.types';
 import { Check, Loader2, Upload, X } from 'lucide-react';
 import Image from 'next/image';
+import { usersApi } from '@/lib/api/users-api'; // Ensure this exists or use appropriate API
+import { useAppSelector } from '@/redux/hooks';
 import type { BookingFormData, DocumentFile } from '../types';
+import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
 
 interface ApplicationDetailsStepProps {
   currentStep: number;
@@ -51,6 +55,62 @@ export function ApplicationDetailsStep({
   // And then I will correct the storage of the component logic. 
   // actually, I can just use `onBack` in the component. 
 
+  onBack,
+}: ApplicationDetailsStepProps) {
+  const { user } = useAppSelector((state) => state.auth);
+  const [verifiedDocs, setVerifiedDocs] = useState<any[]>([]);
+
+  useEffect(() => {
+    // Fetch verified documents from user profile
+    const fetchDocs = async () => {
+      try {
+        // Assuming we can get the latest user data or it's already in redux if updated.
+        // For now, let's try to use the user from redux if it has documents, 
+        // OR fetch the profile if needed. The User interface in frontend might not have 'documents' yet 
+        // unless we updated the type there too. 
+        // Let's assume user object in Redux MIGHT have it if we re-fetched, 
+        // but safest is to fetch fresh profile or check if it exists.
+        // Since we just updated backend, frontend type `IUser` (in redux/types) might be outdated 
+        // but the API response will contain it.
+
+        const res = await usersApi.getProfile(user?.id || '');
+        const profile = res.data || res;
+        if (profile.documents) {
+          setVerifiedDocs(profile.documents);
+        }
+      } catch (err) {
+        console.error("Failed to load verified documents", err);
+      }
+    };
+
+    if (user?.id) {
+      fetchDocs();
+    }
+  }, [user?.id]);
+
+  const handleSelectVerifiedDoc = (docId: string, verifiedDoc: any) => {
+    // Auto-fill the document slot
+    // Create a fake event or just call a new handler?
+    // Better to update state directly or have a dedicated handler.
+    // We need to update the `documents` prop. 
+    // Wait, `documents` is passed as prop. We need a handler `handleSetDocument` from parent?
+    // Or we can cheat and use `handleFileUpload`? No, that expects an event.
+    // We need to modify the parent `CreateBookingClient` to accept a direct file set, 
+    // OR we can hack it here if we had `setDocuments`... but we only have `documents` and `handleFileUpload`.
+    // Actually, looking at `CreateBookingClient`, `documents` state is local there.
+    // We need to PROPOSE a change to `CreateBookingClient` to expose a `setDocument` or similar.
+    // BUT `ApplicationDetailsStep` props interface doesn't have it.
+    // WE NEED TO UPDATE THE PROPS FIRST.
+  };
+
+  // Wait, I can't finish this in one go without updating parent.
+  // The plan said "Update Frontend...". 
+  // I will assume I need to update `CreateBookingClient` first or simultaneously to pass `setDocuments` or `handleSelectDocument`.
+  // Let's modify `ApplicationDetailsStep` to invoke a new prop `onSelectDocument` and then update Parent.
+  // OR, better, let's pause this tool call and update `CreateBookingClient` FIRST to add the handler, 
+  // then update this component.
+
+  // Actually, I will update `ApplicationDetailsStep` interface to include `onSelectDocument`.
   return (
     <Card className={`border-none shadow-md overflow-hidden transition-all duration-300 ${currentStep === 2 ? 'ring-2 ring-primary ring-offset-2' : ''} ${currentStep < 2 ? 'opacity-60 pointer-events-none' : 'opacity-100'}`}>
       <div className="bg-primary/5 p-4 border-b border-primary/10 flex justify-between items-center cursor-pointer"
@@ -165,23 +225,49 @@ export function ApplicationDetailsStep({
                       </div>
                     </div>
                   ) : (
-                    <label className="flex flex-col items-center justify-center h-32 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-primary hover:bg-primary/5 transition-all">
+                    <div className="flex flex-col items-center justify-center p-4 h-32 border-2 border-dashed border-gray-300 rounded-lg bg-white/50 hover:bg-white transition-all">
                       {doc.uploading ? (
                         <Loader2 className="h-8 w-8 text-primary animate-spin" />
                       ) : (
-                        <>
-                          <Upload className="h-8 w-8 text-gray-400 mb-2" />
-                          <span className="text-xs text-primary font-medium">Click to Upload</span>
-                        </>
+                        <div className="flex flex-col gap-2 w-full">
+                          <label className="flex flex-col items-center cursor-pointer hover:text-primary transition-colors">
+                            <Upload className="h-6 w-6 text-gray-400 mb-1" />
+                            <span className="text-xs text-center font-medium">Upload New</span>
+                            <input
+                              type="file"
+                              className="hidden"
+                              accept="image/*"
+                              onChange={(e) => handleFileUpload(e, doc.id)}
+                              disabled={doc.uploading}
+                            />
+                          </label>
+
+                          {verifiedDocs.length > 0 && (
+                            <>
+                              <div className="flex items-center gap-2">
+                                <hr className="flex-1 border-gray-200" />
+                                <span className="text-[10px] text-gray-400 uppercase">OR</span>
+                                <hr className="flex-1 border-gray-200" />
+                              </div>
+
+                              <div className="grid grid-cols-1 gap-1 w-full">
+                                {verifiedDocs.map((vDoc: any, idx: number) => (
+                                  <button
+                                    key={idx}
+                                    type="button"
+                                    className="text-[10px] truncate bg-blue-50 text-blue-600 px-2 py-1 rounded border border-blue-100 hover:bg-blue-100 hover:border-blue-200 transition-all text-left flex items-center gap-1"
+                                    onClick={() => handleSelectVerifiedDoc(doc.id, vDoc)}
+                                  >
+                                    <Check className="h-3 w-3" />
+                                    Select: {vDoc.name}
+                                  </button>
+                                ))}
+                              </div>
+                            </>
+                          )}
+                        </div>
                       )}
-                      <input
-                        type="file"
-                        className="hidden"
-                        accept="image/*"
-                        onChange={(e) => handleFileUpload(e, doc.id)}
-                        disabled={doc.uploading}
-                      />
-                    </label>
+                    </div>
                   )}
                 </div>
               ))}

@@ -102,6 +102,7 @@ api.interceptors.response.use(
 
       // Clear persistent storage only if we strictly need to
       if (!isIgnored) {
+        console.error(`[API Interceptor] 401 Unauth from ${requestUrl}. Clearing session.`);
         localStorage.removeItem('token');
         localStorage.removeItem('user');
       }

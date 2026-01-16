@@ -11,7 +11,8 @@ export interface RegisterData {
 }
 
 export interface LoginData {
-  email: string;
+  email?: string;
+  phoneNumber?: string;
   password: string;
 }
 
@@ -28,6 +29,7 @@ export interface AuthResponse {
   token: string;
   expiresIn: string;
   refreshToken?: string;
+  firebaseCustomToken?: string;
 }
 
 interface IChangePasswordRequest {
@@ -77,9 +79,9 @@ export const authApi = {
     return response.data.data;
   },
 
-  verifyEmail: async (data: { email: string; otp: string }): Promise<{ message: string }> => {
+  verifyEmail: async (data: { email: string; otp: string }): Promise<AuthResponse> => {
     const response = await api.post("/auth/verify-email", data);
-    return response.data;
+    return response.data.data;
   },
 
   resendVerificationEmail: async (email: string): Promise<{ message: string }> => {

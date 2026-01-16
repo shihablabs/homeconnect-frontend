@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { PasswordInput } from '@/components/ui/password-input';
 import {
   Select,
   SelectContent,
@@ -540,11 +541,10 @@ export function UsersManagementClient() {
               <Label htmlFor="password" className="text-right">
                 Password <span className="text-red-500">*</span>
               </Label>
-              <Input
+              <PasswordInput
                 id="password"
-                type="password"
                 value={createStaffDialog.password}
-                onChange={(e) => setCreateStaffDialog({ ...createStaffDialog, password: e.target.value })}
+                onChange={(e) => setCreateStaffDialog({ ...createStaffDialog, password: (e.target as HTMLInputElement).value })}
                 className="col-span-3"
                 placeholder="******"
               />

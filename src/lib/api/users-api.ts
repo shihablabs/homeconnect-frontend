@@ -15,6 +15,7 @@ export interface User {
   isEmailVerified: boolean;
   isPhoneVerified?: boolean;
   isVerified?: boolean;
+  verificationStatus?: 'pending' | 'verified' | 'rejected';
   createdAt: string;
   updatedAt: string;
   bio?: string;

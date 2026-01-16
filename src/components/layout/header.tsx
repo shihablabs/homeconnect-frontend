@@ -12,7 +12,7 @@ import {
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
 import { pacifico } from "@/lib/fonts";
-import { useLogoutMutation } from "@/redux/features/auth/authApiSlice";
+import { logoutUser } from "@/redux/features/auth/authSlice";
 
 import {
   selectCurrentUser,
@@ -171,7 +171,7 @@ export default function Header() {
   const user = useSelector(selectCurrentUser);
   const isAuthenticated = useSelector(selectIsAuthenticated);
 
-  const [logoutUser, { isLoading: isLoggingOut }] = useLogoutMutation();
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
 
 
@@ -211,13 +211,16 @@ export default function Header() {
 
   const handleSignOut = async () => {
     try {
-      await logoutUser().unwrap();
+      setIsLoggingOut(true);
+      await dispatch(logoutUser()).unwrap();
       toast.success("Logged out successfully.");
-      router.push("/login");
+      // Redirect is handled by thunk via window.location.href
       setIsMobileMenuOpen(false);
     } catch (err) {
       toast.error("Failed to log out. Please try again.");
       console.error("Failed to log out:", err);
+    } finally {
+      setIsLoggingOut(false);
     }
   };
 

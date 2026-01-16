@@ -3,10 +3,11 @@
 import { GlobalLoader } from "@/components/ui/GlobalLoader";
 import { auth } from "@/lib/firebase.config";
 import { useRefreshTokenMutation } from "@/redux/features/auth/authApiSlice";
-import { logout, selectIsInitialized, setLoading, setToken, setUser } from "@/redux/features/auth/authSlice";
+import { logout, selectIsInitialized, setCredentials, setLoading, setToken, setUser } from "@/redux/features/auth/authSlice";
 import { useAppDispatch, useAppSelector, useAppStore } from "@/redux/hooks";
 import { authService } from "@/services/authService";
 import { User as FirebaseUser, onAuthStateChanged } from "firebase/auth";
+import { usePathname } from "next/navigation";
 import { useEffect } from "react";
 
 export const FirebaseAuthProvider = ({ children }: { children: React.ReactNode }) => {
@@ -14,39 +15,45 @@ export const FirebaseAuthProvider = ({ children }: { children: React.ReactNode }
   const store = useAppStore();
   const isInitialized = useAppSelector(selectIsInitialized);
   const [refreshToken] = useRefreshTokenMutation();
+  const pathname = usePathname();
 
   useEffect(() => {
-    // Flag to prevent double initialization
     let mounted = true;
 
-    const initializeAuth = async () => {
-      // 1. Attempt to restore session via HTTP-Only Cookie (Refresh Token)
-      try {
-        // This mutation will:
-        // - Hit /auth/refresh-token
-        // - On success: dispatch setCredentials (updates user, token, isAuthenticated)
-        // - On error: throws
-        await refreshToken({}).unwrap();
-        // If successful, we are authenticated. 
-        // Admin or Tenant, doesn't matter, Cookie is valid.
-      } catch (error) {
-        // Cookie missing or expired.
-        // If user was Admin, they are now strictly logged out.
-        // If user was Tenant, we check Firebase below.
-      }
+    // Isolate Admin Routes: If we are on an admin route, DO NOT run Firebase logic.
+    // Admin auth is handled purely by Redux state + LocalStorage (via AuthInitializer).
+    const isAdminRoute = pathname?.startsWith('/dashboard/admin') || pathname?.startsWith('/admin-login');
 
-      // 2. Setup Firebase Listener
-      const unsubscribe = onAuthStateChanged(auth, async (firebaseUser: FirebaseUser | null) => {
-        if (!mounted) return;
+    if (isAdminRoute) {
+      if (mounted) dispatch(setLoading(false));
+      return () => { };
+    }
 
-        const currentState = store.getState().auth;
+    if (!auth) {
+      if (mounted) dispatch(setLoading(false));
+      return () => { };
+    }
 
-        if (firebaseUser) {
-          // If we are NOT authenticated yet (Cookie failed), OR we want to ensure sync
-          if (!currentState.isAuthenticated) {
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser: FirebaseUser | null) => {
+      if (!mounted) return;
+
+      const currentState = store.getState().auth;
+      console.log("🔥 [FirebaseAuthProvider] Auth State Change:", {
+        hasFirebaseUser: !!firebaseUser,
+        email: firebaseUser?.email,
+        isAuthenticatedInRedux: currentState.isAuthenticated,
+        pathname
+      });
+
+      if (firebaseUser) {
+        if (!currentState.isAuthenticated) {
+          console.log("🔥 [FirebaseAuthProvider] User found but not authenticated in Redux. Reviving session...");
+          try {
+            await refreshToken({}).unwrap();
+          } catch (refreshError) {
+            // If refresh fails (e.g. no cookie), fallback to full sync
             try {
               const idToken = await firebaseUser.getIdToken();
-              // Sync with Backend
               const authResponse = await authService.syncUser({
                 name: firebaseUser.displayName || "User",
                 email: firebaseUser.email || "",
@@ -56,58 +63,67 @@ export const FirebaseAuthProvider = ({ children }: { children: React.ReactNode }
                 role: "tenant", // Default only if new
               }, idToken);
 
-              // Update Redux
               dispatch(setUser(authResponse.user));
               dispatch(setToken(authResponse.token));
+              console.log("🔥 [FirebaseAuthProvider] Session revived via Firebase sync.");
             } catch (err) {
               console.error("Firebase Sync Failed:", err);
-              // Force logout if sync fails?
               dispatch(logout());
             }
           }
-        } else {
-          // Firebase User is null (Logged Out)
-          // CRITICAL: specific check for Admin roles relative to Firebase.
-          // Admins do NOT use Firebase. So Firebase being null is expected for them.
-          // We only logout if the current user is a Tenant/Landlord (who SHOULD be in Firebase)
-          // Or if we have no user at all.
+        }
+      } else {
+        // Firebase user is null. Check if we have an Admin/Support session in Redux OR LocalStorage.
+        const currentReduxUser = store.getState().auth.user;
+        let isAdminSession = false;
 
-          if (currentState.user) {
-            const role = currentState.user.role;
-            if (role === 'admin' || role === 'super-admin' || role === 'support') {
-              // Do nothing. Admin session relies on Cookies, handled by refreshToken check above.
-              // If Cookie expired, refreshToken() failed, so we might be authenticated=false anyway.
-            } else {
-              // Tenant/Landlord with no Firebase session -> Logout
-              dispatch(logout());
+        // Check Redux State
+        if (currentReduxUser && ['admin', 'super-admin', 'support'].includes(currentReduxUser.role)) {
+          isAdminSession = true;
+          console.log("🔥 [FirebaseAuthProvider] Admin/Support session found in Redux state.");
+        }
+
+        // Check LocalStorage (Fallback for race conditions)
+        if (!isAdminSession && typeof window !== 'undefined') {
+          try {
+            const localUserStr = localStorage.getItem("user");
+            if (localUserStr) {
+              const localUser = JSON.parse(localUserStr);
+              if (localUser && ['admin', 'super-admin', 'support'].includes(localUser.role)) {
+                // We typically let AuthInitializer hydrate this, but to be safe, we just DON'T logout here yet.
+                // Or we can proactively restore it if Redux is empty.
+                if (!currentReduxUser) {
+                  const token = localStorage.getItem("token");
+                  if (token) {
+                    dispatch(setCredentials({ user: localUser, token }));
+                    isAdminSession = true;
+                  }
+                } else {
+                  isAdminSession = true;
+                }
+              }
             }
-          } else {
-            // No user in Redux -> ensure logout state final
-            // dispatch(logout()); // Clean up just in case
+          } catch (e) {
+            console.error("Error reading storage in auth provider", e);
           }
         }
 
-        // Mark initialization complete
-        // We do this inside the listener to ensure at least one check ran
-        if (mounted) {
-          // We dispatch a specific action to set initialized if needed, 
-          // but setCredentials / logout sets it too.
-          // Just force it false -> true explicitly if still loading
-          dispatch(setLoading(false));
+        if (!isAdminSession) {
+          dispatch(logout());
         }
-      });
+      }
 
-      return () => unsubscribe();
-    };
-
-    initializeAuth();
+      if (mounted) {
+        dispatch(setLoading(false));
+      }
+    });
 
     return () => {
       mounted = false;
+      unsubscribe();
     };
   }, [dispatch, refreshToken, store]);
 
-  // Show Loader until we have checked Session at least once
   if (!isInitialized) {
     return <GlobalLoader message="Restoring secure session..." />;
   }

@@ -13,6 +13,7 @@ export interface AuthUser {
   gender?: 'male' | 'female' | 'other';
   isPhoneVerified?: boolean;
   isEmailVerified?: boolean;
+  verificationStatus?: 'pending' | 'verified' | 'rejected';
   isActive?: boolean;
   bio?: string;
   title?: string;
@@ -81,11 +82,21 @@ export const logoutUser = createAsyncThunk(
       sessionStorage.clear();
 
       // Clear all visible cookies (non-HttpOnly)
-      document.cookie.split(";").forEach((c) => {
-        document.cookie = c
-          .replace(/^ +/, "")
-          .replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
-      });
+      try {
+        const cookies = document.cookie.split(";");
+        for (let i = 0; i < cookies.length; i++) {
+          const cookie = cookies[i];
+          const eqPos = cookie.indexOf("=");
+          const name = eqPos > -1 ? cookie.substr(0, eqPos).trim() : cookie.trim();
+
+          // Try clearing on various paths and domains
+          document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/";
+          document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=" + window.location.hostname;
+          document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=." + window.location.hostname;
+        }
+      } catch (e) {
+        console.error("Cookie clearing error:", e);
+      }
     }
 
     // 4. Reset Redux API State (Clear RTK Query Cache)
@@ -137,14 +148,25 @@ const authSlice = createSlice({
       state.isAuthenticated = false;
       state.status = 'idle';
       state.isLoading = false;
+      state.isInitialized = true;
       if (typeof window !== "undefined") {
         localStorage.clear();
         sessionStorage.clear();
-        document.cookie.split(";").forEach((c) => {
-          document.cookie = c
-            .replace(/^ +/, "")
-            .replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
-        });
+        try {
+          const cookies = document.cookie.split(";");
+          for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i];
+            const eqPos = cookie.indexOf("=");
+            const name = eqPos > -1 ? cookie.substr(0, eqPos).trim() : cookie.trim();
+
+            // Try clearing on various paths and domains
+            document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/";
+            document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=" + window.location.hostname;
+            document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=." + window.location.hostname;
+          }
+        } catch (e) {
+          console.error("Cookie clearing error:", e);
+        }
       }
     },
     setLoading: (state, action: PayloadAction<boolean>) => {

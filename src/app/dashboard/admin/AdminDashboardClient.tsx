@@ -135,7 +135,7 @@ export function AdminDashboardClient() {
           </div>
         </div>
 
-        {}
+        { }
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -145,7 +145,7 @@ export function AdminDashboardClient() {
             <CardContent>
               <div className="text-2xl font-bold">{stats.totalUsers}</div>
               <p className="text-xs text-muted-foreground">
-                {stats.usersByRole.tenant} tenants, {stats.usersByRole.landlord} landlords
+                {(stats.usersByRole?.tenant || 0)} tenants, {(stats.usersByRole?.landlord || 0)} landlords
               </p>
             </CardContent>
           </Card>
@@ -158,7 +158,7 @@ export function AdminDashboardClient() {
             <CardContent>
               <div className="text-2xl font-bold">{stats.totalProperties}</div>
               <p className="text-xs text-muted-foreground">
-                {stats.propertiesByStatus.approved} approved, {stats.propertiesByStatus.pending} pending
+                {(stats.propertiesByStatus?.approved || 0)} approved, {(stats.propertiesByStatus?.pending || 0)} pending
               </p>
             </CardContent>
           </Card>
@@ -186,7 +186,7 @@ export function AdminDashboardClient() {
           </Card>
         </div>
 
-        {}
+        { }
         <Card>
           <CardHeader>
             <CardTitle>Property Verification Status</CardTitle>
@@ -197,28 +197,28 @@ export function AdminDashboardClient() {
               <div className="flex items-center justify-between p-4 border rounded-lg">
                 <div>
                   <p className="text-sm text-muted-foreground">Pending</p>
-                  <p className="text-2xl font-bold">{stats.propertiesByStatus.pending}</p>
+                  <p className="text-2xl font-bold">{(stats.propertiesByStatus?.pending || 0)}</p>
                 </div>
                 <AlertCircle className="h-8 w-8 text-yellow-500" />
               </div>
               <div className="flex items-center justify-between p-4 border rounded-lg">
                 <div>
                   <p className="text-sm text-muted-foreground">Approved</p>
-                  <p className="text-2xl font-bold text-green-600">{stats.propertiesByStatus.approved}</p>
+                  <p className="text-2xl font-bold text-green-600">{(stats.propertiesByStatus?.approved || 0)}</p>
                 </div>
                 <FileCheck className="h-8 w-8 text-green-500" />
               </div>
               <div className="flex items-center justify-between p-4 border rounded-lg">
                 <div>
                   <p className="text-sm text-muted-foreground">Rejected</p>
-                  <p className="text-2xl font-bold text-red-600">{stats.propertiesByStatus.rejected}</p>
+                  <p className="text-2xl font-bold text-red-600">{(stats.propertiesByStatus?.rejected || 0)}</p>
                 </div>
                 <AlertCircle className="h-8 w-8 text-red-500" />
               </div>
               <div className="flex items-center justify-between p-4 border rounded-lg">
                 <div>
                   <p className="text-sm text-muted-foreground">Total</p>
-                  <p className="text-2xl font-bold">{stats.propertiesByStatus.total}</p>
+                  <p className="text-2xl font-bold">{(stats.propertiesByStatus?.total || 0)}</p>
                 </div>
                 <Building2 className="h-8 w-8 text-blue-500" />
               </div>
@@ -226,7 +226,7 @@ export function AdminDashboardClient() {
           </CardContent>
         </Card>
 
-        {}
+        { }
         <div className="grid gap-4 md:grid-cols-3">
           <Card>
             <CardHeader>

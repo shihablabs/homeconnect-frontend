@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { PasswordInput } from '@/components/ui/password-input';
 import {
   Select,
   SelectContent,
@@ -274,11 +275,10 @@ export function StaffManagementClient() {
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="password">Password *</Label>
-                      <Input
+                      <PasswordInput
                         id="password"
-                        type="password"
                         value={staffForm.password}
-                        onChange={(e) => setStaffForm({ ...staffForm, password: e.target.value })}
+                        onChange={(e) => setStaffForm({ ...staffForm, password: (e.target as HTMLInputElement).value })}
                         required
                         minLength={6}
                         placeholder="Minimum 6 characters"
