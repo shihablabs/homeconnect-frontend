@@ -3,15 +3,14 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { usersApi } from '@/lib/api/users-api'; // Ensure this exists or use appropriate API
 import { confirmDelete } from '@/lib/swal';
+import { useAppSelector } from '@/redux/hooks';
 import type { PropertyResponse } from '@/types/property.types';
 import { Check, Loader2, Upload, X } from 'lucide-react';
 import Image from 'next/image';
-import { usersApi } from '@/lib/api/users-api'; // Ensure this exists or use appropriate API
-import { useAppSelector } from '@/redux/hooks';
-import type { BookingFormData, DocumentFile } from '../types';
 import { useEffect, useState } from 'react';
-import { toast } from 'sonner';
+import type { BookingFormData, DocumentFile } from '../types';
 
 interface ApplicationDetailsStepProps {
   currentStep: number;
@@ -22,6 +21,7 @@ interface ApplicationDetailsStepProps {
   documents: DocumentFile[];
   handleFileUpload: (event: React.ChangeEvent<HTMLInputElement>, docId: string) => void;
   handleRemoveDocument: (docId: string) => void;
+  handleSetDocument: (docId: string, url: string, name: string) => void;
   validateStep2: () => boolean;
   isLocked?: boolean;
   onBack?: () => void;
@@ -36,43 +36,17 @@ export function ApplicationDetailsStep({
   documents,
   handleFileUpload,
   handleRemoveDocument,
+  handleSetDocument,
   validateStep2,
   isLocked,
-  onBack,
-}: ApplicationDetailsStepProps) {
-  // Need to reference props object for onBack access inside onClick if strictly destructured? 
-  // Ah, I added onBack to destructuring so it's a local var now.
-  // But my previous edit to ApplicationDetailsStep used `props.onBack`.
-  // I must match the usage. 
-  // Wait, the previous replace_file_content for ApplicationDetailsStep used `props.onBack`.
-  // But `props` is NOT defined in the signature I see above: `({ ... }: ApplicationDetailsStepProps)`.
-  // So `props` would be undefined.
-  // I need to use the destructured `onBack` variable.
-  // I will re-apply the logic in the NEXT tool call or fix it here if I can.
-  // I will assume I made a mistake in the previous tool call content (using `props.onBack` when `props` isn't available).
-  // I will Fix that in a subsequent step or try to fix it blindly now?
-  // I will just add `onBack` here.
-  // And then I will correct the storage of the component logic. 
-  // actually, I can just use `onBack` in the component. 
-
   onBack,
 }: ApplicationDetailsStepProps) {
   const { user } = useAppSelector((state) => state.auth);
   const [verifiedDocs, setVerifiedDocs] = useState<any[]>([]);
 
   useEffect(() => {
-    // Fetch verified documents from user profile
     const fetchDocs = async () => {
       try {
-        // Assuming we can get the latest user data or it's already in redux if updated.
-        // For now, let's try to use the user from redux if it has documents, 
-        // OR fetch the profile if needed. The User interface in frontend might not have 'documents' yet 
-        // unless we updated the type there too. 
-        // Let's assume user object in Redux MIGHT have it if we re-fetched, 
-        // but safest is to fetch fresh profile or check if it exists.
-        // Since we just updated backend, frontend type `IUser` (in redux/types) might be outdated 
-        // but the API response will contain it.
-
         const res = await usersApi.getProfile(user?.id || '');
         const profile = res.data || res;
         if (profile.documents) {
@@ -89,18 +63,8 @@ export function ApplicationDetailsStep({
   }, [user?.id]);
 
   const handleSelectVerifiedDoc = (docId: string, verifiedDoc: any) => {
-    // Auto-fill the document slot
-    // Create a fake event or just call a new handler?
-    // Better to update state directly or have a dedicated handler.
-    // We need to update the `documents` prop. 
-    // Wait, `documents` is passed as prop. We need a handler `handleSetDocument` from parent?
-    // Or we can cheat and use `handleFileUpload`? No, that expects an event.
-    // We need to modify the parent `CreateBookingClient` to accept a direct file set, 
-    // OR we can hack it here if we had `setDocuments`... but we only have `documents` and `handleFileUpload`.
-    // Actually, looking at `CreateBookingClient`, `documents` state is local there.
-    // We need to PROPOSE a change to `CreateBookingClient` to expose a `setDocument` or similar.
-    // BUT `ApplicationDetailsStep` props interface doesn't have it.
-    // WE NEED TO UPDATE THE PROPS FIRST.
+    handleSetDocument(docId, verifiedDoc.url, verifiedDoc.name);
+    toast.success(`${verifiedDoc.name} selected from your profile`);
   };
 
   // Wait, I can't finish this in one go without updating parent.

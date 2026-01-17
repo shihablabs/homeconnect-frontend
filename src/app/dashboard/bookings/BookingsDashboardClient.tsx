@@ -53,10 +53,15 @@ export function BookingsDashboardClient() {
   }, [viewType]);
 
   const handlePay = async (booking: Booking) => {
+    const bookingId = booking.id || (booking as any)._id;
+    if (!bookingId) {
+      toast.error('Booking ID is missing');
+      return;
+    }
     try {
       const response = await bookingsApi.createPaymentSession({
-        bookingId: booking.id,
-        returnUrl: `${window.location.origin}/dashboard/bookings/${booking.id}`,
+        bookingId: bookingId,
+        returnUrl: `${window.location.origin}/dashboard/bookings/${bookingId}`,
       });
       window.location.href = response.url;
     } catch (error: unknown) {
@@ -224,7 +229,7 @@ export function BookingsDashboardClient() {
                   </TableHeader>
                   <TableBody>
                     {(bookings || []).map((booking) => (
-                      <TableRow key={booking.id}>
+                      <TableRow key={booking.id || (booking as any)._id}>
                         <TableCell>
                           <div className="flex items-center gap-3">
                             {booking.property?.images && booking.property.images.length > 0 ? (
@@ -242,7 +247,7 @@ export function BookingsDashboardClient() {
                             )}
                             <div>
                               <Link
-                                href={`/properties/${booking.property?.id || '#'}`}
+                                href={`/properties/${booking.property?.id || (booking.property as any)?._id || '#'}`}
                                 className="font-medium hover:text-primary transition-colors"
                               >
                                 {booking.property?.title || 'N/A'}
@@ -285,7 +290,7 @@ export function BookingsDashboardClient() {
                         <TableCell>{getPaymentStatusBadge(booking.paymentStatus || 'pending')}</TableCell>
                         <TableCell className="text-right">
                           <div className="flex gap-2 justify-end">
-                            <Link href={`/dashboard/bookings/${booking.id}`}>
+                            <Link href={`/dashboard/bookings/${booking.id || (booking as any)._id}`}>
                               <Button variant="outline" size="sm">
                                 <Eye className="mr-2 h-4 w-4" />
                                 View

@@ -13,17 +13,25 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useGetMyInquiriesQuery } from "@/redux/features/inquiry/inquiryApiSlice";
+import { useGetMyInquiriesQuery, usePayInquiryMutation, useUpdateInquiryStatusMutation } from "@/redux/features/inquiry/inquiryApiSlice";
+import { RootState } from "@/redux/store";
 import { format } from "date-fns";
-import { ExternalLink, Loader2, Mail, MessageSquare } from "lucide-react";
+import { Check, CreditCard, ExternalLink, Loader2, Mail, MessageSquare, X } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import { useSelector } from "react-redux";
+import { toast } from "sonner";
 
 export default function OffersPage() {
+  const { user } = useSelector((state: RootState) => state.auth);
   const { data: inquiries, isLoading } = useGetMyInquiriesQuery();
   const [filter, setFilter] = useState<'all' | 'pending' | 'responded'>('all');
   const [selectedInquiry, setSelectedInquiry] = useState<{ id: string; inquirerName: string } | null>(null);
   const [isReplyDialogOpen, setIsReplyDialogOpen] = useState(false);
+  const [updateStatus, { isLoading: isUpdating }] = useUpdateInquiryStatusMutation();
+  const [payInquiry, { isLoading: isPaying }] = usePayInquiryMutation();
+
+  const isLandlord = user?.role === 'landlord';
 
   if (isLoading) {
     return (
@@ -40,10 +48,32 @@ export default function OffersPage() {
 
   const handleReply = (inquiry: any) => {
     setSelectedInquiry({
-      id: inquiry._id || inquiry.id,
+      id: inquiry.id,
       inquirerName: inquiry.buyer.name,
     });
     setIsReplyDialogOpen(true);
+  };
+
+  const handleStatusUpdate = async (id: string, status: string) => {
+    try {
+      await updateStatus({ id, status }).unwrap();
+      toast.success(`Offer ${status} successfully`);
+    } catch (error: any) {
+      toast.error(error.data?.message || "Failed to update status");
+    }
+  };
+
+  const handlePayInquiry = async (inquiryId: string) => {
+    try {
+      const { sessionUrl } = await payInquiry({
+        id: inquiryId,
+        returnUrl: `${window.location.origin}/dashboard/sales/offers`
+      }).unwrap();
+
+      window.location.href = sessionUrl;
+    } catch (error: any) {
+      toast.error(error.data?.message || "Failed to initiate payment");
+    }
   };
 
   return (
@@ -97,7 +127,7 @@ export default function OffersPage() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Property</TableHead>
-                  <TableHead>Inquirer</TableHead>
+                  <TableHead>{isLandlord ? 'Inquirer' : 'Seller'}</TableHead>
                   <TableHead>Message</TableHead>
                   <TableHead>Type</TableHead>
                   <TableHead>Status</TableHead>
@@ -120,16 +150,29 @@ export default function OffersPage() {
                       </div>
                     </TableCell>
                     <TableCell>
-                      <div className="flex items-center gap-2">
-                        <Avatar className="h-8 w-8">
-                          <AvatarImage src={inquiry.buyer.avatar} />
-                          <AvatarFallback>{inquiry.buyer.name?.[0]}</AvatarFallback>
-                        </Avatar>
-                        <div className="flex flex-col">
-                          <span className="text-sm font-medium">{inquiry.buyer.name}</span>
-                          <span className="text-xs text-muted-foreground">{inquiry.buyer.email}</span>
+                      {isLandlord ? (
+                        <div className="flex items-center gap-2">
+                          <Avatar className="h-8 w-8">
+                            <AvatarImage src={inquiry.buyer?.avatar} />
+                            <AvatarFallback>{inquiry.buyer?.name?.[0]}</AvatarFallback>
+                          </Avatar>
+                          <div className="flex flex-col">
+                            <span className="text-sm font-medium">{inquiry.buyer?.name}</span>
+                            <span className="text-xs text-muted-foreground">{inquiry.buyer?.email}</span>
+                          </div>
                         </div>
-                      </div>
+                      ) : (
+                        <div className="flex items-center gap-2">
+                          <Avatar className="h-8 w-8">
+                            <AvatarImage src={inquiry.seller?.avatar} />
+                            <AvatarFallback>{inquiry.seller?.name?.[0]}</AvatarFallback>
+                          </Avatar>
+                          <div className="flex flex-col">
+                            <span className="text-sm font-medium">{inquiry.seller?.name}</span>
+                            <span className="text-xs text-muted-foreground">{inquiry.seller?.email}</span>
+                          </div>
+                        </div>
+                      )}
                     </TableCell>
                     <TableCell>
                       <div className="max-w-[300px] truncate text-sm text-muted-foreground" title={inquiry.message}>
@@ -158,14 +201,53 @@ export default function OffersPage() {
                       {format(new Date(inquiry.createdAt), 'MMM d, yyyy')}
                     </TableCell>
                     <TableCell className="text-right">
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => handleReply(inquiry)}
-                      >
-                        <MessageSquare className="h-4 w-4 mr-1" />
-                        Reply
-                      </Button>
+                      <div className="flex justify-end gap-2">
+                        {isLandlord && inquiry.offeredPrice && inquiry.status === 'pending' && (
+                          <>
+                            <Button
+                              size="sm"
+                              variant="default"
+                              className="bg-emerald-600 hover:bg-emerald-700 h-8 font-semibold"
+                              onClick={() => handleStatusUpdate(inquiry.id, 'accepted')}
+                              disabled={isUpdating}
+                            >
+                              <Check className="h-4 w-4 mr-1" />
+                              Accept
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="destructive"
+                              className="h-8 font-semibold"
+                              onClick={() => handleStatusUpdate(inquiry.id, 'rejected')}
+                              disabled={isUpdating}
+                            >
+                              <X className="h-4 w-4 mr-1" />
+                              Reject
+                            </Button>
+                          </>
+                        )}
+                        {/* Pay Now Button for Buyers */}
+                        {!isLandlord && inquiry.status === 'accepted' && inquiry.type === 'offer' && (
+                          <Button
+                            size="sm"
+                            className="h-8 font-semibold bg-emerald-600 hover:bg-emerald-700"
+                            onClick={() => handlePayInquiry(inquiry.id)}
+                            disabled={isPaying}
+                          >
+                            {isPaying ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <CreditCard className="h-4 w-4 mr-1" />}
+                            Pay Now
+                          </Button>
+                        )}
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => handleReply(inquiry)}
+                          className="h-8"
+                        >
+                          <MessageSquare className="h-4 w-4 mr-1" />
+                          Reply
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -173,7 +255,7 @@ export default function OffersPage() {
             </Table>
           )}
         </CardContent>
-      </Card>
+      </Card >
 
       {selectedInquiry && (
         <ReplyDialog
@@ -182,7 +264,8 @@ export default function OffersPage() {
           inquiryId={selectedInquiry.id}
           inquirerName={selectedInquiry.inquirerName}
         />
-      )}
-    </div>
+      )
+      }
+    </div >
   );
 }

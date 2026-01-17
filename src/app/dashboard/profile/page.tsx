@@ -4,6 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { selectCurrentUser } from "@/redux/features/auth/authSlice";
 import { useAppSelector } from "@/redux/hooks";
 import { AlertTriangle, Shield, User as UserIcon } from "lucide-react";
+import { useState } from "react";
 import { DangerZone } from "./components/DangerZone";
 import { ProfileEditForm } from "./components/ProfileEditForm";
 import { ProfileOverview } from "./components/ProfileOverview";
@@ -11,6 +12,7 @@ import { SecuritySettings } from "./components/SecuritySettings";
 
 export default function ProfilePage() {
   const user = useAppSelector(selectCurrentUser);
+  const [isEditing, setIsEditing] = useState(false);
 
   if (!user) return null; // Should be handled by layout, but safeguard.
 
@@ -30,7 +32,7 @@ export default function ProfilePage() {
         <div className="flex flex-col lg:flex-row gap-8 items-start">
           {/* Sidebar: Profile Overview (Sticky on Desktop) */}
           <div className="w-full lg:w-80 shrink-0 lg:sticky lg:top-8">
-            <ProfileOverview user={user} />
+            <ProfileOverview user={user} isEditing={isEditing} />
           </div>
 
           {/* Main Content Area */}
@@ -54,7 +56,11 @@ export default function ProfilePage() {
               </TabsList>
 
               <TabsContent value="general" className="space-y-6">
-                <ProfileEditForm user={user} />
+                <ProfileEditForm
+                  user={user}
+                  isEditing={isEditing}
+                  setIsEditing={setIsEditing}
+                />
               </TabsContent>
 
               <TabsContent value="security" className="space-y-6">

@@ -34,6 +34,7 @@ import { useAuthState } from '@/hooks/useAuthState';
 import { dashboardApi, type IMaintenanceRequestResponse } from '@/lib/api/dashboard';
 import { AlertCircle, CheckCircle2, Clock, Eye, Filter, Loader2, Plus, Wrench, XCircle } from 'lucide-react';
 import Image from 'next/image';
+import { useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
@@ -51,7 +52,7 @@ export function MaintenanceDashboardClient() {
   const [creating, setCreating] = useState(false);
   const [updating, setUpdating] = useState(false);
 
-  
+
   const [createForm, setCreateForm] = useState({
     property: '',
     title: '',
@@ -82,7 +83,7 @@ export function MaintenanceDashboardClient() {
         ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
         : undefined;
       toast.error(errorMessage || 'Failed to fetch maintenance requests');
-      setRequests([]); 
+      setRequests([]);
       setTotalPages(1);
     } finally {
       setLoading(false);
@@ -99,7 +100,7 @@ export function MaintenanceDashboardClient() {
 
   useEffect(() => {
     fetchRequests();
-    
+
   }, [page, statusFilter, priorityFilter]);
 
   const handleCreate = async () => {
@@ -311,7 +312,7 @@ export function MaintenanceDashboardClient() {
           )}
         </div>
 
-        {}
+        { }
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -354,7 +355,7 @@ export function MaintenanceDashboardClient() {
           </CardContent>
         </Card>
 
-        {}
+        { }
         <Card>
           <CardHeader>
             <CardTitle>All Requests</CardTitle>
@@ -460,7 +461,7 @@ export function MaintenanceDashboardClient() {
                     </TableBody>
                   </Table>
                 </div>
-                {}
+                { }
                 {totalPages > 1 && (
                   <div className="flex items-center justify-between mt-4">
                     <div className="text-sm text-muted-foreground">
@@ -491,7 +492,7 @@ export function MaintenanceDashboardClient() {
           </CardContent>
         </Card>
 
-        {}
+        { }
         <Dialog open={isDetailsDialogOpen} onOpenChange={setIsDetailsDialogOpen}>
           <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>

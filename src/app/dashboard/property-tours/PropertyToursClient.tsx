@@ -9,10 +9,8 @@ import {
   DialogDescription,
   DialogFooter,
   DialogHeader,
-  DialogTitle,
-  DialogTrigger,
+  DialogTitle
 } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
   Table,
@@ -26,7 +24,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { propertiesApi } from '@/lib/api/properties-api';
 import { toursApi, type TourRequest } from '@/lib/api/tours-api';
 import type { PropertyResponse } from '@/types/property.types';
-import { Calendar, CheckCircle2, Clock, Home, MapPin, Plus, XCircle } from 'lucide-react';
+import { Calendar, CheckCircle2, Clock, Home, MapPin, XCircle } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
@@ -39,7 +37,7 @@ export function PropertyToursClient() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedProperty, setSelectedProperty] = useState<string>('');
 
-  
+
   const [isRejectDialogOpen, setIsRejectDialogOpen] = useState(false);
   const [tourToReject, setTourToReject] = useState<string | null>(null);
   const [rejectionReason, setRejectionReason] = useState('');
@@ -93,7 +91,7 @@ export function PropertyToursClient() {
     }
   };
 
-  
+
   const [feedbackOptions, setFeedbackOptions] = useState<string[]>([]);
   const [feedbackComment, setFeedbackComment] = useState('');
   const [targetAction, setTargetAction] = useState<'reject' | 'cancel' | null>(null);
@@ -114,7 +112,7 @@ export function PropertyToursClient() {
 
   const initReject = (tourId: string) => {
     setTourToReject(tourId);
-    setRejectionReason(''); 
+    setRejectionReason('');
     setFeedbackComment('');
     setFeedbackOptions(REJECT_REASONS);
     setTargetAction('reject');
@@ -141,13 +139,13 @@ export function PropertyToursClient() {
       setIsProcessing(true);
       const status = targetAction === 'reject' ? 'rejected' : 'cancelled';
 
-      
-      
+
+
       await toursApi.updateTourStatus(tourToReject, status, {
         cancellationReason: rejectionReason,
         feedback: feedbackComment,
         cancellationBy: 'landlord',
-        landlordNotes: feedbackComment 
+        landlordNotes: feedbackComment
       });
 
       toast.success(`Tour request ${status}`);
@@ -162,7 +160,7 @@ export function PropertyToursClient() {
 
   const handleScheduleTour = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     toast.info('To schedule a specific slot manually, use the property page.');
     setIsDialogOpen(false);
   };
@@ -191,7 +189,7 @@ export function PropertyToursClient() {
           </Badge>
         );
       case 'completed':
-        return <Badge variant="secondary">Completed</Badge>;
+        return <Badge variant="secondary" className="bg-blue-100 text-blue-700 hover:bg-blue-200">Application Submitted</Badge>;
       default:
         return <Badge>{status}</Badge>;
     }
@@ -221,60 +219,6 @@ export function PropertyToursClient() {
               Manage property tour requests and schedules
             </p>
           </div>
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogTrigger asChild>
-              <Button>
-                <Plus className="mr-2 h-4 w-4" />
-                Schedule Tour
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Schedule Property Tour</DialogTitle>
-                <DialogDescription>
-                  Create a new tour schedule for a property
-                </DialogDescription>
-              </DialogHeader>
-              <form onSubmit={handleScheduleTour} className="space-y-4">
-                <div className="space-y-2">
-                  <Label>Property</Label>
-                  <select
-                    className="w-full p-2 border rounded-md"
-                    value={selectedProperty}
-                    onChange={(e) => setSelectedProperty(e.target.value)}
-                    required
-                  >
-                    <option value="">Select a property</option>
-                    {(properties || []).map((prop) => (
-                      <option key={prop.id} value={prop.id}>
-                        {prop.title}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div className="grid gap-4 md:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label>Date</Label>
-                    <Input type="date" required />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Time</Label>
-                    <Input type="time" required />
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label>Notes</Label>
-                  <Textarea placeholder="Additional notes for the tour..." rows={3} />
-                </div>
-                <DialogFooter>
-                  <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
-                    Cancel
-                  </Button>
-                  <Button type="submit">Schedule Tour</Button>
-                </DialogFooter>
-              </form>
-            </DialogContent>
-          </Dialog>
         </div>
 
         <Card>

@@ -81,7 +81,7 @@ export const bookingsApi = {
 
   createBooking: async (data: CreateBookingRequest): Promise<Booking> => {
     const response = await api.post('/bookings', data);
-    return response.data.data.booking;
+    return response.data.data;
   },
 
 
@@ -89,6 +89,11 @@ export const bookingsApi = {
     data: CreatePaymentSessionRequest
   ): Promise<PaymentSessionResponse> => {
     const response = await api.post('/bookings/payment', data);
+    return response.data.data;
+  },
+
+  verifyPayment: async (sessionId: string): Promise<Booking> => {
+    const response = await api.post('/bookings/payment/verify', { session_id: sessionId });
     return response.data.data;
   },
 
@@ -109,7 +114,7 @@ export const bookingsApi = {
 
   getBooking: async (id: string): Promise<Booking> => {
     const response = await api.get(`/bookings/${id}`);
-    return response.data.data.booking;
+    return response.data.data;
   },
 
 
@@ -118,17 +123,17 @@ export const bookingsApi = {
     data: CancelBookingRequest
   ): Promise<Booking> => {
     const response = await api.post(`/bookings/${id}/cancel`, data);
-    return response.data.data.booking;
+    return response.data.data;
   },
 
   approveBooking: async (id: string): Promise<Booking> => {
     const response = await api.patch(`/bookings/${id}/approve`);
-    return response.data.data.booking;
+    return response.data.data;
   },
 
   rejectBooking: async (id: string, reason: string): Promise<Booking> => {
     const response = await api.patch(`/bookings/${id}/reject`, { reason });
-    return response.data.data.booking;
+    return response.data.data;
   },
 };
 

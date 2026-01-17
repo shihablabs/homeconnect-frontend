@@ -70,7 +70,7 @@ export function QuickViewModal({ property, isOpen, onClose }: QuickViewModalProp
   return (
     <>
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="max-w-4xl w-full p-0 border-none rounded-3xl overflow-hidden shadow-2xl">
+        <DialogContent className="max-w-[calc(100%-40px)] md:max-w-[760px] w-full p-0 border-none rounded-3xl overflow-hidden shadow-2xl">
           <div className="w-full grid grid-cols-1 md:grid-cols-[1.1fr_1fr]">
             { }
             <div className="relative aspect-[4/3] md:aspect-auto h-full min-h-[300px] bg-gray-100 group">

@@ -5,19 +5,19 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from '@/components/ui/select';
 import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
 } from '@/components/ui/table';
 import { toursApi, type TourRequest } from '@/lib/api/tours-api';
 import { Calendar, CheckCircle2, Clock, Home, MapPin, Search, XCircle } from 'lucide-react';
@@ -71,8 +71,8 @@ export function MyToursClient() {
     }
   };
 
-  const handleConfirmTour = (propertyId: string) => {
-    router.push(`/dashboard/bookings/create?propertyId=${propertyId}`);
+  const handleConfirmTour = (propertyId: string, tourId: string) => {
+    router.push(`/dashboard/bookings/create?propertyId=${propertyId}&tourId=${tourId}`);
   };
 
   const getStatusBadge = (status: string) => {
@@ -106,7 +106,7 @@ export function MyToursClient() {
           </Badge>
         );
       case 'completed':
-        return <Badge variant="secondary">Completed</Badge>;
+        return <Badge variant="secondary" className="bg-blue-100 text-blue-700">Application Submitted</Badge>;
       default:
         return <Badge>{status}</Badge>;
     }
@@ -242,9 +242,9 @@ export function MyToursClient() {
                         <TableCell className="text-right p-4">
                           <div className="flex items-center justify-end gap-2">
                             {tour.status === 'pending' && (
-                              <Button 
-                                variant="destructive" 
-                                size="sm" 
+                              <Button
+                                variant="destructive"
+                                size="sm"
                                 className="h-8"
                                 onClick={() => handleCancelTour(tour.id)}
                               >
@@ -253,16 +253,16 @@ export function MyToursClient() {
                             )}
                             {tour.status === 'approved' && (
                               <>
-                                <Button 
-                                  variant="outline" 
-                                  size="sm" 
+                                <Button
+                                  variant="outline"
+                                  size="sm"
                                   className="h-8 border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700 hover:border-red-300"
                                   onClick={() => handleCancelTour(tour.id)}
                                 >
                                   Cancel
                                 </Button>
-                                <Button 
-                                  size="sm" 
+                                <Button
+                                  size="sm"
                                   className="h-8 bg-green-600 hover:bg-green-700 text-white"
                                   onClick={() => handleConfirmTour(tour.property.id, tour.id)}
                                 >

@@ -3,7 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { RichTextEditor } from "@/components/ui/rich-text-editor";
+import { Textarea } from "@/components/ui/textarea";
 import { User } from "lucide-react";
 import { UseFormReturn } from "react-hook-form";
 import { ProfileFormData } from "./ProfileEditForm";
@@ -44,13 +44,18 @@ export function GeneralInfo({ form, disabled }: GeneralInfoProps) {
             <FormItem>
               <FormLabel>Bio / Description</FormLabel>
               <FormControl>
-                <RichTextEditor
-                  placeholder="Tell us a bit about yourself..."
-                  className="min-h-[150px]"
-                  value={field.value || ""}
-                  onChange={field.onChange}
-                  disabled={disabled}
-                />
+                {disabled ? (
+                  <div className="min-h-[60px] p-3 rounded-md bg-gray-50 border border-gray-100 text-sm text-gray-600 whitespace-pre-wrap">
+                    {field.value || "No bio added yet."}
+                  </div>
+                ) : (
+                  <Textarea
+                    placeholder="Tell us a bit about yourself..."
+                    className="min-h-[100px] resize-none"
+                    {...field}
+                    value={field.value || ""}
+                  />
+                )}
               </FormControl>
               <FormMessage />
             </FormItem>

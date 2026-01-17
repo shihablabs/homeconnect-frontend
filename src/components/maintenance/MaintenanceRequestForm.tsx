@@ -71,7 +71,7 @@ export function MaintenanceRequestForm({
   const [isUploadingImages, setIsUploadingImages] = useState(false);
 
   const form = useForm<MaintenanceRequestFormData>({
-    
+
     resolver: zodResolver(maintenanceRequestSchema) as any,
     defaultValues: {
       propertyId: propertyId || '',
@@ -113,7 +113,7 @@ export function MaintenanceRequestForm({
       return response.data.data.map((img: { url: string }) => img.url);
     } catch (error: unknown) {
       console.error('Image upload error:', error);
-      
+
       throw new Error((error as any).response?.data?.message || 'Failed to upload images');
     }
   };
@@ -122,14 +122,14 @@ export function MaintenanceRequestForm({
     try {
       setIsSubmitting(true);
 
-      
+
       let imageUrls: string[] = [];
       if (imageFiles.length > 0) {
         setIsUploadingImages(true);
         try {
           imageUrls = await uploadImages(imageFiles);
         } catch (error: unknown) {
-          
+
           toast.error((error as any).message || 'Failed to upload images');
           setIsSubmitting(false);
           setIsUploadingImages(false);
@@ -139,7 +139,7 @@ export function MaintenanceRequestForm({
         }
       }
 
-      
+
       const requestData = {
         ...data,
         images: imageUrls,
@@ -159,7 +159,7 @@ export function MaintenanceRequestForm({
     } catch (error: unknown) {
       console.error('Error creating maintenance request:', error);
       toast.error(
-        
+
         (error as any).response?.data?.message ||
         'Failed to submit maintenance request. Please try again.'
       );
@@ -170,10 +170,40 @@ export function MaintenanceRequestForm({
 
   const imagePreviews = imageFiles.map((file) => URL.createObjectURL(file));
 
+  const { user } = useAppSelector((state) => state.auth);
+  const [rentedProperties, setRentedProperties] = useState<any[]>([]);
+  const [isLoadingProperties, setIsLoadingProperties] = useState(false);
+
+  useEffect(() => {
+    const fetchRentedProperties = async () => {
+      if (user?.role !== 'tenant' || propertyId) return;
+
+      try {
+        setIsLoadingProperties(true);
+        const { bookings } = await bookingsApi.getUserBookings('tenant');
+        // Filter for confirmed/completed bookings to show active rentals
+        const activeRentals = bookings
+          .filter(b => b.status === 'confirmed' || b.status === 'completed' || b.status === 'approved')
+          .map(b => b.property);
+
+        // Remove duplicates if any
+        const uniqueProperties = Array.from(new Set(activeRentals.map(p => p.id)))
+          .map(id => activeRentals.find(p => p.id === id));
+
+        setRentedProperties(uniqueProperties);
+      } catch (error) {
+        console.error('Failed to fetch rented properties:', error);
+      } finally {
+        setIsLoadingProperties(false);
+      }
+    };
+
+    fetchRentedProperties();
+  }, [user, propertyId]);
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        {}
         {!propertyId && (
           <FormField
             control={form.control}
@@ -181,14 +211,30 @@ export function MaintenanceRequestForm({
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Property</FormLabel>
-                <FormControl>
-                  <Input
-                    placeholder="Enter Property ID"
-                    {...field}
-                  />
-                </FormControl>
+                <Select
+                  onValueChange={field.onChange}
+                  defaultValue={field.value}
+                  disabled={isLoadingProperties}
+                >
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder={isLoadingProperties ? "Loading properties..." : "Select property"} />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {rentedProperties.length > 0 ? (
+                      rentedProperties.map((prop) => (
+                        <SelectItem key={prop.id} value={prop.id}>
+                          {prop.title}
+                        </SelectItem>
+                      ))
+                    ) : (
+                      <SelectItem value="none" disabled>No active rentals found</SelectItem>
+                    )}
+                  </SelectContent>
+                </Select>
                 <FormDescription>
-                  Enter the property ID for this maintenance request
+                  Select the property you are reporting maintenance for
                 </FormDescription>
                 <FormMessage />
               </FormItem>
@@ -196,7 +242,7 @@ export function MaintenanceRequestForm({
           />
         )}
 
-        {}
+        { }
         <FormField
           control={form.control}
           name="title"
@@ -217,7 +263,7 @@ export function MaintenanceRequestForm({
           )}
         />
 
-        {}
+        { }
         <FormField
           control={form.control}
           name="description"
@@ -239,7 +285,7 @@ export function MaintenanceRequestForm({
           )}
         />
 
-        {}
+        { }
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormField
             control={form.control}
@@ -302,14 +348,14 @@ export function MaintenanceRequestForm({
           />
         </div>
 
-        {}
+        { }
         <div className="space-y-2">
           <FormLabel>Images (Optional)</FormLabel>
           <FormDescription>
             Upload up to 10 images to help describe the issue
           </FormDescription>
 
-          {}
+          { }
           {imageFiles.length > 0 && (
             <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-4 mt-4">
               {imagePreviews.map((preview, index) => (
@@ -335,7 +381,7 @@ export function MaintenanceRequestForm({
             </div>
           )}
 
-          {}
+          { }
           {imageFiles.length < 10 && (
             <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-blue-500 hover:bg-gray-50 transition-colors">
               <div className="flex flex-col items-center justify-center pt-5 pb-6">
@@ -355,7 +401,7 @@ export function MaintenanceRequestForm({
           )}
         </div>
 
-        {}
+        { }
         <div className="flex justify-end gap-4">
           <Button
             type="button"

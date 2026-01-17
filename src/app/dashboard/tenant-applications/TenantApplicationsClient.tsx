@@ -43,7 +43,7 @@ export function TenantApplicationsClient() {
     try {
       setLoading(true);
       const response = await bookingsApi.getUserBookings('landlord');
-      
+
       const applications = (response?.bookings || []).filter((b) => b.status === 'pending');
       setBookings(applications);
     } catch (error: unknown) {
@@ -64,12 +64,17 @@ export function TenantApplicationsClient() {
 
   const handleApprove = async () => {
     if (!selectedBooking) return;
+    const bookingId = selectedBooking.id || (selectedBooking as any)._id;
+    if (!bookingId) {
+      toast.error('Booking ID is missing');
+      return;
+    }
     try {
-      setProcessingId(selectedBooking.id);
-      await bookingsApi.approveBooking(selectedBooking.id);
+      setProcessingId(bookingId);
+      await bookingsApi.approveBooking(bookingId);
       toast.success('Application approved successfully');
       setIsDialogOpen(false);
-      fetchApplications(); 
+      fetchApplications();
     } catch (error: unknown) {
       console.error('Failed to approve application:', error);
       toast.error('Failed to approve application');
@@ -89,12 +94,18 @@ export function TenantApplicationsClient() {
       return;
     }
 
+    const bookingId = selectedBooking.id || (selectedBooking as any)._id;
+    if (!bookingId) {
+      toast.error('Booking ID is missing');
+      return;
+    }
+
     try {
-      setProcessingId(selectedBooking.id);
-      await bookingsApi.rejectBooking(selectedBooking.id, rejectReason);
+      setProcessingId(bookingId);
+      await bookingsApi.rejectBooking(bookingId, rejectReason);
       toast.success('Application rejected');
       setIsDialogOpen(false);
-      fetchApplications(); 
+      fetchApplications();
     } catch (error: unknown) {
       console.error('Failed to reject application:', error);
       toast.error('Failed to reject application');
@@ -161,7 +172,7 @@ export function TenantApplicationsClient() {
                   </TableHeader>
                   <TableBody>
                     {bookings.map((booking) => (
-                      <TableRow key={booking.id}>
+                      <TableRow key={booking.id || (booking as any)._id}>
                         <TableCell>
                           <div className="flex items-center gap-3">
                             {booking.property.images && booking.property.images.length > 0 ? (
@@ -205,9 +216,16 @@ export function TenantApplicationsClient() {
                           </div>
                         </TableCell>
                         <TableCell>
-                          <Badge variant="secondary">
-                            {booking.documents?.length || 0} Files
-                          </Badge>
+                          <div className="flex flex-col gap-1">
+                            <Badge variant="secondary" className="w-fit">
+                              {booking.documents?.length || 0} Files
+                            </Badge>
+                            {booking.tour && (
+                              <Badge variant="outline" className="w-fit bg-blue-50 text-blue-700 border-blue-200 text-[10px]">
+                                Verified Visit
+                              </Badge>
+                            )}
+                          </div>
                         </TableCell>
                         <TableCell className="font-medium">
                           ৳{booking.totalAmount.toLocaleString()}
@@ -230,7 +248,7 @@ export function TenantApplicationsClient() {
           </CardContent>
         </Card>
 
-        {}
+        { }
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
@@ -242,7 +260,7 @@ export function TenantApplicationsClient() {
             {selectedBooking && (
               <div className="space-y-6">
 
-                {}
+                { }
                 <div className="grid md:grid-cols-2 gap-4 p-4 bg-gray-50 rounded-lg">
                   <div>
                     <h4 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-2">Property</h4>
@@ -259,7 +277,7 @@ export function TenantApplicationsClient() {
                   </div>
                 </div>
 
-                {}
+                { }
                 <div>
                   <h4 className="text-lg font-semibold mb-3 flex items-center gap-2">
                     Tenant Information
@@ -281,11 +299,16 @@ export function TenantApplicationsClient() {
                   )}
                 </div>
 
-                {}
+                { }
                 <div>
                   <h4 className="text-lg font-semibold mb-3 flex items-center gap-2">
                     Submitted Documents
                     <Badge variant="outline">{selectedBooking.documents?.length || 0} Files</Badge>
+                    {selectedBooking.tour && (
+                      <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                        Verified Visit
+                      </Badge>
+                    )}
                   </h4>
 
                   {selectedBooking.documents && selectedBooking.documents.length > 0 ? (
@@ -317,7 +340,7 @@ export function TenantApplicationsClient() {
                   )}
                 </div>
 
-                {}
+                { }
                 {showRejectInput && (
                   <div className="space-y-2 animate-in slide-in-from-top-2">
                     <label className="text-sm font-medium text-red-600">Reason for Rejection</label>

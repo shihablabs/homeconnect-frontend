@@ -20,8 +20,8 @@ import { convertBDTtoUSD, formatBDT, formatUSD } from '@/lib/utils/currencyHelpe
 import { AlertCircle, ArrowLeft, Calendar, CheckCircle2, Clock, CreditCard, Home, MapPin, User, XCircle } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
 interface BookingDetailsClientProps {
@@ -30,6 +30,8 @@ interface BookingDetailsClientProps {
 
 export function BookingDetailsClient({ bookingId }: BookingDetailsClientProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const verificationAttempted = useRef(false);
   const { user } = useAuthState();
   const [booking, setBooking] = useState<Booking | null>(null);
   const [loading, setLoading] = useState(true);
@@ -54,16 +56,41 @@ export function BookingDetailsClient({ bookingId }: BookingDetailsClientProps) {
   };
 
   useEffect(() => {
-    fetchBooking();
+    const verifyPayment = async () => {
+      const sessionId = searchParams.get('session_id');
+      const success = searchParams.get('success');
 
-  }, [bookingId]);
+      if (success === 'true' && sessionId && !verificationAttempted.current) {
+        verificationAttempted.current = true;
+        try {
+          const verifiedBooking = await bookingsApi.verifyPayment(sessionId);
+          setBooking(verifiedBooking);
+          toast.success('Payment verified successfully!');
+          // Clean up URL
+          router.replace(`/dashboard/bookings/${bookingId}`);
+        } catch (error) {
+          console.error("Payment verification failed:", error);
+          toast.error("Payment verification failed. Please contact support.");
+        }
+      } else {
+        fetchBooking();
+      }
+    };
+
+    verifyPayment();
+  }, [bookingId, searchParams]);
 
   const handlePay = async () => {
     if (!booking) return;
+    const bookingId = booking.id || (booking as any)._id;
+    if (!bookingId) {
+      toast.error('Booking ID is missing');
+      return;
+    }
     try {
       const response = await bookingsApi.createPaymentSession({
-        bookingId: booking.id,
-        returnUrl: `${window.location.origin}/dashboard/bookings/${booking.id}`,
+        bookingId: bookingId,
+        returnUrl: `${window.location.origin}/dashboard/bookings/${bookingId}`,
       });
       window.location.href = response.url;
     } catch (error: unknown) {
@@ -128,20 +155,22 @@ export function BookingDetailsClient({ bookingId }: BookingDetailsClientProps) {
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'confirmed':
+      case 'approved':
+      case 'waiting_for_payment':
         return (
-          <Badge variant="default" className="gap-1">
+          <Badge className="gap-1 bg-green-600">
             <CheckCircle2 className="h-3 w-3" />
-            Confirmed
+            Approved
           </Badge>
         );
       case 'pending':
         return (
-          <Badge variant="outline" className="gap-1">
+          <Badge variant="outline" className="gap-1 bg-yellow-50 text-yellow-700 border-yellow-200">
             <Clock className="h-3 w-3" />
-            Pending
+            Application Pending
           </Badge>
         );
+      case 'rejected':
       case 'cancelled':
         return (
           <Badge variant="destructive" className="gap-1">
@@ -163,11 +192,11 @@ export function BookingDetailsClient({ bookingId }: BookingDetailsClientProps) {
 
   const isTenant = user?.role === 'tenant';
   const canCancel = booking.status !== 'cancelled' && booking.status !== 'completed';
-  const canPay = isTenant && booking.status === 'pending' && booking.paymentStatus === 'pending';
+  const canPay = isTenant && (booking.status === 'approved' || booking.status === 'waiting_for_payment') && booking.paymentStatus === 'pending';
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-4 mt-10">
         <Link href="/dashboard/bookings">
           <Button variant="outline" size="icon">
             <ArrowLeft className="h-4 w-4" />
@@ -184,7 +213,7 @@ export function BookingDetailsClient({ bookingId }: BookingDetailsClientProps) {
       <div className="grid gap-6 md:grid-cols-3">
         { }
         <div className="md:col-span-2 space-y-6">
-          <Card>
+          <Card className=''>
             <CardHeader>
               <CardTitle>Property Information</CardTitle>
             </CardHeader>
@@ -205,7 +234,7 @@ export function BookingDetailsClient({ bookingId }: BookingDetailsClientProps) {
                 )}
                 <div>
                   <Link
-                    href={`/properties/${booking.property.id}`}
+                    href={`/properties/${booking.property.id || (booking.property as any)._id}`}
                     className="text-xl font-semibold hover:text-primary transition-colors"
                   >
                     {booking.property.title}
@@ -219,7 +248,7 @@ export function BookingDetailsClient({ bookingId }: BookingDetailsClientProps) {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className=''>
             <CardHeader>
               <CardTitle>Booking Dates</CardTitle>
             </CardHeader>
@@ -244,7 +273,7 @@ export function BookingDetailsClient({ bookingId }: BookingDetailsClientProps) {
           </Card>
 
           {booking.specialRequests && (
-            <Card>
+            <Card className=''>
               <CardHeader>
                 <CardTitle>Special Requests</CardTitle>
               </CardHeader>
@@ -257,7 +286,7 @@ export function BookingDetailsClient({ bookingId }: BookingDetailsClientProps) {
 
         { }
         <div className="space-y-6">
-          <Card>
+          <Card className=''>
             <CardHeader>
               <CardTitle>Booking Status</CardTitle>
             </CardHeader>
@@ -281,7 +310,7 @@ export function BookingDetailsClient({ bookingId }: BookingDetailsClientProps) {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className=''>
             <CardHeader>
               <CardTitle>{isTenant ? 'Landlord' : 'Tenant'}</CardTitle>
             </CardHeader>
@@ -307,7 +336,7 @@ export function BookingDetailsClient({ bookingId }: BookingDetailsClientProps) {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className=''>
             <CardHeader>
               <CardTitle>Actions</CardTitle>
             </CardHeader>
@@ -319,12 +348,12 @@ export function BookingDetailsClient({ bookingId }: BookingDetailsClientProps) {
                     <div className="text-[11px] text-muted-foreground">
                       <p className="font-semibold text-primary/80">Payment Disclaimer</p>
                       <p>Rent & Deposit: <span className="font-bold">{formatBDT(booking.totalAmount + (booking.securityDeposit || 0))}</span></p>
-                      <p>Service Fee (5%): <span className="font-bold">{formatBDT(booking.totalAmount * 0.05)}</span></p>
+                      <p>Service Fee (2%): <span className="font-bold">{formatBDT(booking.totalAmount * 0.02)}</span></p>
                       <p className="text-sm border-t border-primary/10 mt-1 pt-1 text-foreground font-semibold">
-                        Total BDT: <span>{formatBDT((booking.totalAmount * 1.05) + (booking.securityDeposit || 0))}</span>
+                        Total BDT: <span>{formatBDT((booking.totalAmount * 1.02) + (booking.securityDeposit || 0))}</span>
                       </p>
                       <p className="text-foreground font-semibold">
-                        Equivalent USD: <span>{formatUSD(convertBDTtoUSD((booking.totalAmount * 1.05) + (booking.securityDeposit || 0)))}</span>
+                        Equivalent USD: <span>{formatUSD(convertBDTtoUSD((booking.totalAmount * 1.02) + (booking.securityDeposit || 0)))}</span>
                       </p>
                       <p className="mt-1 italic">* You will be charged in USD based on the fixed rate (1 USD = 120 BDT).</p>
                     </div>

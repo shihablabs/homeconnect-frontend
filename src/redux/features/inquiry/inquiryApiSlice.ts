@@ -16,6 +16,7 @@ export interface InquiryResponse {
   message: string;
   status: 'pending' | 'responded' | 'accepted' | 'rejected' | 'countered';
   createdAt: string;
+  type?: 'general' | 'offer';
 }
 
 export const inquiryApiSlice = apiSlice.injectEndpoints({
@@ -43,6 +44,21 @@ export const inquiryApiSlice = apiSlice.injectEndpoints({
       }),
       invalidatesTags: ['Inquiry' as any],
     }),
+    updateInquiryStatus: builder.mutation<InquiryResponse, { id: string; status: string }>({
+      query: ({ id, status }) => ({
+        url: `/inquiries/${id}/status`,
+        method: 'PATCH',
+        body: { status },
+      }),
+      invalidatesTags: ['Inquiry' as any],
+    }),
+    payInquiry: builder.mutation<{ sessionId: string; sessionUrl: string }, { id: string; returnUrl: string }>({
+      query: ({ id, returnUrl }) => ({
+        url: `/payments/offer/${id}/pay`, // Note: using payments route
+        method: 'POST',
+        body: { returnUrl },
+      }),
+    }),
   }),
 });
 
@@ -50,4 +66,6 @@ export const {
   useCreateInquiryMutation,
   useGetMyInquiriesQuery,
   useReplyToInquiryMutation,
+  useUpdateInquiryStatusMutation,
+  usePayInquiryMutation,
 } = inquiryApiSlice;

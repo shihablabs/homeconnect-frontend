@@ -24,46 +24,52 @@ export function RoleBasedFields({ form, role, disabled }: RoleBasedFieldsProps) 
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <FormField
-            control={form.control}
-            name="title"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Professional Title</FormLabel>
-                <FormControl>
-                  <Input placeholder="e.g. Property Manager" {...field} disabled={disabled} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          {(!disabled || form.getValues("title")) && (
+            <FormField
+              control={form.control}
+              name="title"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Professional Title</FormLabel>
+                  <FormControl>
+                    <Input placeholder="e.g. Property Manager" {...field} disabled={disabled} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          )}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <FormField
-              control={form.control}
-              name="yearsOfExperience"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Years of Experience</FormLabel>
-                  <FormControl>
-                    <Input type="number" min="0" placeholder="0" {...field} disabled={disabled} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="specializedArea"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Specialized Area</FormLabel>
-                  <FormControl>
-                    <Input placeholder="e.g. Uttara, Gulshan" {...field} disabled={disabled} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            {(!disabled || form.getValues("yearsOfExperience")) && (
+              <FormField
+                control={form.control}
+                name="yearsOfExperience"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Years of Experience</FormLabel>
+                    <FormControl>
+                      <Input type="number" min="0" placeholder="0" {...field} disabled={disabled} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
+            {(!disabled || form.getValues("specializedArea")) && (
+              <FormField
+                control={form.control}
+                name="specializedArea"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Specialized Area</FormLabel>
+                    <FormControl>
+                      <Input placeholder="e.g. Uttara, Gulshan" {...field} disabled={disabled} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
           </div>
         </CardContent>
       </Card>
@@ -80,79 +86,85 @@ export function RoleBasedFields({ form, role, disabled }: RoleBasedFieldsProps) 
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
-          <FormField
-            control={form.control}
-            name="permanentAddress"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Permanent Address</FormLabel>
-                <FormControl>
-                  <Input placeholder="Enter your permanent address" {...field} disabled={disabled} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="nidNumber"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>NID Number</FormLabel>
-                <FormControl>
-                  <Input placeholder="Enter your National ID Number" {...field} disabled={disabled} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          {(!disabled || form.getValues("permanentAddress")) && (
+            <FormField
+              control={form.control}
+              name="permanentAddress"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Permanent Address</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Enter your permanent address" {...field} disabled={disabled} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          )}
+          {(!disabled || form.getValues("nidNumber")) && (
+            <FormField
+              control={form.control}
+              name="nidNumber"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>NID Number</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Enter your National ID Number" {...field} disabled={disabled} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          )}
 
-          <div className="border-t pt-4">
-            <h4 className="flex items-center gap-2 font-medium mb-3 text-gray-700 text-sm">
-              <Shield className="h-4 w-4" /> Emergency Contact
-            </h4>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <FormField
-                control={form.control}
-                name="emergencyContact.name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Name</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Contact Name" {...field} disabled={disabled} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="emergencyContact.relationship"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Relationship</FormLabel>
-                    <FormControl>
-                      <Input placeholder="e.g. Father, Spouse" {...field} disabled={disabled} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="emergencyContact.phoneNumber"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Phone Number</FormLabel>
-                    <FormControl>
-                      <Input placeholder="+880..." {...field} disabled={disabled} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+          {(!disabled || (form.getValues("emergencyContact.name") || form.getValues("emergencyContact.phoneNumber"))) && (
+            <div className="border-t pt-4">
+              <h4 className="flex items-center gap-2 font-medium mb-3 text-gray-700 text-sm">
+                <Shield className="h-4 w-4" /> Emergency Contact
+              </h4>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <FormField
+                  control={form.control}
+                  name="emergencyContact.name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Name</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Contact Name" {...field} disabled={disabled} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="emergencyContact.relationship"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Relationship</FormLabel>
+                      <FormControl>
+                        <Input placeholder="e.g. Father, Spouse" {...field} disabled={disabled} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="emergencyContact.phoneNumber"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Phone Number</FormLabel>
+                      <FormControl>
+                        <Input placeholder="+880..." {...field} disabled={disabled} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
             </div>
-          </div>
+          )}
         </CardContent>
       </Card>
     );

@@ -22,61 +22,69 @@ export function SocialLinks({ form, disabled }: SocialLinksProps) {
         </CardTitle>
       </CardHeader>
       <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <FormField
-          control={form.control}
-          name="socialLinks.website"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel className="flex items-center gap-2"><Globe className="h-3 w-3" /> Website</FormLabel>
-              <FormControl>
-                <Input placeholder="https://your-website.com" {...field} disabled={disabled} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        {(!disabled || form.getValues("socialLinks.website")) && (
+          <FormField
+            control={form.control}
+            name="socialLinks.website"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="flex items-center gap-2"><Globe className="h-3 w-3" /> Website</FormLabel>
+                <FormControl>
+                  <Input placeholder="https://your-website.com" {...field} disabled={disabled} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
 
-        <FormField
-          control={form.control}
-          name="socialLinks.linkedin"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel className="flex items-center gap-2"><Linkedin className="h-3 w-3" /> LinkedIn</FormLabel>
-              <FormControl>
-                <Input placeholder="https://linkedin.com/in/username" {...field} disabled={disabled} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        {(!disabled || form.getValues("socialLinks.linkedin")) && (
+          <FormField
+            control={form.control}
+            name="socialLinks.linkedin"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="flex items-center gap-2"><Linkedin className="h-3 w-3" /> LinkedIn</FormLabel>
+                <FormControl>
+                  <Input placeholder="https://linkedin.com/in/username" {...field} disabled={disabled} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
 
-        <FormField
-          control={form.control}
-          name="socialLinks.twitter"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel className="flex items-center gap-2"><Twitter className="h-3 w-3" /> Twitter / X</FormLabel>
-              <FormControl>
-                <Input placeholder="https://twitter.com/username" {...field} disabled={disabled} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        {(!disabled || form.getValues("socialLinks.twitter")) && (
+          <FormField
+            control={form.control}
+            name="socialLinks.twitter"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="flex items-center gap-2"><Twitter className="h-3 w-3" /> Twitter / X</FormLabel>
+                <FormControl>
+                  <Input placeholder="https://twitter.com/username" {...field} disabled={disabled} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
 
-        <FormField
-          control={form.control}
-          name="socialLinks.instagram"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel className="flex items-center gap-2"><Instagram className="h-3 w-3" /> Instagram</FormLabel>
-              <FormControl>
-                <Input placeholder="https://instagram.com/username" {...field} disabled={disabled} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        {(!disabled || form.getValues("socialLinks.instagram")) && (
+          <FormField
+            control={form.control}
+            name="socialLinks.instagram"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="flex items-center gap-2"><Instagram className="h-3 w-3" /> Instagram</FormLabel>
+                <FormControl>
+                  <Input placeholder="https://instagram.com/username" {...field} disabled={disabled} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
       </CardContent>
     </Card>
   );

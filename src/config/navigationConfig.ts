@@ -1,21 +1,21 @@
 
 import {
-    TbBook,
-    TbBuilding,
-    TbCalendar,
-    TbCertificate,
-    TbChartBar,
-    TbCreditCard,
-    TbHeart,
-    TbHelp,
-    TbHome,
-    TbHomeSearch,
-    TbMail,
-    TbMessage,
-    TbPackage,
-    TbSettings,
-    TbUser,
-    TbUsers
+  TbBook,
+  TbBuilding,
+  TbCalendar,
+  TbCertificate,
+  TbChartBar,
+  TbCreditCard,
+  TbHeart,
+  TbHelp,
+  TbHome,
+  TbHomeSearch,
+  TbMail,
+  TbMessage,
+  TbPackage,
+  TbSettings,
+  TbUser,
+  TbUsers
 } from 'react-icons/tb';
 
 export type NavItemType = 'link' | 'dropdown' | 'section';
@@ -26,7 +26,7 @@ export interface NavItem {
   href?: string;
   icon?: React.ElementType;
   badge?: string | null;
-  items?: NavItem[]; 
+  items?: NavItem[];
 }
 
 export interface RoleConfig {
@@ -105,6 +105,13 @@ export const navigationConfig: RoleConfig = {
       badge: null
     },
     {
+      type: 'link',
+      label: 'Offers & Inquiries',
+      href: '/dashboard/sales/offers',
+      icon: TbMessage,
+      badge: null
+    },
+    {
       type: 'section',
       label: 'SUPPORT & ACCOUNT'
     },
@@ -180,6 +187,12 @@ export const navigationConfig: RoleConfig = {
             { type: 'link', href: '/dashboard/sales/contracts', label: 'Sales Contracts' },
             { type: 'link', href: '/dashboard/sales/closings', label: 'Closing Actions' },
           ]
+        },
+        {
+          type: 'link',
+          label: 'Client Inquiries',
+          href: '/dashboard/sales/offers',
+          icon: TbMessage,
         }
       ]
     },

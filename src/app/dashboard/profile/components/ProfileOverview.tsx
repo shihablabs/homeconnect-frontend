@@ -2,19 +2,23 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { api } from "@/lib/api/api";
-import { AuthUser } from "@/redux/features/auth/authSlice";
+import { authApi } from "@/lib/api/auth-api";
+import { AuthUser, updateUserProfile } from "@/redux/features/auth/authSlice";
+import { useAppDispatch } from "@/redux/hooks";
 
-import { BadgeCheck, Mail, Phone, ShieldAlert, ShieldCheck, User } from "lucide-react";
+import { BadgeCheck, Loader2, Mail, Phone, ShieldAlert, ShieldCheck, User } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
 interface ProfileOverviewProps {
   user: AuthUser;
+  isEditing: boolean;
 }
 
-export function ProfileOverview({ user }: ProfileOverviewProps) {
-
+export function ProfileOverview({ user, isEditing }: ProfileOverviewProps) {
+  const dispatch = useAppDispatch();
   const [sendingVerification, setSendingVerification] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
 
   const getInitials = (name: string) => {
     const parts = name.split(" ").filter(Boolean);
@@ -25,7 +29,26 @@ export function ProfileOverview({ user }: ProfileOverviewProps) {
     );
   };
 
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
 
+    setIsUploading(true);
+    const toastId = toast.loading("Uploading avatar...");
+    try {
+      const result = await authApi.uploadAvatar(file);
+      // Backend returns unified user object or { avatar: 'url' } 
+      // Based on auth.controller.ts, it returns sendResponse(res, 200, "...", user);
+      // So result is the updated user object.
+      dispatch(updateUserProfile(result));
+      toast.success("Avatar updated!", { id: toastId });
+    } catch (error: any) {
+      console.error("Avatar upload failed:", error);
+      toast.error("Failed to upload avatar", { id: toastId });
+    } finally {
+      setIsUploading(false);
+    }
+  };
 
   const handleVerifyEmail = async () => {
     if (sendingVerification) return;
@@ -51,15 +74,45 @@ export function ProfileOverview({ user }: ProfileOverviewProps) {
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="flex flex-col items-center text-center">
-          <div className="relative mb-4">
-            <Avatar className="h-24 w-24 border-4 border-white shadow-lg">
+          <div className="relative mb-4 group">
+            <Avatar className="h-28 w-28 border-4 border-white shadow-lg">
               <AvatarImage src={user.avatar} alt={user.name} />
-              <AvatarFallback className="text-2xl font-bold">
+              <AvatarFallback className="text-3xl font-bold">
                 {getInitials(user.name)}
               </AvatarFallback>
             </Avatar>
 
-            {user.verificationStatus === 'verified' && (
+            {isEditing && (
+              <div className="absolute inset-0 bg-black/40 rounded-full flex flex-col items-center justify-center cursor-pointer transition-colors hover:bg-black/50 z-10">
+                <label
+                  htmlFor="overview-avatar-upload"
+                  className="flex flex-col items-center justify-center h-full w-full cursor-pointer p-2 text-center"
+                >
+                  {isUploading ? (
+                    <Loader2 className="h-6 w-6 text-white animate-spin" />
+                  ) : (
+                    <>
+                      <div className="bg-white/20 p-2 rounded-full mb-1">
+                        <Camera className="h-5 w-5 text-white" />
+                      </div>
+                      <span className="text-white text-[10px] font-bold uppercase tracking-wider leading-none">
+                        Change<br />Avatar
+                      </span>
+                    </>
+                  )}
+                  <input
+                    id="overview-avatar-upload"
+                    type="file"
+                    className="hidden"
+                    accept="image/*"
+                    onChange={handleAvatarUpload}
+                    disabled={isUploading}
+                  />
+                </label>
+              </div>
+            )}
+
+            {user.verificationStatus === 'verified' && !isEditing && (
               <div className="absolute bottom-0 right-0 bg-white p-1 rounded-full shadow-md">
                 <BadgeCheck className="h-6 w-6 text-blue-500 fill-white" />
               </div>

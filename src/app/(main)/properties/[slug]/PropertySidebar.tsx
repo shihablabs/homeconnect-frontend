@@ -1,9 +1,11 @@
+import { MaintenanceRequestForm } from "@/components/maintenance/MaintenanceRequestForm";
 import { MakeOfferModal } from "@/components/modals/MakeOfferModal";
 import { RequestInfoModal } from "@/components/modals/RequestInfoModal";
 import { ScheduleVisitModal } from "@/components/modals/ScheduleVisitModal";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
 import { useAuthGuard } from "@/hooks/useAuthGuard";
 import { useMyToursQuery } from "@/hooks/useMyToursQuery";
@@ -13,7 +15,7 @@ import { cn } from "@/lib/utils";
 import { useGetMyInquiriesQuery } from "@/redux/features/inquiry/inquiryApiSlice";
 import { RootState } from "@/redux/store";
 import { OwnerAgentResponse } from "@/types/property.types";
-import { MessageSquare, Share2, ShieldCheck, User as UserIcon } from "lucide-react";
+import { MessageSquare, Share2, ShieldCheck, User as UserIcon, Wrench } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useSelector } from "react-redux";
@@ -49,6 +51,7 @@ export function PropertySidebar({
   const { hasPendingTour } = useMyToursQuery();
 
   const [isRequestInfoOpen, setIsRequestInfoOpen] = useState(false);
+  const [isMaintenanceModalOpen, setIsMaintenanceModalOpen] = useState(false);
   const [isBookingLoading, setIsBookingLoading] = useState(false);
   const { user } = useSelector((state: RootState) => state.auth);
 
@@ -217,7 +220,7 @@ export function PropertySidebar({
             </Button>
 
             <div className="space-y-3 pt-4 border-t border-gray-100">
-              {listingType === "rent" ? (
+              <div className="grid grid-cols-2 gap-3">
                 <Button
                   variant="outline"
                   className={cn(
@@ -232,12 +235,22 @@ export function PropertySidebar({
                     checkAuth(() => setIsScheduleVisitOpen(true));
                   }}
                 >
-                  {propertyId && hasPendingTour(propertyId) ? "Visit Requested" : "Schedule a Visit"}
+                  {propertyId && hasPendingTour(propertyId) ? "Visit Requested" : "Schedule visit"}
                 </Button>
-              ) : (
                 <Button
                   variant="outline"
-                  className="w-full h-11 bg-gradient-to-r from-cyan-50 to-blue-50 text-cyan-700 border-cyan-200 hover:text-white hover:from-cyan-600 hover:to-blue-600 hover:border-transparent transition-all font-semibold shadow-sm"
+                  className="w-full h-11 bg-gray-50 text-gray-700 border-gray-200 hover:bg-primary hover:text-white hover:border-transparent transition-all font-semibold"
+                  onClick={() => checkAuth(() => setIsMaintenanceModalOpen(true))}
+                >
+                  <Wrench className="mr-2 h-4 w-4" />
+                  Report
+                </Button>
+              </div>
+
+              {listingType === "sale" && (
+                <Button
+                  variant="outline"
+                  className="w-full h-11 bg-gradient-to-r from-purple-50 to-indigo-50 text-purple-700 border-purple-200 hover:text-white hover:from-purple-600 hover:to-indigo-600 hover:border-transparent transition-all font-semibold shadow-sm"
                   onClick={() => {
                     checkAuth(() => setIsOfferModalOpen(true));
                   }}
@@ -286,6 +299,20 @@ export function PropertySidebar({
           isOpen={isRequestInfoOpen}
           onClose={() => setIsRequestInfoOpen(false)}
         />
+      )}
+
+      {propertyId && (
+        <Dialog open={isMaintenanceModalOpen} onOpenChange={setIsMaintenanceModalOpen}>
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Report Maintenance</DialogTitle>
+            </DialogHeader>
+            <MaintenanceRequestForm
+              propertyId={propertyId}
+              onSuccess={() => setIsMaintenanceModalOpen(false)}
+            />
+          </DialogContent>
+        </Dialog>
       )}
     </Card >
   );
